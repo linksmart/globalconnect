@@ -15,12 +15,14 @@ const (
 )
 
 var (
-	id = flag.String("id", "A", "Client ID")
+	id  = flag.String("id", "A", "Client ID")
+	pub = flag.String("pub", "tcp://localhost:6000", "PUB socket endpoint")
+	sub = flag.String("sub", "tcp://localhost:6001", "SUB socket endpoint")
 )
 
-func publish(id string) {
+func publish(id, endpoint string) {
 	publisher, _ := zmq.NewSocket(zmq.PUB)
-	publisher.Connect("tcp://localhost:6000")
+	publisher.Connect(endpoint)
 
 	rand.Seed(time.Now().UnixNano())
 	count := 0
@@ -40,9 +42,9 @@ func publish(id string) {
 	}
 }
 
-func subscribe(id string) {
+func subscribe(id, endpoint string) {
 	subscriber, _ := zmq.NewSocket(zmq.SUB)
-	subscriber.Connect("tcp://localhost:6001")
+	subscriber.Connect(endpoint)
 	subscriber.SetSubscribe(id)
 	subscriber.SetSubscribe(DiscoveryTopic)
 	defer subscriber.Close()
@@ -61,8 +63,8 @@ func subscribe(id string) {
 func main() {
 	flag.Parse()
 
-	go publish(*id)
-	go subscribe(*id)
+	go publish(*id, *pub)
+	go subscribe(*id, *sub)
 
 	for _ = range time.Tick(100) {
 	}

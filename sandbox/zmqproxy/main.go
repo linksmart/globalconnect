@@ -1,12 +1,23 @@
 package main
 
-import zmq "github.com/pebbe/zmq4"
+import (
+	"flag"
+
+	zmq "github.com/pebbe/zmq4"
+)
+
+var (
+	pub = flag.String("xpub", "tcp://*:6001", "XPUB socket endpoint")
+	sub = flag.String("xsub", "tcp://*:6000", "XSUB socket endpoint")
+)
 
 func main() {
+	flag.Parse()
+
 	subscriber, _ := zmq.NewSocket(zmq.XSUB)
-	subscriber.Bind("tcp://*:6000")
+	subscriber.Bind(*sub)
 
 	publisher, _ := zmq.NewSocket(zmq.XPUB)
-	publisher.Bind("tcp://*:6001")
+	publisher.Bind(*pub)
 	zmq.Proxy(subscriber, publisher, nil)
 }
