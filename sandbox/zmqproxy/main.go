@@ -30,7 +30,7 @@ func main() {
 	pubSocket.Bind(*xpub)
 
 	// publisher to announce peerdowns
-	downCh := make(chan string)
+	downCh := make(chan zmqbb.Message)
 	subEndpoint, _ := subSocket.GetLastEndpoint()
 	go publisher(subEndpoint, downCh)
 
@@ -42,7 +42,7 @@ func main() {
 	zmq.Proxy(subSocket, pubSocket, nil)
 }
 
-func subscriber(endpoint string, downCh chan<- string) {
+func subscriber(endpoint string, downCh chan<- zmqbb.Message) {
 	heartbeats := Heartbeats{
 		beats: make(map[string]*time.Timer),
 	}
@@ -52,10 +52,17 @@ func subscriber(endpoint string, downCh chan<- string) {
 	s.SetSubscribe(zmqbb.HeartbeatTopic)
 	defer s.Close()
 
-	announceDown := func(id string) func() {
+	peerDown := func(id string) func() {
 		return func() {
 			log.Println("TIMEOUT heartbeat for peer ", id)
-			downCh <- id
+			msg := zmqbb.Message{
+				zmqbb.BroadcastTopic,
+				zmqbb.MessageTypePeerDown,
+				time.Now().UnixNano(),
+				id,
+				[]byte{},
+			}
+			downCh <- msg
 
 			heartbeats.Lock()
 			delete(heartbeats.beats, id)
@@ -76,7 +83,7 @@ func subscriber(endpoint string, downCh chan<- string) {
 
 		if !ok {
 			log.Println("FIRST heartbeat from peer ", msg.Sender)
-			heartbeats.beats[msg.Sender] = time.AfterFunc(zmqbb.HeartbeatTimeout*time.Millisecond, announceDown(msg.Sender))
+			heartbeats.beats[msg.Sender] = time.AfterFunc(zmqbb.HeartbeatTimeout*time.Millisecond, peerDown(msg.Sender))
 			log.Println("Current # of peers: ", len(heartbeats.beats))
 		} else {
 			// log.Println("UPDATE heartbeat from ", msg.Sender)
@@ -86,19 +93,12 @@ func subscriber(endpoint string, downCh chan<- string) {
 	}
 }
 
-func publisher(endpoint string, downCh <-chan string) {
+func publisher(endpoint string, ch <-chan zmqbb.Message) {
 	p, _ := zmq.NewSocket(zmq.PUB)
 	p.Connect(endpoint)
 
-	for peerID := range downCh {
-		log.Println("Announcing PEERDOWN for peer ", peerID)
-		msg := zmqbb.Message{
-			zmqbb.BroadcastTopic,
-			zmqbb.MessageTypePeerDown,
-			time.Now().UnixNano(),
-			peerID,
-			[]byte{},
-		}
+	for msg := range ch {
+		log.Println("Announcing PEERDOWN for peer ", msg.Sender)
 		p.SendMessage(*msg.ToBytes())
 	}
 }
