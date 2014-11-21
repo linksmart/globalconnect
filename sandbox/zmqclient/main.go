@@ -1,17 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
 
-	zmq "github.com/pebbe/zmq4"
-)
+	"log"
 
-const (
-	DiscoveryTopic = "aloha"
+	zmq "github.com/pebbe/zmq4"
+	"linksmart.eu/globalconnect/sandbox/zmqbb"
 )
 
 var (
@@ -21,42 +21,80 @@ var (
 )
 
 func publish(id, endpoint string) {
-	publisher, _ := zmq.NewSocket(zmq.PUB)
-	publisher.Connect(endpoint)
+	p, _ := zmq.NewSocket(zmq.PUB)
+	p.Connect(endpoint)
 
 	rand.Seed(time.Now().UnixNano())
+	var msg zmqbb.Message
 	count := 0
-	var msg string
 	for {
-		msg = fmt.Sprintf("%c FROM %s: %d", rand.Intn(3)+'A', id, count)
-		if strings.HasPrefix(msg, id) {
-			msg = fmt.Sprintf("%s ALOHA %s", DiscoveryTopic, id)
+		msg.Topic = string(rand.Intn(3) + 'A')
+		msg.Type = zmqbb.MessageTypeUnicast
+
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.BigEndian, count)
+		msg.Payload = buf.Bytes()
+
+		if msg.Topic == id {
+			msg.Topic = zmqbb.BroadcastTopic
+			msg.Type = zmqbb.MessageTypeDiscovery
+			msg.Payload = []byte{}
 		}
-		_, err := publisher.SendMessage(msg)
+		msg.Sender = id
+		msg.Timestamp = time.Now().UnixNano()
+
+		_, err := p.SendMessage(*msg.ToBytes())
 		if err != nil {
-			break
+			fmt.Println("Error writing message to publish socket: ", err.Error())
 		}
 		count++
-		fmt.Printf("SENT (%d): %s\n", count, []string{msg})
+		fmt.Printf("SENT: %v\n", msg)
 		time.Sleep(3 * time.Second)
 	}
 }
 
 func subscribe(id, endpoint string) {
-	subscriber, _ := zmq.NewSocket(zmq.SUB)
-	subscriber.Connect(endpoint)
-	subscriber.SetSubscribe(id)
-	subscriber.SetSubscribe(DiscoveryTopic)
-	defer subscriber.Close()
+	s, _ := zmq.NewSocket(zmq.SUB)
+	s.Connect(endpoint)
+	s.SetSubscribe(id)
+	s.SetSubscribe(zmqbb.BroadcastTopic)
+	defer s.Close()
 
-	count := 0
 	for {
-		msg, err := subscriber.RecvMessage(0)
+		var msg zmqbb.Message
+
+		pkt, err := s.RecvMessageBytes(0)
+		err = msg.FromBytes(pkt)
+
 		if err != nil {
-			break
+			log.Println("Error reading from subscribe socket: ", err.Error())
 		}
-		count++
-		fmt.Printf("RCVD (%d): %s\n", count, msg)
+		switch msg.Type {
+		case zmqbb.MessageTypeUnicast:
+			fmt.Printf("RCVD UNICAST from %s: %v\n", msg.Sender, msg)
+		case zmqbb.MessageTypeDiscovery:
+			fmt.Printf("RCVD DISCOVERY from %s: %v\n", msg.Sender, msg)
+		case zmqbb.MessageTypePeerDown:
+			fmt.Printf("RCVD PEERDOWN for %s: %v\n", msg.Sender, msg)
+		}
+	}
+}
+
+func heartbeat(id, endpoint string) {
+	p, _ := zmq.NewSocket(zmq.PUB)
+	p.Connect(endpoint)
+
+	ticker := time.NewTicker(zmqbb.HeartbeatInterval * time.Millisecond)
+
+	for _ = range ticker.C {
+		msg := zmqbb.Message{
+			zmqbb.HeartbeatTopic,
+			zmqbb.MessageTypeHeartbeat,
+			time.Now().UnixNano(),
+			id,
+			[]byte{},
+		}
+		p.SendMessage(*msg.ToBytes())
 	}
 }
 
@@ -65,6 +103,7 @@ func main() {
 
 	go publish(*id, *pub)
 	go subscribe(*id, *sub)
+	go heartbeat(*id, *pub)
 
 	for _ = range time.Tick(100) {
 	}
