@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<features name="${project.artifactId}" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
+
+	<feature name="linksmart-gc-boot" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.version}">linksmart-boot</feature>
+    </feature>
+    
+    <feature name="backbone-zmq" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">linksmart-gc-boot</feature>	
+    	<bundle>mvn:eu.linksmart/eu.linksmart.api.security.communication/${linksmart.version}</bundle>	       
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.backbone/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}</bundle>
+    </feature>
+       
+</features>
