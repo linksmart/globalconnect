@@ -1,0 +1,14 @@
+README 	General information
+
+AUTHORS 	Karl Catewicz
+
+ChangeLog
+
+NEWS
+
+INSTALL
+  	Install a 1.7 JDK. Depending on OS either call start.sh or start.bat to start the global connect zqm proxy.
+
+COPYING / LICENSE 	see LICENSE for details
+
+BUGS
