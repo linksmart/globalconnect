@@ -6,33 +6,25 @@ import org.zeromq.ZMQ;
 public class TestPeer2 {
 	
 	String peerID = "PEER-2";
+	String xsub_uri = "tcp://gando.fit.fraunhofer.de:6000";
+	String xpub_uri = "tcp://gando.fit.fraunhofer.de:6001";
 	
 	@Test
 	public void testPeer2() {
 		try {
 			
 			//
-			// prepare our context
-			//
-			ZMQ.Context context = ZMQ.context(1);
-			
-			//
 			// sending heartbeat
 			//
-			ZMQ.Socket publisher = context.socket(ZMQ.PUB);
-			publisher.connect("tcp://gando.fit.fraunhofer.de:6000"); // XSUB socket
-			System.out.println("PEER-2 is sending hearbeat to proxy");
-			publisher.sendMore("HEARTBEAT");
-			publisher.sendMore("0x03");
-			publisher.sendMore(("" + System.currentTimeMillis()).getBytes());
-			publisher.sendMore(peerID);
-			publisher.send("", 0);
+			HeartBeat heartBeat = new HeartBeat(peerID, xsub_uri);
+			heartBeat.start();
 			
 			//
-			// prepare subscribers
+			// prepare context and subscribers
 			//
+			ZMQ.Context context = ZMQ.context(1);
 			ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
-			subscriber.connect("tcp://gando.fit.fraunhofer.de:6001"); // XPUB socket
+			subscriber.connect(xpub_uri); 
 			subscriber.subscribe("BROADCAST".getBytes());
 			subscriber.subscribe(peerID.getBytes());
 			
@@ -43,7 +35,7 @@ public class TestPeer2 {
 			// reading messages
 			//
 			int message_counter = 1;
-			while (!Thread.currentThread ().isInterrupted()) {
+			while (!Thread.currentThread().isInterrupted()) {
 				String topic = subscriber.recvStr();
 				String type = new String(subscriber.recvStr());
 				String time = subscriber.recvStr();
@@ -53,11 +45,17 @@ public class TestPeer2 {
 				System.out.println("topic: " + topic + " - type: " + type + " - time: " + time + " - sender: " + sender + " - contents : " + contents);
 				message_counter++;
 			}
+			
+			subscriber.setLinger(1000);
 			subscriber.close ();
 			context.term ();
+			
+			heartBeat.setIsRunning(false);
+			
+			System.out.println("PEER-2 is going down");
+			
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-	}	
-
+	}
 }

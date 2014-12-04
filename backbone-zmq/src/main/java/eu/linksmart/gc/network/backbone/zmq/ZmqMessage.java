@@ -1,19 +1,17 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
-import java.util.Date;
-
 public class ZmqMessage {
 	
 	private String topic;
-	private byte type;
-	private Date timeStamp;
+	private String type;
+	private long timeStamp;
 	private String sender;
 	private byte[] payload;
 	
 	public ZmqMessage() {	
 	}
 	
-	public ZmqMessage(String topic, byte type, Date timeStamp, String sender, byte[] payload) {
+	public ZmqMessage(String topic, String type, long timeStamp, String sender, byte[] payload) {
 		this.topic = topic;
 		this.type = type;
 		this.timeStamp = timeStamp;
@@ -29,19 +27,19 @@ public class ZmqMessage {
 		return this.topic;
 	}
 	
-	public void setType(byte type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 	
-	public byte getType() {
+	public String getType() {
 		return this.type;
 	}
 	
-	public void setTimeStamp(Date timeStamp) {
+	public void setTimeStamp(long timeStamp) {
 		this.timeStamp = timeStamp;
 	}
 	
-	public Date getTimeStamp() {
+	public long getTimeStamp() {
 		return this.timeStamp;
 	}
 	
