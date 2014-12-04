@@ -14,22 +14,43 @@ public class TestPeer2 {
 		try {
 			
 			//
-			// sending heartbeat
+			// sending heartbeats
 			//
 			HeartBeat heartBeat = new HeartBeat(peerID, xsub_uri);
 			heartBeat.start();
 			
 			//
-			// prepare context and subscribers
+			// prepare our context
 			//
 			ZMQ.Context context = ZMQ.context(1);
+			
+			//
+			// sending (just one) broadcast message
+			//
+			ZMQ.Socket publisher = context.socket(ZMQ.PUB);
+			publisher.connect(xsub_uri); 
+			
+			Thread.sleep(100);
+	
+			System.out.println("[" + peerID + "] is sending a broadcast message");
+			publisher.sendMore(ZmqConstants.BROADCAST_TOPIC);
+			publisher.sendMore(ZmqConstants.MESSAGE_TYPE_DISCOVERY);
+			publisher.sendMore("" + System.currentTimeMillis());
+			publisher.sendMore(peerID);
+			publisher.send(peerID + "[S3,S4]", 0);
+			
+			//
+			// prepare subscribers
+			//
 			ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
 			subscriber.connect(xpub_uri); 
-			subscriber.subscribe("BROADCAST".getBytes());
+			subscriber.subscribe(ZmqConstants.BROADCAST_TOPIC.getBytes());
 			subscriber.subscribe(peerID.getBytes());
 			
-			System.out.println("subscribed to: BROADCAST");
-			System.out.println("subscribed to: " + peerID);
+			System.out.println("[" + peerID + "] is subscribed to topic: BROADCAST");
+			System.out.println("subscribed to topic: [" + peerID + "]");
+			
+			Thread.sleep(100);
 			
 			//
 			// reading messages
@@ -41,8 +62,11 @@ public class TestPeer2 {
 				String time = subscriber.recvStr();
 				String sender = subscriber.recvStr();
 				String contents = subscriber.recvStr();
-				System.out.println("receiving message_counter: " + message_counter);
-				System.out.println("topic: " + topic + " - type: " + type + " - time: " + time + " - sender: " + sender + " - contents : " + contents);
+				System.out.println("message_counter: " + message_counter);
+				if(topic.equals(ZmqConstants.BROADCAST_TOPIC)) {
+					System.out.println("recieved broadcast message from [" + sender + "] - topic: " + topic + " - type: " + type + " - time: " + time + " - contents : " + contents);
+				} else
+					System.out.println("topic: " + topic + " - type: " + type + " - time: " + time + " - sender: " + sender + " - contents : " + contents);
 				message_counter++;
 			}
 			
@@ -52,7 +76,7 @@ public class TestPeer2 {
 			
 			heartBeat.setIsRunning(false);
 			
-			System.out.println("PEER-2 is going down");
+			System.out.println("[" + peerID + "] is going down");
 			
 		} catch (Exception e) {
 			// TODO: handle exception

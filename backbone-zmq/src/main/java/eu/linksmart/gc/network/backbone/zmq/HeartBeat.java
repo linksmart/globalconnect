@@ -7,7 +7,7 @@ public class HeartBeat extends Thread {
 	private ZMQ.Context context = null;
 	private ZMQ.Socket publisher = null;
 	private String peerID;
-	private static int sleepTime = 5000;
+	private static int sleepTime = 2000;
 	private boolean isRunning = false;
 	
 	public HeartBeat(String peerID, String uri) {
