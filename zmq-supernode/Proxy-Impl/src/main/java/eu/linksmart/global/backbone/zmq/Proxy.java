@@ -1,5 +1,6 @@
 package eu.linksmart.global.backbone.zmq;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
@@ -25,6 +26,9 @@ public class Proxy {
     public Proxy() {
 
         heartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
+
+        System.out.println(ObjectUtils.identityToString(heartbeatTimestamps));
+        //System.out.println(ObjectUtils.i
 
     }
     public void startProxy(){
@@ -73,7 +77,8 @@ public class Proxy {
     public boolean trafficWatchAlive(){
         return trafficWatch.isAlive();
     }
-    private static class ProxyThread extends Thread{
+
+    private class ProxyThread extends Thread{
 
         private ZMQ.Context ctx;
         private ZMQ.Socket xsubSocket;
@@ -117,7 +122,7 @@ public class Proxy {
     }
 
     // analyzes traffic of the proxy
-    private static class TrafficWatch extends Thread {
+    private class TrafficWatch extends Thread {
 
         ZMQ.Context ctx;
         ZMQ.Socket trafficSocket;
@@ -132,6 +137,10 @@ public class Proxy {
 
         public TrafficWatch(ConcurrentHashMap<UUID, Long> peers) {
             mPeers = peers;
+            System.out.println(ObjectUtils.identityToString(peers));
+            System.out.println(ObjectUtils.identityToString(mPeers));
+
+            LOG.trace("traffic watch : peers : "+mPeers.size());
             ctx = ZMQ.context(1);
             trafficSocket = ctx.socket(ZMQ.SUB);
             LOG.trace("traffic watch : SUB trafficSocket created");
@@ -174,8 +183,8 @@ public class Proxy {
                         aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
                         aMessage.sender = new String(trafficSocket.recv());
                         aMessage.payload = trafficSocket.recv();
-                        hartbeatTimestamps.put(java.util.UUID.fromString(aMessage.sender), System.currentTimeMillis());
-                        LOG.debug("no of peers : " + hartbeatTimestamps.size());
+                        mPeers.put(java.util.UUID.fromString(aMessage.sender), System.currentTimeMillis());
+                        LOG.debug("no of peers : " + mPeers.size());
                         Message.printMessage(aMessage);
                     } else if (aMessage.topic.equals(Constants.BROADCAST_TOPIC)) {
                         aMessage.type = trafficSocket.recv()[0];
@@ -215,7 +224,7 @@ public class Proxy {
 
 
     // checks periodically for peer heartbeat timeouts
-    private static class HeartbeatWatch extends Thread {
+    private class HeartbeatWatch extends Thread {
 
         ZMQ.Context ctx;
         ZMQ.Socket heartbeatSocket;
@@ -223,11 +232,15 @@ public class Proxy {
 
         public HeartbeatWatch(ConcurrentHashMap<UUID, Long> peers) {
 
+
             mPeers = peers;
+            System.out.println(ObjectUtils.identityToString(peers));
+            System.out.println(ObjectUtils.identityToString(mPeers));
         }
 
         @Override
         public void run() {
+            LOG.trace("heartbeat watch : peers : "+mPeers.size());
 
             ctx = ZMQ.context(1);
             heartbeatSocket = ctx.socket(ZMQ.PUB);
@@ -237,7 +250,8 @@ public class Proxy {
 
             try {
                 while (true) {
-                    LOG.trace("analyzing peer timers...");
+                    LOG.trace("analyzing "+mPeers.size()+" peer timers...");
+                    LOG.trace("peers : "+mPeers.size());
                     for (UUID sender : mPeers.keySet()) {
                         Long tstamp = mPeers.get(sender);
                         LOG.trace("peer : " + sender.toString());

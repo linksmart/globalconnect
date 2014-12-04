@@ -9,6 +9,8 @@ import java.util.UUID;
  */
 public class testingSubscriber {
 
+    private static String SUBSCRIBE_PEER_ID = "f28cd5b1-d30a-433d-a49d-e32ff8d718b9";
+
 
     public static void main (String[] args) throws InterruptedException {
 
@@ -34,9 +36,8 @@ public class testingSubscriber {
             socket.connect("tcp://localhost:7001");
             System.out.println("sub thread connected to : tcp://localhost:7001");
 
-            //socket.subscribe("1518016c-5db1-4f69-a405-de40a8c2d0b9".getBytes());
-            socket.subscribe("XXXXX".getBytes());
-            System.out.println("sub thread subscribed to " + "1518016c-5db1-4f69-a405-de40a8c2d0b9");
+            socket.subscribe(SUBSCRIBE_PEER_ID.getBytes());
+            System.out.println("sub thread subscribed to " + SUBSCRIBE_PEER_ID);
 
             while(!Thread.currentThread ().isInterrupted ()){
                 String address = socket.recvStr();

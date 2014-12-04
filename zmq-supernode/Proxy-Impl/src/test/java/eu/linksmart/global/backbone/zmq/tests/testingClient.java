@@ -1,0 +1,49 @@
+package eu.linksmart.global.backbone.zmq.tests;
+
+import eu.linksmart.global.backbone.zmq.Client;
+import eu.linksmart.global.backbone.zmq.Proxy;
+import org.zeromq.ZMQ;
+
+/**
+ * Created by carlos on 04.12.14.
+ */
+public class testingClient {
+
+    public static void main(String[] args) throws InterruptedException {
+        ZMQ.Context context = ZMQ.context(1);
+        System.out.println("versioN: "+ZMQ.getVersionString());
+
+
+        //
+        Proxy proxy = new Proxy();
+        proxy.startProxy();
+
+        Client c1,c2;
+        c1 = new Client();
+        c2 = new Client();
+        c2.subscribe(c1.getPeerID());
+
+
+
+
+        int i = 0;
+        while(i<3){
+            c1.publish("ABC".getBytes());
+            Thread.sleep(2000);
+            i++;
+        }
+        System.out.println("STOPPING CLIENTS.... ");
+        c1.stopClient();
+        Thread.sleep(10000);
+        c2.stopClient();
+
+
+
+
+
+
+
+    }
+
+
+}
