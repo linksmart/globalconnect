@@ -177,7 +177,7 @@ public class Client extends Observable{
             while (!Thread.currentThread ().isInterrupted ()) {
                     try {
                         aMessage.topic = new String(subSocket.recv());
-                    }catch(ZMQException ex){
+                    }catch(Exception ex){
                         LOG.warn(ex);
                         // ZMQ context terminated. Exiting thread
                         break;
@@ -210,6 +210,7 @@ public class Client extends Observable{
                         aMessage.payload = subSocket.recv();
                         if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                         // notify observers about new message from subscribed topics
+                        setChanged();
                         notifyObservers(aMessage);
                     }
                     else{

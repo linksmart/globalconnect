@@ -274,6 +274,10 @@ public class Proxy {
             heartbeatSocket.send("".getBytes());
             LOG.info("peer down broadcasted");
         }
+
+    }
+    public int getNumberOfPeers(){
+        return this.heartbeatTimestamps.size();
     }
 
 
