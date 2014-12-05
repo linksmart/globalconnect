@@ -2,6 +2,7 @@ package eu.linksmart.global.backbone.zmq;
 
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
+import org.zeromq.ZMQException;
 
 import java.util.Observable;
 import java.util.UUID;
@@ -42,9 +43,7 @@ public class Client extends Observable{
         heartbeatThread = new HeartbeatThread();
         heartbeatThread.start();
 
-        // subscribe to BROADCAST topic
-        subscribe(Constants.BROADCAST_TOPIC);
-        // subscriber thread, lazy start later
+        // subscriber thread, lazy start later on first subscribtion
         subscriberThread = new SubscriberThread();
 
         LOG.info("client "+this.peerID+" initialized.");
@@ -80,11 +79,15 @@ public class Client extends Observable{
         heartbeatThread.interrupt();
 
         // unsubscribe topics
-        for(String aTopic : subscriptions){
-            unsubscribe(aTopic);
+        LOG.trace("iteration over subscribtion list of : "+subscriptions.size());
+        for(int i=0; i < subscriptions.size() ; i++){
+            unsubscribe(subscriptions.get(i));
         }
+//        for(String aTopic : subscriptions){
+//
+//        }
         // stop subscriber thread
-        subscriberThread.interrupt();
+        //subscriberThread.interrupt();
 
         // clean up the IO
         pubSocket.close();
@@ -110,9 +113,9 @@ public class Client extends Observable{
 
         if(subscriptions.contains(topic)){
             subSocket.unsubscribe(topic.getBytes());
-            subscriptions.remove(topic);
             LOG.info("un-subscribed : "+topic);
         }
+        subscriptions.clear();
     }
 
 
@@ -158,23 +161,35 @@ public class Client extends Observable{
             } catch (InterruptedException ex) {
                 LOG.debug("heartbeat thread interrupted.");
             }
+            LOG.debug("heartbeat thread terminated.");
         }
     }
     private class SubscriberThread extends Thread {
+
         @Override
         public void run() {
+            subSocket.subscribe(Constants.BROADCAST_TOPIC.getBytes());
+            subscriptions.add(Constants.BROADCAST_TOPIC);
+            LOG.debug("subscribed to broadcast");
+
             Message aMessage = new Message();
             LOG.debug("subscriber thread started.");
             while (!Thread.currentThread ().isInterrupted ()) {
-                    aMessage.topic = new String(subSocket.recv());
-                    LOG.trace("client subscriber thread received topic : "+aMessage.topic);
+                    try {
+                        aMessage.topic = new String(subSocket.recv());
+                    }catch(ZMQException ex){
+                        LOG.warn(ex);
+                        // ZMQ context terminated. Exiting thread
+                        break;
+                    }
+                    LOG.trace("client subscriber thread received topic : " + aMessage.topic);
                     if(aMessage.topic.equals(Constants.BROADCAST_TOPIC)){
                         LOG.trace("BROADCAST topic received");
                         aMessage.type = subSocket.recv()[0];
                         aMessage.timestamp = Message.deserializeTimestamp(subSocket.recv());
                         aMessage.sender = new String(subSocket.recv());
                         aMessage.payload = subSocket.recv();
-                        Message.printMessage(aMessage);
+                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                         // remove subscription on PEER DOWN
                         if(aMessage.type==Constants.MSG_PEERDOWN){
                             LOG.debug("received PEER DOWN for : "+aMessage.sender);
@@ -193,7 +208,7 @@ public class Client extends Observable{
                         aMessage.timestamp = Message.deserializeTimestamp(subSocket.recv());
                         aMessage.sender = new String(subSocket.recv());
                         aMessage.payload = subSocket.recv();
-                        Message.printMessage(aMessage);
+                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                         // notify observers about new message from subscribed topics
                         notifyObservers(aMessage);
                     }
@@ -206,7 +221,7 @@ public class Client extends Observable{
                         }
                     }
             }
-            LOG.debug("subscriber thread interrupted.");
+            LOG.info("subscriber thread terminated");
         }
     }
 }

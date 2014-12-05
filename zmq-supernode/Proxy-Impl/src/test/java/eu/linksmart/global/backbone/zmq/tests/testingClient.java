@@ -34,7 +34,7 @@ public class testingClient {
         }
         System.out.println("STOPPING CLIENTS.... ");
         c1.stopClient();
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         c2.stopClient();
 
 

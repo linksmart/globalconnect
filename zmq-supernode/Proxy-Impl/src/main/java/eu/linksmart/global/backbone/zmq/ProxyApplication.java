@@ -18,7 +18,7 @@ public class ProxyApplication {
         Runtime.getRuntime().addShutdownHook(sh);
         LOG.debug("shutdown hook registered.");
         // start proxy
-        LOG.info("starting proxy...");
+        LOG.info("starting ZMQ backbone...");
         proxy.startProxy();
 
         while(true){
@@ -35,9 +35,9 @@ public class ProxyApplication {
             }
             @Override
             public void run() {
-                    LOG.warn("Crtl-c intercepted");
+                    LOG.warn("CTRL-C intercepted");
                     mProxy.stopProxy();
-                    LOG.info("application terminated");
+                    LOG.info("ZMQ backbone terminated");
             }
     }
 }

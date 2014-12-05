@@ -1,6 +1,5 @@
 package eu.linksmart.global.backbone.zmq;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
@@ -26,9 +25,6 @@ public class Proxy {
     public Proxy() {
 
         heartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
-
-        System.out.println(ObjectUtils.identityToString(heartbeatTimestamps));
-        //System.out.println(ObjectUtils.i
 
     }
     public void startProxy(){
@@ -100,7 +96,6 @@ public class Proxy {
 
             LOG.info("ProxyThread terminated");
         }
-        // TODO current JeroMQ proxy implementation hangs on during context termination. No graceful shutdown of the proxy possible
         public void stopProxyThread(){
 
             xpubSocket.setLinger(0);
@@ -115,6 +110,7 @@ public class Proxy {
             xsubSocket.close();
             LOG.trace("XSUB closed.");
 
+            // TODO current JeroMQ proxy implementation hangs on during context termination. No graceful shutdown of the proxy possible
             //ctx.close();
             //LOG.trace("ZMQ ctx terminated.");
 
@@ -127,7 +123,7 @@ public class Proxy {
         ZMQ.Context ctx;
         ZMQ.Socket trafficSocket;
 
-        // thread safe hash map of heart beat timers
+        // thread safe hash map of heartbeat timers
         ConcurrentHashMap<UUID, Long> hartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
 
         private Message aMessage;
@@ -137,8 +133,6 @@ public class Proxy {
 
         public TrafficWatch(ConcurrentHashMap<UUID, Long> peers) {
             mPeers = peers;
-            System.out.println(ObjectUtils.identityToString(peers));
-            System.out.println(ObjectUtils.identityToString(mPeers));
 
             LOG.trace("traffic watch : peers : "+mPeers.size());
             ctx = ZMQ.context(1);
@@ -154,6 +148,7 @@ public class Proxy {
         }
         public void stopTrafficWatch(){
             trafficSocket.unsubscribe("".getBytes());
+            LOG.trace("traffic watch : un-subscribed from everything");
             trafficSocket.close();
             trafficSocket.setLinger(0);
             ctx.term();
@@ -185,13 +180,13 @@ public class Proxy {
                         aMessage.payload = trafficSocket.recv();
                         mPeers.put(java.util.UUID.fromString(aMessage.sender), System.currentTimeMillis());
                         LOG.debug("no of peers : " + mPeers.size());
-                        Message.printMessage(aMessage);
+                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                     } else if (aMessage.topic.equals(Constants.BROADCAST_TOPIC)) {
                         aMessage.type = trafficSocket.recv()[0];
                         aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
                         aMessage.sender = new String(trafficSocket.recv());
                         aMessage.payload = trafficSocket.recv();
-                        Message.printMessage(aMessage);
+                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                     } else if (Message.isUUID(aMessage.topic)) {
                         // TODO in case the client sends a valid UUID as topic but no proper message, the routine will fail
                         // TODO better handling or format specification required
@@ -199,7 +194,7 @@ public class Proxy {
                         aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
                         aMessage.sender = new String(trafficSocket.recv());
                         aMessage.payload = trafficSocket.recv();
-                        Message.printMessage(aMessage);
+                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                     } else {
                         LOG.warn("unknown topic detected.");
                         // receive crap from unknown topic
@@ -232,10 +227,7 @@ public class Proxy {
 
         public HeartbeatWatch(ConcurrentHashMap<UUID, Long> peers) {
 
-
             mPeers = peers;
-            System.out.println(ObjectUtils.identityToString(peers));
-            System.out.println(ObjectUtils.identityToString(mPeers));
         }
 
         @Override
