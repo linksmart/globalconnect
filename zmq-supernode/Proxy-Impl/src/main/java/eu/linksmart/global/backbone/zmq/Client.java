@@ -2,7 +2,6 @@ package eu.linksmart.global.backbone.zmq;
 
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
-import org.zeromq.ZMQException;
 
 import java.util.Observable;
 import java.util.UUID;
