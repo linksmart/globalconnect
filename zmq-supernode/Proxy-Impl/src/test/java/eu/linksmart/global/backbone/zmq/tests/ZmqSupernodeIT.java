@@ -6,7 +6,6 @@ import eu.linksmart.global.backbone.zmq.Message;
 import eu.linksmart.global.backbone.zmq.Proxy;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Observable;
@@ -42,7 +41,7 @@ public class ZmqSupernodeIT {
 
     }
 
-    @Ignore
+    @Test
     public void testSubscriptionWorkflow() throws InterruptedException {
 
         SubscribtionObserver so = new SubscribtionObserver();
@@ -71,7 +70,7 @@ public class ZmqSupernodeIT {
         Client c1,c2;
         c1 = new Client();
         c2 = new Client();
-        Thread.sleep(500);
+        Thread.sleep(5000);
         assertEquals(2, proxy.getNumberOfPeers());
         c1.publish("ABC".getBytes());
         c1.publish("BCD".getBytes());
@@ -84,7 +83,11 @@ public class ZmqSupernodeIT {
     }
 
     @After
-    public void shutdown(){
-        proxy.stopProxy();
+    public void shutdown() throws InterruptedException {
+        try {
+            proxy.stopProxy();
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
 }

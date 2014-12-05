@@ -92,7 +92,11 @@ public class Proxy {
             LOG.trace("XPUB trafficSocket bound to : " + Constants.mXPUB);
 
             LOG.debug("starting blocking ZMQ proxy...");
-            boolean result = ZMQ.proxy(xsubSocket, xpubSocket, null);
+            try {
+                boolean result = ZMQ.proxy(xsubSocket, xpubSocket, null);
+            }catch(Exception ex){
+                LOG.warn("ZMQ proxy interrupted",ex);
+            }
 
             LOG.info("ProxyThread terminated");
         }
