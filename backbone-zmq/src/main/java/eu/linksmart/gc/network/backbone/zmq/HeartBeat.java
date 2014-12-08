@@ -1,45 +1,74 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
 
 public class HeartBeat extends Thread {
 	
-	private ZMQ.Context context = null;
-	private ZMQ.Socket publisher = null;
-	private String peerID;
-	private static int sleepTime = 2000;
+	private static Logger LOG = Logger.getLogger(HeartBeat.class.getName());
+	
+	private ZmqHandler zmqHandler = null;
+
 	private boolean isRunning = false;
 	
-	public HeartBeat(String peerID, String uri) {
-		this(peerID, uri, sleepTime);
-	}
+	private String peerID = null;
+	private int heatbeatInterval = 5000;
 	
-	public HeartBeat(String peerID, String uri, int sleepTimer) {
-		this.peerID = peerID;
-		sleepTime = sleepTimer;
-		isRunning = true;
-		context = ZMQ.context(1);
-		publisher = context.socket(ZMQ.PUB);
-		publisher.connect(uri); 
+	ZMQ.Context context = null;
+	ZMQ.Socket publisher = null;
+	
+	public HeartBeat(ZmqHandler zmqHandler) {
+		this.zmqHandler = zmqHandler;
+		this.peerID = this.zmqHandler.getPeerID();
+		this.heatbeatInterval = this.zmqHandler.getHeartBeatInterval();
+		this.isRunning = true;
 	}
 	
     public void run() {
-    	while(isRunning) {
-    		//System.out.println("[" + this.peerID + "] is sending hearbeat to proxy");
-			publisher.sendMore("HEARTBEAT");
-			publisher.sendMore("0x03");
-			publisher.sendMore("" + System.currentTimeMillis());
-			publisher.sendMore(this.peerID);
-			publisher.send("", 0);
-			try {Thread.sleep(sleepTime);} catch (InterruptedException e) {}
-    	}
-    	publisher.setLinger(100);
-    	publisher.close();
-		context.term();
-		System.out.println("[" + peerID + "] hearbeat is stopped");
+    
+    	try {
+			
+        	//
+    		// prepare context & publisher to send heartbeat messages to proxy
+    		//
+        	context = ZMQ.context(1);
+        	publisher = context.socket(ZMQ.PUB);
+    		publisher.connect(zmqHandler.getXSubUri()); 
+    		LOG.debug("[" + peerID + "] initialized publisher to send hearbeat to proxy");
+    		
+        	while(this.isRunning) {
+        		LOG.trace("[" + peerID + "] is sending hearbeat to proxy");
+    			publisher.sendMore(ZmqConstants.HEARTBEAT_TOPIC);
+    			publisher.sendMore(new byte[]{ZmqConstants.PROTOCOL_VERSION});
+    			publisher.sendMore(new byte[]{ZmqConstants.MESSAGE_TYPE_HEART_BEAT});
+    			publisher.sendMore("" + System.currentTimeMillis());
+    			publisher.sendMore(peerID);
+    			publisher.sendMore("");
+    			publisher.send("".getBytes(), 0);
+    			Thread.sleep(heatbeatInterval);
+        	}
+        	
+		} catch (InterruptedException ex) {
+            LOG.error("ZmqHeartbeat: interrupt signal received.", ex);
+        } catch (Exception e) {
+        	LOG.error("ZmqHeartbeat: exception: " + e.getMessage(), e);
+		}
+    	
+    	closeZmqContext();
+    	
+    	LOG.info("[" + peerID + "] ZmqHeartbeat is stopped");
     }
     
     public void setIsRunning(boolean flag) {
     	this.isRunning = flag;
+    }
+    
+    private void closeZmqContext() {
+    	if(context != null && publisher != null) {
+    		publisher.setLinger(1);
+        	publisher.close();
+    		context.term();
+    		LOG.debug("[" + peerID + "] ZmqHeartbeat context is closed");
+    	}
     }
 }
