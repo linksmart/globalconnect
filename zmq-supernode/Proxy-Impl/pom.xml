@@ -13,7 +13,7 @@
 
     <groupId>eu.linksmart.globalconnect</groupId>
     <artifactId>Proxy-Impl</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
     <name>Linksmart Globalconnect ZMQ backbone - Implementation</name>
 
     <dependencies>
