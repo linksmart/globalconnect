@@ -87,7 +87,7 @@ public class testingPublisher {
     private static void discovery(ZMQ.Socket socket){
         byte[] serializedUnixTime = serializeTimestamp();
         socket.sendMore(Constants.BROADCAST_TOPIC);
-        socket.sendMore(new byte[]{Constants.MSG_DISCOVERY});
+        socket.sendMore(new byte[]{Constants.MSG_PEER_DISCOVERY});
         socket.sendMore(serializedUnixTime);
         socket.sendMore(senderID);
         socket.send("".getBytes());

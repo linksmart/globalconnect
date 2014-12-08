@@ -166,6 +166,15 @@ public class Proxy {
                 }
             }
         }
+        private void receiveMessage(Message someMessage){
+            aMessage.version = trafficSocket.recv()[0];
+            aMessage.type = trafficSocket.recv()[0];
+            aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
+            aMessage.sender = new String(trafficSocket.recv());
+            aMessage.requestID = new String(trafficSocket.recv());
+            aMessage.payload = trafficSocket.recv();
+            if(LOG.isTraceEnabled())Message.printMessage(aMessage);
+        }
 
         @Override
         public void run() {
@@ -173,32 +182,19 @@ public class Proxy {
             while (!Thread.currentThread().isInterrupted()) {
                 LOG.debug("receiving topic...");
                 try {
-                    byte[] raw = trafficSocket.recv();
-                    aMessage.topic = new String(raw);
+                    aMessage.topic = new String(trafficSocket.recv());
                     LOG.trace("topic received : "+aMessage.topic);
 
                     if (aMessage.topic.equals(Constants.HEARTBEAT_TOPIC)) {
-                        aMessage.type = trafficSocket.recv()[0];
-                        aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
-                        aMessage.sender = new String(trafficSocket.recv());
-                        aMessage.payload = trafficSocket.recv();
+                        receiveMessage(aMessage);
                         mPeers.put(java.util.UUID.fromString(aMessage.sender), System.currentTimeMillis());
                         LOG.debug("no of peers : " + mPeers.size());
-                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                     } else if (aMessage.topic.equals(Constants.BROADCAST_TOPIC)) {
-                        aMessage.type = trafficSocket.recv()[0];
-                        aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
-                        aMessage.sender = new String(trafficSocket.recv());
-                        aMessage.payload = trafficSocket.recv();
-                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
+                        receiveMessage(aMessage);
                     } else if (Message.isUUID(aMessage.topic)) {
                         // TODO in case the client sends a valid UUID as topic but no proper message, the routine will fail
                         // TODO better handling or format specification required
-                        aMessage.type = trafficSocket.recv()[0];
-                        aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
-                        aMessage.sender = new String(trafficSocket.recv());
-                        aMessage.payload = trafficSocket.recv();
-                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
+                        receiveMessage(aMessage);
                     } else {
                         LOG.warn("unknown topic detected.");
                         // receive crap from unknown topic
@@ -272,9 +268,11 @@ public class Proxy {
         private void broadcastPeerdown(UUID aSender) {
             byte[] serializedUnixTime = Message.serializeTimestamp();
             heartbeatSocket.sendMore(Constants.BROADCAST_TOPIC);
+            heartbeatSocket.sendMore(new byte[]{Constants.VERSION});
             heartbeatSocket.sendMore(new byte[]{Constants.MSG_PEERDOWN});
             heartbeatSocket.sendMore(serializedUnixTime);
             heartbeatSocket.sendMore(aSender.toString());
+            heartbeatSocket.sendMore("".getBytes());
             heartbeatSocket.send("".getBytes());
             LOG.info("peer down broadcasted");
         }

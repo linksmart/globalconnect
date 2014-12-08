@@ -121,9 +121,11 @@ public class Client extends Observable{
     public void publish(byte[] payload) {
         byte[] serializedUnixTime = Message.serializeTimestamp();
         pubSocket.sendMore(peerID);
+        pubSocket.sendMore(new byte[]{Constants.VERSION});
         pubSocket.sendMore(new byte[]{Constants.MSG_UNICAST});
         pubSocket.sendMore(serializedUnixTime);
         pubSocket.sendMore(peerID);
+        pubSocket.sendMore(UUID.randomUUID().toString());
         pubSocket.send(payload);
         LOG.debug("message published");
     }
@@ -131,9 +133,11 @@ public class Client extends Observable{
     private void heartbeat() {
         byte[] serializedUnixTime = Message.serializeTimestamp();
         pubSocket.sendMore(Constants.HEARTBEAT_TOPIC);
+        pubSocket.sendMore(new byte[]{Constants.VERSION});
         pubSocket.sendMore(new byte[]{Constants.MSG_HEARTBEAT});
         pubSocket.sendMore(serializedUnixTime);
         pubSocket.sendMore(peerID);
+        pubSocket.sendMore("".getBytes());
         pubSocket.send("".getBytes());
         LOG.debug("heartbeat send");
     }
@@ -141,9 +145,11 @@ public class Client extends Observable{
 
         byte[] serializedUnixTime = Message.serializeTimestamp();
         pubSocket.sendMore(Constants.BROADCAST_TOPIC);
-        pubSocket.sendMore(new byte[]{Constants.MSG_DISCOVERY});
+        pubSocket.sendMore(new byte[]{Constants.VERSION});
+        pubSocket.sendMore(new byte[]{Constants.MSG_PEER_DISCOVERY});
         pubSocket.sendMore(serializedUnixTime);
         pubSocket.sendMore(peerID);
+        pubSocket.sendMore(UUID.randomUUID().toString());
         pubSocket.send("".getBytes());
         LOG.debug("discovery send");
     }
@@ -184,9 +190,11 @@ public class Client extends Observable{
                     LOG.trace("client subscriber thread received topic : " + aMessage.topic);
                     if(aMessage.topic.equals(Constants.BROADCAST_TOPIC)){
                         LOG.trace("BROADCAST topic received");
+                        aMessage.version = subSocket.recv()[0];
                         aMessage.type = subSocket.recv()[0];
                         aMessage.timestamp = Message.deserializeTimestamp(subSocket.recv());
                         aMessage.sender = new String(subSocket.recv());
+                        aMessage.requestID = new String(subSocket.recv());
                         aMessage.payload = subSocket.recv();
                         if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                         // remove subscription on PEER DOWN
@@ -203,9 +211,11 @@ public class Client extends Observable{
                         LOG.trace("UNICAST topic received");
                         // TODO in case the client sends a valid UUID as topic but no proper message, the routine will fail
                         // TODO better handling or format specification required
+                        aMessage.version = subSocket.recv()[0];
                         aMessage.type = subSocket.recv()[0];
                         aMessage.timestamp = Message.deserializeTimestamp(subSocket.recv());
                         aMessage.sender = new String(subSocket.recv());
+                        aMessage.requestID = new String(subSocket.recv());
                         aMessage.payload = subSocket.recv();
                         if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
                         // notify observers about new message from subscribed topics
