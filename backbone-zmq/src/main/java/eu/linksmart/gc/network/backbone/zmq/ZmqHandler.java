@@ -13,8 +13,10 @@ public class ZmqHandler {
 	private static Logger LOG = Logger.getLogger(ZmqReceiver.class.getName());
 
 	private String peerID = UUID.randomUUID().toString();
-	private String xsubUri = "tcp://gando.fit.fraunhofer.de:6000";
-	private String xpubUri = "tcp://gando.fit.fraunhofer.de:6001";
+	//private String xsubUri = "tcp://gando.fit.fraunhofer.de:6000";
+	//private String xpubUri = "tcp://gando.fit.fraunhofer.de:6001";
+	private String xsubUri = "tcp://127.0.0.1:7000";
+	private String xpubUri = "tcp://127.0.0.1:7001";
 	
 	private int heartBeatInterval = 2000;
 	
@@ -70,6 +72,18 @@ public class ZmqHandler {
 		}
 	}
 	
+	public void braodcast(BackboneMessage bbMessage) {
+		
+	}
+	
+	public void send(BackboneMessage bbMessage) {
+		
+	}
+	
+	public void receive(BackboneMessage bbMessage) {
+		
+	}
+	
 	public void publish(ZmqMessage zmqMessage) {
 		publisher.sendMore(zmqMessage.getTopic());
 		publisher.sendMore(new byte[]{zmqMessage.getProtocolVersion()});
@@ -90,7 +104,7 @@ public class ZmqHandler {
 	
 	public void notify(ZmqMessage zmqMessage) {
 		if(zmqMessage.getTopic().equals(ZmqConstants.BROADCAST_TOPIC)) {
-			if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_SERVICE_DISCOVERY) {
+			if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_PEER_DISCOVERY) {
 				processDiscovery(zmqMessage);
 			} else if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_PEER_DOWN) {
 				processPeerDown(zmqMessage);
@@ -103,8 +117,8 @@ public class ZmqHandler {
 	}
 	
 	private void processDiscovery(ZmqMessage zmqMessage) {
-		LOG.info("recieved broadcast message from [" + zmqMessage.getSender() + "] - contents : " + new String(zmqMessage.getPayload()));
 		if(!(zmqMessage.getSender().equals(this.peerID))) {
+			LOG.info("recieved broadcast message from [" + zmqMessage.getSender() + "] - contents : " + new String(zmqMessage.getPayload()));
 			remotePeers.put(zmqMessage.getSender(), "S1-VAD");
 			LOG.info("adding peer [" + zmqMessage.getSender() + "] into list");
 		}
@@ -119,7 +133,7 @@ public class ZmqHandler {
 	private void processMessage(ZmqMessage zmqMessage) {
 		LOG.info("recieved unicast message from [" + zmqMessage.getSender() + "] - contents : " + new String(zmqMessage.getPayload()));
 	}
-	
+
 	public String getPeerID() {
 		return this.peerID;
 	}

@@ -19,8 +19,8 @@ public class TestZmqHandler {
 			
 			Thread.sleep(1000);
 			
-			peer1.publish(peer1.createBroadcastMessage("S1-VAD".getBytes()));
-			peer2.publish(peer1.createBroadcastMessage("S2-VAD".getBytes()));
+			peer1.publish(peer1.createBroadcastMessage("S1".getBytes()));
+			peer2.publish(peer2.createBroadcastMessage("S2".getBytes()));
 			
 			Thread.sleep(3000);
 			
@@ -29,10 +29,11 @@ public class TestZmqHandler {
 			Thread.sleep(3000);
 			
 			peer1.stop();
+			
+			Thread.sleep(15000);
+			
 			peer2.stop();
-			
-			Thread.sleep(3000);
-			
+				
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
