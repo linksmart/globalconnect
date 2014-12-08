@@ -171,6 +171,17 @@ public class Client extends Observable{
     }
     private class SubscriberThread extends Thread {
 
+
+        private void receiveMessage(Message someMessage){
+            someMessage.version = subSocket.recv()[0];
+            someMessage.type = subSocket.recv()[0];
+            someMessage.timestamp = Message.deserializeTimestamp(subSocket.recv());
+            someMessage.sender = new String(subSocket.recv());
+            someMessage.requestID = new String(subSocket.recv());
+            someMessage.payload = subSocket.recv();
+            if(LOG.isTraceEnabled()){Message.printMessage(someMessage);}
+
+        }
         @Override
         public void run() {
             subSocket.subscribe(Constants.BROADCAST_TOPIC.getBytes());
@@ -190,13 +201,7 @@ public class Client extends Observable{
                     LOG.trace("client subscriber thread received topic : " + aMessage.topic);
                     if(aMessage.topic.equals(Constants.BROADCAST_TOPIC)){
                         LOG.trace("BROADCAST topic received");
-                        aMessage.version = subSocket.recv()[0];
-                        aMessage.type = subSocket.recv()[0];
-                        aMessage.timestamp = Message.deserializeTimestamp(subSocket.recv());
-                        aMessage.sender = new String(subSocket.recv());
-                        aMessage.requestID = new String(subSocket.recv());
-                        aMessage.payload = subSocket.recv();
-                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
+                        receiveMessage(aMessage);
                         // remove subscription on PEER DOWN
                         if(aMessage.type==Constants.MSG_PEERDOWN){
                             LOG.debug("received PEER DOWN for : "+aMessage.sender);
@@ -211,13 +216,7 @@ public class Client extends Observable{
                         LOG.trace("UNICAST topic received");
                         // TODO in case the client sends a valid UUID as topic but no proper message, the routine will fail
                         // TODO better handling or format specification required
-                        aMessage.version = subSocket.recv()[0];
-                        aMessage.type = subSocket.recv()[0];
-                        aMessage.timestamp = Message.deserializeTimestamp(subSocket.recv());
-                        aMessage.sender = new String(subSocket.recv());
-                        aMessage.requestID = new String(subSocket.recv());
-                        aMessage.payload = subSocket.recv();
-                        if(LOG.isTraceEnabled()){Message.printMessage(aMessage);}
+                        receiveMessage(aMessage);
                         // notify observers about new message from subscribed topics
                         setChanged();
                         notifyObservers(aMessage);
