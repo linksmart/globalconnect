@@ -26,4 +26,8 @@ public class BackboneMessage {
 		return this.data;
 	}
 	
+	public void setPayload(byte[] newPayload) {
+		this.data = newPayload;
+	}
+	
 }
