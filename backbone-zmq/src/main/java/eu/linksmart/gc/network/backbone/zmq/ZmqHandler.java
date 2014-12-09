@@ -83,12 +83,12 @@ public class ZmqHandler {
 		return null;
 	}
 	
-	public void send(BackboneMessage bbMessage, boolean synchronous) {
-		
+	public NMResponse send(BackboneMessage bbMessage, boolean synchronous) {
+		return null;
 	}
 	
-	public void receive(BackboneMessage bbMessage) {
-		
+	public NMResponse receive(BackboneMessage bbMessage) {
+		return null;
 	}
 	
 	public void publish(ZmqMessage zmqMessage) {

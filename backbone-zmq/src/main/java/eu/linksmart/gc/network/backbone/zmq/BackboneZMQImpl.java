@@ -87,13 +87,13 @@ public class BackboneZMQImpl implements Backbone {
     @Override
 	public NMResponse receiveDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress,
 			byte[] receivedData) {
-		return bbRouter.receiveDataSynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);;
+		return bbRouter.receiveDataSynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);
 	}
 	
     @Override
 	public NMResponse receiveDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress,
 			byte[] receivedData) {
-		return bbRouter.receiveDataAsynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);;
+		return bbRouter.receiveDataAsynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);
 	}
 
     @Override
