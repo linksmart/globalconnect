@@ -9,6 +9,8 @@ import java.util.UUID;
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
 
+import eu.linksmart.network.NMResponse;
+
 public class ZmqHandler {
 	
 	private static Logger LOG = Logger.getLogger(ZmqReceiver.class.getName());
@@ -77,11 +79,11 @@ public class ZmqHandler {
 		}
 	}
 	
-	public void braodcast(BackboneMessage bbMessage) {
-		
+	public NMResponse braodcast(BackboneMessage bbMessage) {
+		return null;
 	}
 	
-	public void send(BackboneMessage bbMessage) {
+	public void send(BackboneMessage bbMessage, boolean synchronous) {
 		
 	}
 	

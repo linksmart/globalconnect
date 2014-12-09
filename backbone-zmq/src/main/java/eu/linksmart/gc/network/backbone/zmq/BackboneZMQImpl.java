@@ -12,6 +12,7 @@ import org.osgi.service.component.ComponentContext;
 import eu.linksmart.network.NMResponse;
 import eu.linksmart.network.VirtualAddress;
 import eu.linksmart.network.backbone.Backbone;
+import eu.linksmart.network.routing.BackboneRouter;
 import eu.linksmart.security.communication.SecurityProperty;
 
 @Component(name="BackboneZMQ", immediate=true)
@@ -20,6 +21,8 @@ public class BackboneZMQImpl implements Backbone {
 
 	private Logger LOGGER = Logger.getLogger(BackboneZMQImpl.class.getName());
 	
+	private ZmqHandler zmqHandler = null;
+	
 	private BackboneZMQConfigurator configurator;
 	@Reference(name="ConfigurationAdmin",
             cardinality = ReferenceCardinality.MANDATORY_UNARY,
@@ -27,6 +30,13 @@ public class BackboneZMQImpl implements Backbone {
             unbind="unbindConfigAdmin",
             policy=ReferencePolicy.STATIC)
     private ConfigurationAdmin mConfigAdmin = null;
+	
+	@Reference(name="BackboneRouter",
+            cardinality = ReferenceCardinality.MANDATORY_UNARY,
+            bind="bindBackboneRouter",
+            unbind="unbindBackboneRouter",
+            policy= ReferencePolicy.STATIC)
+	private BackboneRouter bbRouter;
 	
     protected void bindConfigAdmin(ConfigurationAdmin configAdmin) {
     	LOGGER.debug("Backbonezmq::binding configAdmin");
@@ -38,44 +48,57 @@ public class BackboneZMQImpl implements Backbone {
         this.mConfigAdmin = null;
     }
     
+    protected void bindBackboneRouter(BackboneRouter bbRouter) {
+    	LOGGER.debug("Backbonezmq::binding backbone-router");
+        this.bbRouter = bbRouter;
+    }
+
+    protected void unbindBackboneRouter(BackboneRouter bbRouter) {
+    	LOGGER.debug("Backbonezmq::un-binding backbone-router");
+        this.bbRouter = null;
+    }
+    
     @Activate
 	protected void activate(ComponentContext context) {
     	LOGGER.info("[activating BackboneZMQ]");
 		this.configurator = new BackboneZMQConfigurator(this, context.getBundleContext(), mConfigAdmin);
 		configurator.registerConfiguration();
+		zmqHandler = new ZmqHandler();
+		zmqHandler.start();
 	}
 
     @Deactivate
 	public void deactivate(ComponentContext context) {
     	LOGGER.info("[de-activating BackboneZMQ]");
 		configurator.stop();
+		zmqHandler.stop();
 	}
 	
     @Override
 	public NMResponse sendDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
-    	return null;
+    	return zmqHandler.send(new BackboneMessage(senderVirtualAddress, receiverVirtualAddress, data), true);
 	}
 	
     @Override
 	public NMResponse sendDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
-		return null;
+		return zmqHandler.send(new BackboneMessage(senderVirtualAddress, receiverVirtualAddress, data), false);
 	}
 	
     @Override
 	public NMResponse receiveDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress,
 			byte[] receivedData) {
-		return null;
+		return bbRouter.receiveDataSynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);;
 	}
 	
     @Override
 	public NMResponse receiveDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress,
 			byte[] receivedData) {
-		return null;
+		return bbRouter.receiveDataAsynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);;
 	}
 
     @Override
 	public NMResponse broadcastData(VirtualAddress senderVirtualAddress, byte[] data) {
-		return null;
+    	return zmqHandler.braodcast(new BackboneMessage(senderVirtualAddress, null, data));
 	}
 
     @Override
