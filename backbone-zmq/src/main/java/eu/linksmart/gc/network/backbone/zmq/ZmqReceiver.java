@@ -1,5 +1,7 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import java.nio.ByteBuffer;
+
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
@@ -40,24 +42,28 @@ public class ZmqReceiver extends Thread {
 			LOG.debug("[" + peerID + "] is subscribed to own topic");
 			
 	    	while(this.isRunning) {
-	    		String topic = subscriber.recvStr();
-	    		byte[] protocol = subscriber.recv();
-				byte type = subscriber.recv()[0];
-				String timeStamp = subscriber.recvStr();
-				String sender = subscriber.recvStr();
-				String requestID = subscriber.recvStr();
-				byte[] payload = subscriber.recv();
-				zmqHandler.notify(new ZmqMessage(topic, type, new Long(timeStamp).longValue(), sender, requestID, payload));
+	    		try {
+	    			String topic = subscriber.recvStr();
+		    		subscriber.recv(); // for byte[] protocol
+					byte type = subscriber.recv()[0];
+					byte[] timeStamp = subscriber.recv();
+					String sender = subscriber.recvStr();
+					String requestID = subscriber.recvStr();
+					byte[] payload = subscriber.recv();
+					zmqHandler.notify(new ZmqMessage(topic, type, ByteBuffer.wrap(timeStamp).getLong(), sender, requestID, payload));
+				} catch (ZMQException e) {
+					if (e.getErrorCode() == ZMQ.Error.ETERM.getCode()) {
+		                LOG.debug("ZmqReceiver: termination interrupt received");
+		            } else {
+		                LOG.error("ZmqReceiver: ZmqException: " + e.getMessage(), e);
+		            }
+				} catch (Exception e) {
+					LOG.error("ZmqReceiver: exception: " + e.getMessage(), e);
+				}	
 	    	}
 	    	
-		} catch(ZMQException e) {
-            if (e.getErrorCode() == ZMQ.Error.ETERM.getCode()) {
-                LOG.debug("ZmqReceiver: termination interrupt received");
-            } else{
-                LOG.error("ZmqReceiver: ZmqException: " + e.getMessage(), e);
-            }
 		} catch (Exception e) {
-			LOG.error("ZmqReceiver: exception: " + e.getMessage(), e);
+			LOG.error("ZmqReceiver-1: exception: " + e.getMessage(), e);
 		}
 		
 		if(this.isRunning)
@@ -71,7 +77,7 @@ public class ZmqReceiver extends Thread {
     	if(context != null && subscriber != null) {
     		subscriber.close();
     		context.term();
-    		LOG.debug("[" + peerID + "] ZmqReceiver context is closed");
+    		LOG.info("[" + peerID + "] ZmqReceiver context is closed");
     	}
     }
 }

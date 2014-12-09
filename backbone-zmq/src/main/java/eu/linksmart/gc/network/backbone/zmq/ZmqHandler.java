@@ -1,5 +1,6 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +13,7 @@ public class ZmqHandler {
 	
 	private static Logger LOG = Logger.getLogger(ZmqReceiver.class.getName());
 
-	private String peerID = UUID.randomUUID().toString();
+	private String peerID = null;
 	//private String xsubUri = "tcp://gando.fit.fraunhofer.de:6000";
 	//private String xpubUri = "tcp://gando.fit.fraunhofer.de:6001";
 	private String xsubUri = "tcp://127.0.0.1:7000";
@@ -27,6 +28,10 @@ public class ZmqHandler {
 	private ZMQ.Socket publisher = null;
 	
 	Map<String, String> remotePeers = Collections.synchronizedMap(new HashMap<String, String>());
+	
+	public ZmqHandler() {
+		this.peerID = UUID.randomUUID().toString();
+	}
 	
 	public ZmqHandler(String peerID) {
 		this.peerID = peerID;
@@ -88,7 +93,7 @@ public class ZmqHandler {
 		publisher.sendMore(zmqMessage.getTopic());
 		publisher.sendMore(new byte[]{zmqMessage.getProtocolVersion()});
 		publisher.sendMore(new byte[]{zmqMessage.getType()});
-		publisher.sendMore("" + zmqMessage.getTimeStamp());
+		publisher.sendMore(ByteBuffer.allocate(8).putLong(zmqMessage.getTimeStamp()).array());
 		publisher.sendMore(zmqMessage.getSender());
 		publisher.sendMore(zmqMessage.getRequestID());
 		publisher.send(zmqMessage.getPayload(), 0);
