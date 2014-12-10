@@ -97,7 +97,7 @@ public class ZmqHandler {
 	}
 	
 	public NMResponse broadcast(BackboneMessage bbMessage) {
-		
+		LOG.info("sending broadcast message from virtual-address: " + bbMessage.getSenderVirtualAddress());
 		publish(createBroadcastMessage(ZmqUtil.addSenderVADToPayload(bbMessage)));
 		
 		NMResponse response = new NMResponse();
@@ -199,7 +199,7 @@ public class ZmqHandler {
 		receive(zmqMessage);
 	}
 	
-	public void publish(ZmqMessage zmqMessage) {
+	private void publish(ZmqMessage zmqMessage) {
 		publisher.sendMore(zmqMessage.getTopic());
 		publisher.sendMore(new byte[]{zmqMessage.getProtocolVersion()});
 		publisher.sendMore(new byte[]{zmqMessage.getType()});
@@ -209,11 +209,11 @@ public class ZmqHandler {
 		publisher.send(zmqMessage.getPayload(), 0);
 	}
 	
-	public ZmqMessage createBroadcastMessage(byte[] payload) {
+	private ZmqMessage createBroadcastMessage(byte[] payload) {
 		return new ZmqMessage(ZmqConstants.BROADCAST_TOPIC, ZmqConstants.MESSAGE_TYPE_PEER_DISCOVERY, System.currentTimeMillis(), this.peerID, "", payload);
 	}
 	
-	public ZmqMessage createPeerMessage(String peerID, byte[] payload) {
+	private ZmqMessage createPeerMessage(String peerID, byte[] payload) {
 		return new ZmqMessage(peerID, ZmqConstants.MESSAGE_TYPE_UNICAST, System.currentTimeMillis(), this.peerID, UUID.randomUUID().toString(), payload);
 	}
 

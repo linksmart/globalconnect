@@ -9,12 +9,15 @@
     	<feature version="${linksmart.gc.version}">linksmart-gc-boot</feature>	
     	<bundle>mvn:eu.linksmart/eu.linksmart.api.security.communication/${linksmart.version}</bundle>	       
         <bundle>mvn:eu.linksmart/eu.linksmart.api.backbone/${linksmart.version}</bundle>
+         <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager.core/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager/${linksmart.version}</bundle>
         <bundle>mvn:eu.linksmart/eu.linksmart.api.backbone.router/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.backbone.router/${linksmart.version}</bundle>
         <bundle>mvn:org.zeromq/jeromq/0.3.4</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}</bundle>
     </feature>
     
-    <feature name="linksmart-light" version="${linksmart.version}">
+    <feature name="linksmart-light-gc" version="${linksmart.gc.version}">
     	<feature version="${linksmart.version}">osgi-http</feature>
     	<feature version="${linksmart.version}">linksmart-boot</feature>
     	<feature version="${linksmart.version}">identity-manager</feature>        
@@ -22,7 +25,9 @@
    		<feature version="${linksmart.version}">backbone-osgi</feature>
    		<feature version="${linksmart.version}">backbone-soap</feature>
    		<feature version="${linksmart.version}">backbone-data</feature>
-   		<feature version="${linksmart.version}">backbone-zmq</feature>
+   		
+   		<bundle>mvn:org.zeromq/jeromq/0.3.4</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}</bundle>
    		
         <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager/${linksmart.version}</bundle>
         <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager.core/${linksmart.version}</bundle>
