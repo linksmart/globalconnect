@@ -6,4 +6,4 @@ for jar in lib/*.jar; do
 CP+=$jar:
 done
 
-java -client -cp $CP eu.linksmart.global.backbone.zmq.ProxyApplication "$@";
+java -client -Dlog4j.debug=true -Dlog4j.configuration=file:$PWD/log4j.properties -cp $CP eu.linksmart.global.backbone.zmq.ProxyApplication "$@";
