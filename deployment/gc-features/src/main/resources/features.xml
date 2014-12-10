@@ -13,5 +13,28 @@
         <bundle>mvn:org.zeromq/jeromq/0.3.4</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}</bundle>
     </feature>
+    
+    <feature name="linksmart-light" version="${linksmart.version}">
+    	<feature version="${linksmart.version}">osgi-http</feature>
+    	<feature version="${linksmart.version}">linksmart-boot</feature>
+    	<feature version="${linksmart.version}">identity-manager</feature>        
+   		<feature version="${linksmart.version}">backbone-router</feature>
+   		<feature version="${linksmart.version}">backbone-osgi</feature>
+   		<feature version="${linksmart.version}">backbone-soap</feature>
+   		<feature version="${linksmart.version}">backbone-data</feature>
+   		<feature version="${linksmart.version}">backbone-zmq</feature>
+   		
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager.core/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.networkmanager/${linksmart.version}</bundle>
+        
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.tunnel/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.tunnel.standard/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.soaptunneling/${linksmart.version}</bundle>
+        
+        <bundle>mvn:eu.linksmart/eu.linksmart.config.managerconfigurator/${linksmart.version}</bundle>
+        
+        <feature version="${linksmart.version}">linksmart-ws-provider</feature>
+    </feature>
        
 </features>

@@ -1,5 +1,6 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -62,7 +63,7 @@ public class BackboneZMQImpl implements Backbone {
 	protected void activate(ComponentContext context) {
     	LOGGER.info("[activating BackboneZMQ]");
 		this.configurator = new BackboneZMQConfigurator(this, context.getBundleContext(), mConfigAdmin);
-		configurator.registerConfiguration();
+		this.configurator.registerConfiguration();
 		zmqHandler = new ZmqHandler(this);
 		zmqHandler.start();
 	}
@@ -126,7 +127,19 @@ public class BackboneZMQImpl implements Backbone {
 
 	@Override
 	public List<SecurityProperty> getSecurityTypesRequired() {
-		return null;
+		String configuredSecurity = this.configurator.get(BackboneZMQConfigurator.SECURITY_PARAMETERS);
+		String[] securityTypes = configuredSecurity.split("\\|");
+		SecurityProperty oneProperty;
+		List<SecurityProperty> answer = new ArrayList<SecurityProperty>();
+		for (String s : securityTypes) {
+			try {
+				oneProperty = SecurityProperty.valueOf(s);
+				answer.add(oneProperty);
+			} catch (Exception e) {
+				LOGGER.error("Security property value from configuration is not recognized: " + s + ": " + e);
+			}
+		}
+		return answer;
 	}
 
 	@Override
