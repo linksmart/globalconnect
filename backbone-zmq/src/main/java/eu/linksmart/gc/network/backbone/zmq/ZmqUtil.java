@@ -4,6 +4,7 @@ import org.apache.commons.lang.ArrayUtils;
 
 import eu.linksmart.network.VirtualAddress;
 
+//TODO name "ZmqUtil" ambigious since no ZMQ operations are done here
 public class ZmqUtil {
 	
 	public static byte[] addSenderVADToPayload(BackboneMessage bbMessage) {
