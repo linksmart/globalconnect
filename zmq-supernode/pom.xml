@@ -20,7 +20,7 @@
 
     <modules>
         <module>Proxy-Impl</module>
-        <module>Main-Distribution</module>
+        <module>ZMQ-Supernode-Distribution</module>
     </modules>
 
 
