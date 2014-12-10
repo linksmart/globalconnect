@@ -1,27 +1,13 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
-import java.nio.ByteBuffer;
-
 import org.apache.commons.lang.ArrayUtils;
 
 import eu.linksmart.network.VirtualAddress;
 
 public class ZmqUtil {
 	
-	public static ZmqMessage toZmqMessage(byte[][] multipart) {
-		return null;
-	}
-	
-	public static byte[][] toZmqBytes(ZmqMessage message) {
-		return null;
-	}
-	
-	public static void addSenderVAD(BackboneMessage bbMessage) {
-		ByteBuffer aBuffer = ByteBuffer.allocate(VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH	+ bbMessage.getPayload().length);
-		aBuffer.position(0);
-		aBuffer.put(bbMessage.getSenderVirtualAddress().getBytes());
-		aBuffer.put(bbMessage.getPayload());
-		bbMessage.setPayload(aBuffer.array());
+	public static byte[] addSenderVADToPayload(BackboneMessage bbMessage) {
+		return ArrayUtils.addAll(bbMessage.getSenderVirtualAddress().getBytes(),bbMessage.getPayload());
 	}
 	
 	public static VirtualAddress getSenderVAD(byte[] origData) {
@@ -37,10 +23,27 @@ public class ZmqUtil {
 		return ret;
 	}
 	
-	public static void addVADsToPayload(BackboneMessage bbMessage) {
+	public static byte[] addVADsToPayload(BackboneMessage bbMessage) {
 		byte[] payloadWithReceiverVAD = ArrayUtils.addAll(bbMessage.getReceiverVirtualAddress().getBytes(),bbMessage.getPayload());
 		byte[] payloadWithVADs = ArrayUtils.addAll(bbMessage.getSenderVirtualAddress().getBytes(),payloadWithReceiverVAD);
-		bbMessage.setPayload(payloadWithVADs);
+		return payloadWithVADs;
+	}
+	
+	public static byte[] removeVADsFromPayload(byte[] payload) {
+		int virtualAddressesLength = VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH * 2;
+		int lengthWithoutVirtualAddress = payload.length - virtualAddressesLength;
+		byte[] ret = new byte[lengthWithoutVirtualAddress];
+		System.arraycopy(payload, virtualAddressesLength, ret, 0, payload.length - virtualAddressesLength);
+		return ret;
+	}
+	
+	public static VirtualAddress getReceiverVAD(byte[] origData) {
+		//
+		// receiver virtual address is after sender virtual address in payload
+		// 
+		byte[] ret = new byte[VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH];
+		System.arraycopy(origData, VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH, ret, 0, VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH - 0);
+		return new VirtualAddress(ret);
 	}
 	
 }

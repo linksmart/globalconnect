@@ -92,20 +92,16 @@ public class BackboneZMQImpl implements Backbone {
     @Override
 	public NMResponse receiveDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress,
 			byte[] receivedData) {
-    	//
-		// commented because tests are failing since backbone router is not attached and no OSGi runtime is startedup
-    	//
-    	//return bbRouter.receiveDataSynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);
+    	if(bbRouter != null)
+    		return bbRouter.receiveDataSynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);
     	return null;
 	}
 	
     @Override
 	public NMResponse receiveDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress,
 			byte[] receivedData) {
-    	//
-		// commented because tests are failing since backbone router is not attached and no OSGi runtime is startedup
-    	//
-		//return bbRouter.receiveDataAsynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);
+    	if(bbRouter != null)
+    		return bbRouter.receiveDataAsynch(senderVirtualAddress, receiverVirtualAddress, receivedData, (Backbone) this);
     	return null;
 	}
 

@@ -3,6 +3,7 @@ package eu.linksmart.gc.network.backbone.zmq;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -42,11 +43,20 @@ public class ZmqHandler {
 		this.peerID = UUID.randomUUID().toString();
 	}
 	
-	public ZmqHandler(String peerID) {
+	public ZmqHandler(BackboneZMQImpl zmqBackbone, String peerID) {
+		this.zmqBackbone = zmqBackbone;
 		this.peerID = peerID;
 	}
 	
-	public ZmqHandler(String peerID, String xpubUri, String xsubUri) {
+	public ZmqHandler(BackboneZMQImpl zmqBackbone, String xpubUri, String xsubUri) {
+		this.zmqBackbone = zmqBackbone;
+		this.peerID = UUID.randomUUID().toString();
+		this.xpubUri = xpubUri;
+		this.xsubUri = xsubUri;
+	}
+	
+	public ZmqHandler(BackboneZMQImpl zmqBackbone, String peerID, String xpubUri, String xsubUri) {
+		this.zmqBackbone = zmqBackbone;
 		this.peerID = peerID;
 		this.xpubUri = xpubUri;
 		this.xsubUri = xsubUri;
@@ -87,32 +97,57 @@ public class ZmqHandler {
 	}
 	
 	public NMResponse broadcast(BackboneMessage bbMessage) {
-		ZmqUtil.addSenderVAD(bbMessage);
-		publish(createBroadcastMessage(bbMessage.getPayload()));
+		
+		publish(createBroadcastMessage(ZmqUtil.addSenderVADToPayload(bbMessage)));
+		
 		NMResponse response = new NMResponse();
 		response.setStatus(NMResponse.STATUS_SUCCESS);
 		response.setMessage("Broadcast successful");
+		
 		return response;
 	}
 	
 	public NMResponse send(BackboneMessage bbMessage, boolean synchronous) {
-		ZmqUtil.addVADsToPayload(bbMessage);
-		String receiverPeerID = this.remotePeers.get(bbMessage.getReceiverVirtualAddress());
-		requests.put(UUID.randomUUID().toString(), bbMessage);
-		publish(createPeerMessage(receiverPeerID, bbMessage.getPayload()));
+		
 		NMResponse response = new NMResponse();
+		
+		if(synchronous) {
+			LOG.error("synchronous invocation is not supported yet.");
+			response.setStatus(NMResponse.STATUS_ERROR);
+			response.setMessage("synchronous invocation is not supported yet");
+			return response;
+		}
+		
+		String receiverPeerID = this.remotePeers.get(bbMessage.getReceiverVirtualAddress());
+		if(receiverPeerID == null) {
+			response.setStatus(NMResponse.STATUS_ERROR);
+			response.setMessage("unable to find PeerID for receiver virtual address: " + bbMessage.getReceiverVirtualAddress());
+			return response;
+		}
+		
+		publish(createPeerMessage(receiverPeerID, ZmqUtil.addVADsToPayload(bbMessage)));
+		
+		requests.put(UUID.randomUUID().toString(), bbMessage);
+		
 		response.setStatus(NMResponse.STATUS_SUCCESS);
 		response.setMessage("sending message is successful");
+		
 		return response;
 	}
 	
-	public NMResponse receive(ZmqMessage zmqMessage, BackboneMessage originalMessage) {
-		// TODO extract VADs from actual payload
-		//
-		// commented because tests are failing since backbone router is not attached and no OSGi runtime is startedup
-    	//
-		//return zmqBackbone.receiveDataAsynch(originalMessage.getReceiverVirtualAddress(), originalMessage.getSenderVirtualAddress(), zmqMessage.getPayload());
-		return null;
+	public NMResponse receive(ZmqMessage zmqMessage) {
+		
+		byte[] originalPayload = ZmqUtil.removeVADsFromPayload(zmqMessage.getPayload());
+		VirtualAddress senderVA = ZmqUtil.getSenderVAD(zmqMessage.getPayload());
+		VirtualAddress recieverVA = ZmqUtil.getReceiverVAD(zmqMessage.getPayload());
+		
+		BackboneMessage originalRequest = requests.get(zmqMessage.getRequestID());
+		
+		if(originalRequest != null) {
+			return zmqBackbone.receiveDataAsynch(originalRequest.getReceiverVirtualAddress(), originalRequest.getSenderVirtualAddress(), originalPayload);
+		}
+		
+		return zmqBackbone.receiveDataAsynch(senderVA, recieverVA, originalPayload);
 	}
 	
 	public void notify(ZmqMessage zmqMessage) {
@@ -125,32 +160,43 @@ public class ZmqHandler {
 		} else if(zmqMessage.getTopic().equals(this.getPeerID())) {
 			processMessage(zmqMessage);
 		} else {
-            LOG.warn("unknown topic detected.");
+            LOG.warn("unknown topic [" + zmqMessage.getTopic() + "] detected. ignoring");
         }
 	}
 	
 	private void processDiscovery(ZmqMessage zmqMessage) {
+		
 		if(zmqMessage.getSender().equals(this.peerID)) 
 			return;
+		
 		VirtualAddress senderVirtualAddress = ZmqUtil.getSenderVAD(zmqMessage.getPayload());
-		remotePeers.put(senderVirtualAddress, zmqMessage.getSender());
 		LOG.info("recieved broadcast message from [" + zmqMessage.getSender() + "] - virtual-address: " + senderVirtualAddress.toString());
-		LOG.info("adding peer [" + zmqMessage.getSender() + "] into list");
+		
+		if(!(remotePeers.containsKey(senderVirtualAddress))) {
+			remotePeers.put(senderVirtualAddress, zmqMessage.getSender());
+			LOG.info("added peer [" + zmqMessage.getSender() + "] into list of known peers");
+		}
+			
 		byte[] payload = ZmqUtil.removeSenderVAD(zmqMessage.getPayload());
 		zmqBackbone.receiveDataAsynch(senderVirtualAddress, null, payload);
 	}
 	
 	private void processPeerDown(ZmqMessage zmqMessage) {
 		LOG.info("recieved peerdown message from [" + zmqMessage.getSender() + "]");
-		// TODO key is actually virtual address, so peerID should be searched and remove the entry
-		//remotePeers.remove(zmqMessage.getSender());
-		LOG.info("removing peer [" + zmqMessage.getSender() + "] from list");
+		Iterator<String> iterator = remotePeers.values().iterator();
+		while(iterator.hasNext()) {
+		    String value = iterator.next();
+		    if(value.equals(zmqMessage.getSender())) {
+				iterator.remove();
+				LOG.info("removing peer [" + zmqMessage.getSender() + "] from list");
+				break;
+			}
+		}
 	}
 	
 	private void processMessage(ZmqMessage zmqMessage) {
 		LOG.info("recieved unicast message from [" + zmqMessage.getSender() + "] - request-ID : " + zmqMessage.getRequestID());
-		BackboneMessage originalMessage = requests.get(zmqMessage.getRequestID());
-		receive(zmqMessage, originalMessage);
+		receive(zmqMessage);
 	}
 	
 	public void publish(ZmqMessage zmqMessage) {

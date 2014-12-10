@@ -21,18 +21,19 @@ public class TestZmqHandler {
 			
 			Thread.sleep(1000);
 			
-			BackboneMessage ph1_b = new BackboneMessage(new VirtualAddress(), null, "S1".getBytes());
+			VirtualAddress senderVA = new VirtualAddress();
+			VirtualAddress receiverVA = new VirtualAddress();
+			
+			BackboneMessage ph1_b = new BackboneMessage(senderVA, null, "S1".getBytes());
 			ph1.broadcast(ph1_b);
 			
-			BackboneMessage ph2_b = new BackboneMessage(new VirtualAddress(), null, "S2".getBytes());
+			BackboneMessage ph2_b = new BackboneMessage(receiverVA, null, "S2".getBytes());
 			ph2.broadcast(ph2_b);
-			
-			//ph1.publish(ph1.createBroadcastMessage("S1".getBytes()));
-			//ph2.publish(ph2.createBroadcastMessage("S2".getBytes()));
 			
 			Thread.sleep(3000);
 			
-			ph1.publish(ph1.createPeerMessage(ph2.getPeerID(), "M1".getBytes()));
+			BackboneMessage ph1_m = new BackboneMessage(senderVA, receiverVA, "M1".getBytes());
+			ph1.send(ph1_m, false);
 			
 			Thread.sleep(3000);
 			
