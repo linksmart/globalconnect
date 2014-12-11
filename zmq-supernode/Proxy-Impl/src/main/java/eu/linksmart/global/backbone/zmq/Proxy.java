@@ -39,8 +39,13 @@ public class Proxy {
         //"tcp://localhost:7000";
         //"tcp://localhost:7001";
 
-        mXSubAddress = "tcp://"+aIP+":"+aXSubPort;
-        mXPubAddress = "tcp://"+aIP+":"+aXPubPort;
+        if(aIP.equals("0.0.0.0")) {
+            mXSubAddress = "tcp://*:" + aXSubPort;
+            mXPubAddress = "tcp://*:" + aXPubPort;
+        }else{
+            mXSubAddress = "tcp://" + aIP + ":" + aXSubPort;
+            mXPubAddress = "tcp://" + aIP + ":" + aXPubPort;
+        }
 
         heartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
 
