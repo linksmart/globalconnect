@@ -55,7 +55,7 @@ public class ProxyApplication {
 
 
         // initialize proxy
-        Proxy proxy = new Proxy();
+        Proxy proxy = new Proxy(address, xSubPort, xPubPort);
         // attach shutdown hook
         ShutdownHook sh = new ShutdownHook(proxy);
         Runtime.getRuntime().addShutdownHook(sh);
