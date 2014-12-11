@@ -1,3 +1,8 @@
+# Environment
+  
+  Scripts tested with Docker 1.3.2.
+  Docker 1.0.1 wont work.
+
 # Building
 ```
 docker build --rm -t lsgc/base base
