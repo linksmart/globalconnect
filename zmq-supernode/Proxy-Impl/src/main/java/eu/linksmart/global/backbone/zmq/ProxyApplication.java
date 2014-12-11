@@ -37,6 +37,11 @@ public class ProxyApplication {
                         LOG.warn("XPUB port not in allowed range.");
                         xPubPort = 7001;
                     }
+                    if(xSubPort==xPubPort){
+                        LOG.warn("XPUB and XSUB identical.");
+                        xSubPort = 7000;
+                        xPubPort = 7001;
+                    }
                 }catch(java.lang.NumberFormatException ex){
                     LOG.warn("Provided port(s) invalid.",ex);
                 }
