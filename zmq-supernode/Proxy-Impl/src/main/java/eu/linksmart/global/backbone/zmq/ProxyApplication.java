@@ -22,6 +22,7 @@ public class ProxyApplication {
                 LOG.warn("Provided IP address invalid. Using IP        :" + address);
             } else {
                 LOG.debug("using provided IP        :" + args[0]);
+                address = args[0];
             }
             // parse the port strings
             if(args.length==3){
