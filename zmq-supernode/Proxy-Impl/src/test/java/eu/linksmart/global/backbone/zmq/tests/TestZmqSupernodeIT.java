@@ -77,7 +77,7 @@ public class TestZmqSupernodeIT {
         c2.stopClient();
         c1.stopClient();
 
-        Thread.sleep(Constants.HEARTBEAT_TIMEOUT+1000);
+        Thread.sleep(Constants.HEARTBEAT_TIMEOUT+2000);
         assertEquals(0,proxy.getNumberOfPeers());
 
     }

@@ -40,9 +40,11 @@ public class Proxy {
         //"tcp://localhost:7001";
 
         if(aIP.equals("0.0.0.0")) {
+            LOG.trace("0.0.0.0 detected. Using all interfaces.");
             mXSubAddress = "tcp://*:" + aXSubPort;
             mXPubAddress = "tcp://*:" + aXPubPort;
         }else{
+            LOG.trace("Normal IP4 detected. Using primary interface");
             mXSubAddress = "tcp://" + aIP + ":" + aXSubPort;
             mXPubAddress = "tcp://" + aIP + ":" + aXPubPort;
         }
