@@ -19,10 +19,28 @@ public class Proxy {
     private HeartbeatWatch heartbeatWatch;
     private ProxyThread proxyThread;
 
+    private String mXSubAddress;
+    private String mXPubAddress;
+
 
     ConcurrentHashMap<UUID, Long> heartbeatTimestamps;
 
     public Proxy() {
+
+        // use default values for proxy ports and address
+        mXSubAddress = Constants.mXSUB;
+        mXPubAddress = Constants.mXPUB;
+
+        heartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
+
+    }
+    public Proxy(String aIP, int aXSubPort, int aXPubPort) {
+
+        //"tcp://localhost:7000";
+        //"tcp://localhost:7001";
+
+        mXSubAddress = "tcp://"+aIP+":"+aXSubPort;
+        mXPubAddress = "tcp://"+aIP+":"+aXPubPort;
 
         heartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
 
@@ -85,11 +103,11 @@ public class Proxy {
 
             ctx = ZMQ.context(1);
             xsubSocket = ctx.socket(ZMQ.XSUB);
-            xsubSocket.bind(Constants.mXSUB);
-            LOG.trace("XSUB trafficSocket bound to : " + Constants.mXSUB);
+            xsubSocket.bind(mXSubAddress);
+            LOG.trace("XSUB trafficSocket bound to : " + mXSubAddress);
             xpubSocket = ctx.socket(ZMQ.XPUB);
-            xpubSocket.bind(Constants.mXPUB);
-            LOG.trace("XPUB trafficSocket bound to : " + Constants.mXPUB);
+            xpubSocket.bind(mXPubAddress);
+            LOG.trace("XPUB trafficSocket bound to : " + mXPubAddress);
 
             LOG.debug("starting blocking ZMQ proxy...");
             try {
@@ -103,13 +121,13 @@ public class Proxy {
         public void stopProxyThread(){
 
             xpubSocket.setLinger(0);
-            xpubSocket.unbind(Constants.mXPUB);
+            xpubSocket.unbind(mXPubAddress);
             LOG.trace("XPUB unbound..");
             xpubSocket.close();
             LOG.trace("XPUB closed.");
 
             xsubSocket.setLinger(0);
-            xsubSocket.unbind(Constants.mXSUB);
+            xsubSocket.unbind(mXSubAddress);
             LOG.trace("XSUB unbound.");
             xsubSocket.close();
             LOG.trace("XSUB closed.");
@@ -142,8 +160,8 @@ public class Proxy {
             ctx = ZMQ.context(1);
             trafficSocket = ctx.socket(ZMQ.SUB);
             LOG.trace("traffic watch : SUB trafficSocket created");
-            trafficSocket.connect(Constants.mXPUB);
-            LOG.trace("traffic watch : connected to proxy :" + Constants.mXPUB);
+            trafficSocket.connect(mXPubAddress);
+            LOG.trace("traffic watch : connected to proxy :" + mXPubAddress);
             trafficSocket.subscribe("".getBytes());
             LOG.trace("traffic watch : subscribed to everything");
 
@@ -237,8 +255,8 @@ public class Proxy {
             ctx = ZMQ.context(1);
             heartbeatSocket = ctx.socket(ZMQ.PUB);
             LOG.trace("PUB trafficSocket created");
-            heartbeatSocket.connect(Constants.mXSUB);
-            LOG.trace("connected to proxy: " + Constants.mXSUB);
+            heartbeatSocket.connect(mXSubAddress);
+            LOG.trace("connected to proxy: " + mXSubAddress);
 
             try {
                 while (true) {
