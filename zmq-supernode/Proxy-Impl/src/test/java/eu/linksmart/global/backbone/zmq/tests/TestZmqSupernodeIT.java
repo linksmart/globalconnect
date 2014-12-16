@@ -37,6 +37,7 @@ public class TestZmqSupernodeIT {
     @Before
     public void initialize(){
         proxy = new Proxy();
+        //proxy = new Proxy("0.0.0.0",7000,7001);
         proxy.startProxy();
 
     }

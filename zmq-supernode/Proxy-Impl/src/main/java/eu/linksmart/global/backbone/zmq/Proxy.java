@@ -31,6 +31,8 @@ public class Proxy {
         mXSubAddress = Constants.mXSUB;
         mXPubAddress = Constants.mXPUB;
 
+        LOG.trace("No parameters provided. Using "+Constants.mXSUB+" and "+Constants.mXPUB);
+
         heartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
 
     }

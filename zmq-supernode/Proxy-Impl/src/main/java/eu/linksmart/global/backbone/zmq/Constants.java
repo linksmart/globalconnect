@@ -19,8 +19,8 @@ public class Constants {
 
 
 
-    public static final String mXSUB = "tcp://129.26.162.10:7000";
-    public static final String mXPUB = "tcp://129.26.162.10:7001";
+    public static final String mXSUB = "tcp://127.0.0.1:7000";
+    public static final String mXPUB = "tcp://127.0.0.1:7001";
 
     public static final String HEARTBEAT_TOPIC            = "HEARTBEAT";
     public static final String BROADCAST_TOPIC            = "BROADCAST";
