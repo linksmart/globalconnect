@@ -32,8 +32,8 @@ public class TestZmqHandler {
 			
 			Thread.sleep(3000);
 			
-			BackboneMessage ph1_m = new BackboneMessage(senderVA, receiverVA, "M1".getBytes());
-			ph1.send(ph1_m, false);
+			BackboneMessage bbMessage = new BackboneMessage(senderVA, receiverVA, "M1".getBytes(), false);
+			ph1.sendData(bbMessage);
 			
 			Thread.sleep(3000);
 			

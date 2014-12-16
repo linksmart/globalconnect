@@ -82,12 +82,12 @@ public class BackboneZMQImpl implements Backbone {
 	
     @Override
 	public NMResponse sendDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
-    	return zmqHandler.send(new BackboneMessage(senderVirtualAddress, receiverVirtualAddress, data), true);
+    	return zmqHandler.sendData(new BackboneMessage(senderVirtualAddress, receiverVirtualAddress, data, true));
 	}
 	
     @Override
 	public NMResponse sendDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
-		return zmqHandler.send(new BackboneMessage(senderVirtualAddress, receiverVirtualAddress, data), false);
+		return zmqHandler.sendData(new BackboneMessage(senderVirtualAddress, receiverVirtualAddress, data, false));
 	}
 	
     @Override

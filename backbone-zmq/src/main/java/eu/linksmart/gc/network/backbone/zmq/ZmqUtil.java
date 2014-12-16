@@ -1,5 +1,7 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import java.util.UUID;
+
 import org.apache.commons.lang.ArrayUtils;
 
 import eu.linksmart.network.VirtualAddress;
@@ -45,6 +47,14 @@ public class ZmqUtil {
 		byte[] ret = new byte[VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH];
 		System.arraycopy(origData, VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH, ret, 0, VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH - 0);
 		return new VirtualAddress(ret);
+	}
+	
+	public static ZmqMessage createBroadcastMessage(String peerID, byte[] payload) {
+		return new ZmqMessage(ZmqConstants.BROADCAST_TOPIC, ZmqConstants.MESSAGE_TYPE_PEER_DISCOVERY, System.currentTimeMillis(), peerID, "", payload);
+	}
+	
+	public static ZmqMessage createPeerMessage(String senderPeerID, String receiverPeerID, String requestID, byte[] payload) {
+		return new ZmqMessage(receiverPeerID, ZmqConstants.MESSAGE_TYPE_UNICAST, System.currentTimeMillis(), senderPeerID, requestID, payload);
 	}
 	
 }
