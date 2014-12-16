@@ -294,7 +294,7 @@ public class ZmqHandler {
 
 		public void notification(byte[] payload) {
 			responseReceived = true;
-			LOG.info("received response for requestID: " + requestID);
+			LOG.info("received notification for requestID: " + requestID);
 			resp.setBytesPrimary(true);
 			resp.setMessageBytes(payload);
 			synchronized (requestID) {
@@ -320,7 +320,7 @@ public class ZmqHandler {
 
 		public NMResponse send(BackboneMessage bbMessage, String receiverPeerID) {
 
-			LOG.info("sending request-message to peer [" + receiverPeerID + "] - sender-VAD: " + bbMessage.getReceiverVirtualAddress().toString() + " - requestID: " + requestID);
+			LOG.info("sending request-message to peer [" + receiverPeerID + "] - receiver-VAD: " + bbMessage.getReceiverVirtualAddress().toString() + " - requestID: " + requestID);
 			
 			//ZmqMessage zmqMessage = new ZmqMessage(receiverPeerID, ZmqConstants.MESSAGE_TYPE_UNICAST_REQUEST, System.currentTimeMillis(), peerID, requestID.toString(), ZmqUtil.addVADsToPayload(bbMessage));
 			
