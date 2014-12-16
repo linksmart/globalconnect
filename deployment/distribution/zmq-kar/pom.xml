@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+    	<groupId>eu.linksmart.distribution</groupId>
+    	<artifactId>zmq-packaging-parent</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>zmq-kar</artifactId>
+
+    <name>LinkSmart main KAR</name>
+    <description>Triggers assembly of Karaf archive of LS main distribution</description>
+
+	<packaging>kar</packaging>
+	
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.karaf.tooling</groupId>
+                <artifactId>karaf-maven-plugin</artifactId>
+                <version>${karaf.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>features-create-kar</id>
+                        <goals>
+                            <goal>features-create-kar</goal>
+                        </goals>
+                        <configuration>
+                            <featuresFile>mvn:eu.linksmart.gc.features/linksmart-gc-features/0.0.1-SNAPSHOT/xml/features</featuresFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

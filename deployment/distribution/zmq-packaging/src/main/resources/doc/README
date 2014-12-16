@@ -1,0 +1,81 @@
+LinkSmart ${linksmart.version}
+------------------------------------------------------------
+
+Requirements
+------------
+Java 1.7
+JCE unlimited strength
+
+
+Starting and Stopping LinkSmart
+------------------------------------------------------------
+
+To start the server, run the following command in Windows:
+
+bin\karaf.bat
+
+respectively on Unix:
+
+bin/karaf
+
+upon successful startup, a welcome message would appear. 
+
+Please wait for a while (10-15 seconds) so that LinkSmart components are installed and activated by the container.
+
+you can view the the log from LinkSmart components: 
+karaf@root()> log:display
+or
+karaf@root()> log:tail
+
+to see the (OSGi) bundles status:
+karaf@root()> bundle:list
+
+
+LinkSmart status page can be viewed in a browser with the following URL:
+http://localhost:8082/LinkSmartStatus
+
+
+To stop Server from the console, enter ^D in the console:
+
+^D
+
+Alternatively, you can also run the following command:
+
+system:shutdown
+
+or simply
+
+shutdown -f
+
+LinkSmart Features
+------------------------------------------------------------
+LinkSmart provides different deployment modes with the help of Karaf's feature concept. Following are the currently available features:
+
+- linksmart-core
+start all LinkSmart components without web service layer.
+
+- linksmart-ws-provider
+setup & start web services container (based on CXF)
+
+- linksmart
+start all LinkSmart components with web service layer and expose web services for relevant components.
+
+- linksmart-light
+start LinkSmart without security components (crypto, trust, security-manager etc). Currently, JXTA backbone is also excluded.
+
+- linksmart-xacml-policy
+support for authorization of services/resources access inside LinkSmart by XACML based policy framework
+
+- network-manager-rest
+provide HTTP based (REST) interface for Network Manager for registration, de-registration, and service discovery etc
+
+
+The feature:install command installs a feature as follows: 
+
+karaf@root()> feature:install linksmart
+
+The feature:uninstall command uninstalls a feature as shown below: 
+
+karaf@root()> feature:uninstall linksmart
+
+
