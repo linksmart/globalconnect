@@ -234,30 +234,24 @@ public class ZmqHandler {
 				 * MESSAGE request arrived. Call the zmqBackbone.receiveData(). Once it has received the status send it as a response
 				 */
 				
-				LOG.info("rec-REQ: " + " (sender) VirtualAddress=" + senderVA.toString() + " (receiver) VirtualAddress=" + recieverVA.toString());
+				LOG.info("REQ: " + " sender-VirtualAddress=" + senderVA.toString() + " - receiver-VirtualAddress=" + recieverVA.toString());
 				
 				NMResponse response = new NMResponse();
 
-				boolean synch = true;
-				
-				if(synch) {
-					response = zmqBackbone.receiveDataSynch(senderVA, recieverVA, originalPayload);
-					System.out.println("rec-REQ: received response from bb-router");
-				} else {
-					response  = zmqBackbone.receiveDataAsynch(senderVA, recieverVA, originalPayload);
-				}
-				
+				response = zmqBackbone.receiveDataSynch(senderVA, recieverVA, originalPayload);
+				LOG.info("REQ: received response from nm/router for requestID: " + requestID);
+				 				
 				//
 				// reverse source and destination because we (dest) send response back to source
 				//
 				BackboneMessage bbMessage = new BackboneMessage(recieverVA, senderVA, response.getMessageBytes(), true);
 				
-				LOG.info("rec-REQ: sending RESP: " + " (sender) VirtualAddress=" + bbMessage.getSenderVirtualAddress().toString() + " (receiver) VirtualAddress=" + bbMessage.getReceiverVirtualAddress().toString());
+				LOG.info("REQ: sending response: " + " sender-VirtualAddress=" + bbMessage.getSenderVirtualAddress().toString() + " receiver-VirtualAddress=" + bbMessage.getReceiverVirtualAddress().toString());
 				
 				String receiverPeerID = remotePeers.get(bbMessage.getReceiverVirtualAddress());
 				
 				if(receiverPeerID == null) {
-					LOG.error("rec-REQ: unable to find PeerID for receiver virtual address: " + bbMessage.getReceiverVirtualAddress());
+					LOG.error("REQ: unable to find PeerID for receiver virtual address: " + bbMessage.getReceiverVirtualAddress());
 				}
 				
 				if(bbMessage.isSync()) {
@@ -265,16 +259,16 @@ public class ZmqHandler {
 						response.setMessage("");
 					boolean success = sendMessageResponse(bbMessage, receiverPeerID, requestID);
 					if(!success) {
-						LOG.error("rec-REQ: Unable to send response to message from " + senderVA.toString());
+						LOG.error("REQ: Unable to send response to requestID: " + requestID + " from " + recieverVA.toString());
 					}
 				}
 
 			} else if(requestIdSenders.get(Integer.valueOf(requestID)) != null) {
 				// TODO should be something similarl to ZmqConstants.TYPE_RESPONSE.equals("RES")
 				/*
-				 * RESPONSE MESSAGE. NOTIFY the lock (in sendDataOverPipe). 
+				 * RESPONSE MESSAGE. NOTIFY the lock (in MessageSender.send(..)). 
 				 */
-				LOG.info("rec-RES: Received response message from peer: " + zmqMessage.getSender() + " - requestID: " + Integer.valueOf(requestID));
+				LOG.info("RES: Received response message from peer: " + zmqMessage.getSender() + " - requestID: " + Integer.valueOf(requestID));
 				MessageSender sender = requestIdSenders.get(Integer.valueOf(requestID));
 				if (sender != null) {
 					sender.notification(originalPayload);
@@ -307,7 +301,7 @@ public class ZmqHandler {
 
 		public void notification(byte[] payload) {
 			responseReceived = true;
-			LOG.info("Received response in " + requestID);
+			LOG.info("Received response for requestID: " + requestID);
 			resp.setBytesPrimary(true);
 			resp.setMessageBytes(payload);
 			synchronized (requestID) {
@@ -321,12 +315,12 @@ public class ZmqHandler {
 					LOG.info("waiting for response to recieve for requestID: " + requestID);
 					requestID.wait(MAX_RESPONSE_TIME);
 				} catch (InterruptedException e) {
-					LOG.error("request timeout for repsonse from remote peer", e);
+					LOG.error("request timeout for repsonse from remote peer for requestID: " + requestID, e);
 				}
 			}
 			if(!responseReceived) {
 				resp.setStatus(NMResponse.STATUS_ERROR);
-				resp.setMessage("request timeout for repsonse from remote peer");
+				resp.setMessage("request timeout for repsonse from remote peer for requestID: " + requestID);
 			}
 			return resp;
 		}
@@ -335,19 +329,18 @@ public class ZmqHandler {
 
 			LOG.info("sending message to peer: " + receiverPeerID + " - virtual addesss: " + bbMessage.getReceiverVirtualAddress() + " - requestID: " + requestID);
 			
-			// TODO add communication mode (syn, asyn)
 			// TODO add message_type (request or response)
-			
+		
 			bbMessage.setBBMessageType(ZmqConstants.TYPE_REQUEST);
 			
 			if(publisher.publish(ZmqUtil.createPeerMessage(peerID, receiverPeerID, requestID.toString(), ZmqUtil.addVADsToPayload(bbMessage)))) {
 				resp.setStatus(NMResponse.STATUS_SUCCESS);
 				resp.setMessage("<Response>Success sending data to VirtualAddress = " + bbMessage.getReceiverVirtualAddress().toString() + "</Response>");
-				LOG.info("message send successfully");
+				LOG.info("message send successfully for requestID: " + requestID);
 			} else {
 				resp.setStatus(NMResponse.STATUS_ERROR);
 				resp.setMessage("<Response>Error in MessageSender</Response>");
-				LOG.error("unable to send message");
+				LOG.error("unable to send message for requestID: " + requestID);
 			} 
 			return resp;
 		}

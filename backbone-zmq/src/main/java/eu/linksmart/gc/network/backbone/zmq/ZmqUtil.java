@@ -1,7 +1,5 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
-import java.util.UUID;
-
 import org.apache.commons.lang.ArrayUtils;
 
 import eu.linksmart.network.VirtualAddress;
