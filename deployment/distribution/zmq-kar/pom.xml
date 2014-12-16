@@ -12,7 +12,7 @@
     
     <artifactId>zmq-kar</artifactId>
 
-    <name>LinkSmart main KAR</name>
+    <name>LSGC zmq KAR</name>
     <description>Triggers assembly of Karaf archive of LS main distribution</description>
 
 	<packaging>kar</packaging>

@@ -8,7 +8,7 @@
      </parent>
     <artifactId>linksmart-zmq-distribution</artifactId>
     
-    <name>LinkSmart zmq zip archive</name>
+    <name>LSGC zmq zip archive</name>
     <description>Delivers a LinkSmart Server zmq distribution as ZIP and GZIP</description>
     
     <packaging>pom</packaging>
@@ -23,6 +23,7 @@
         <dependency>
             <groupId>org.apache.karaf</groupId>
             <artifactId>apache-karaf</artifactId>
+            <version>3.0.1</version>
             <type>tar.gz</type>
         </dependency>
     </dependencies>
@@ -85,7 +86,7 @@
 					            	<artifactItems>
 										<artifactItem>
 											<groupId>eu.linksmart.distribution</groupId>
-											<artifactId>main-kar</artifactId>
+											<artifactId>zmq-kar</artifactId>
 											<type>kar</type>
 											<outputDirectory>target/linksmart-resources</outputDirectory>
 											<destFileName>linksmart-karaf-archive.zip</destFileName>
