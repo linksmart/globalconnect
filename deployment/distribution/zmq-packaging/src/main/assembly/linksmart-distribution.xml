@@ -14,7 +14,9 @@
 			<outputDirectory>/</outputDirectory>
 			<fileMode>755</fileMode>
 			<excludes>
-        		<exclude>/etc/org.apache.karaf.features.cfg</exclude>
+
+                <exclude>/etc/org.apache.karaf.features.cfg</exclude>
+                <exclude>/etc/org.ops4j.pax.url.mvn.cfg</exclude>
       		</excludes>
 		</fileSet>
 		<fileSet>

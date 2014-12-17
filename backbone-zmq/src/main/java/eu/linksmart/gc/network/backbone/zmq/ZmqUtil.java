@@ -4,7 +4,6 @@ import org.apache.commons.lang.ArrayUtils;
 
 import eu.linksmart.network.VirtualAddress;
 
-//TODO name "ZmqUtil" ambigious since no ZMQ operations are done here
 public class ZmqUtil {
 	
 	public static byte[] addSenderVADToPayload(BackboneMessage bbMessage) {
@@ -48,11 +47,15 @@ public class ZmqUtil {
 	}
 	
 	public static ZmqMessage createBroadcastMessage(String peerID, byte[] payload) {
-		return new ZmqMessage(ZmqConstants.BROADCAST_TOPIC, ZmqConstants.MESSAGE_TYPE_PEER_DISCOVERY, System.currentTimeMillis(), peerID, "", payload);
+		return new ZmqMessage(ZmqConstants.BROADCAST_TOPIC, ZmqConstants.MESSAGE_TYPE_SERVICE_DISCOVERY, System.currentTimeMillis(), peerID, "", payload);
 	}
 	
-	public static ZmqMessage createPeerMessage(String senderPeerID, String receiverPeerID, String requestID, byte[] payload) {
-		return new ZmqMessage(receiverPeerID, ZmqConstants.MESSAGE_TYPE_UNICAST, System.currentTimeMillis(), senderPeerID, requestID, payload);
+	public static ZmqMessage createRequestMessage(String senderPeerID, String receiverPeerID, String requestID, byte[] payload) {
+		return new ZmqMessage(receiverPeerID, ZmqConstants.MESSAGE_TYPE_UNICAST_REQUEST, System.currentTimeMillis(), senderPeerID, requestID, payload);
+	}
+	
+	public static ZmqMessage createResponseMessage(String senderPeerID, String receiverPeerID, String requestID, byte[] payload) {
+		return new ZmqMessage(receiverPeerID, ZmqConstants.MESSAGE_TYPE_UNICAST_RESPONSE, System.currentTimeMillis(), senderPeerID, requestID, payload);
 	}
 	
 }

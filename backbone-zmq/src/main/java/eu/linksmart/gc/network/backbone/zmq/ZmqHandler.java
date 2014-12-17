@@ -173,7 +173,7 @@ public class ZmqHandler {
 
 		public void run() {
 			if(zmqMessage.getTopic().equals(ZmqConstants.BROADCAST_TOPIC)) {
-				if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_PEER_DISCOVERY) {
+				if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_SERVICE_DISCOVERY) {
 					processDiscovery();
 				} else if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_PEER_DOWN) {
 					processPeerDown();
@@ -217,24 +217,19 @@ public class ZmqHandler {
 		
 		private void processPeerMessage() {
 			
-			LOG.info("recieved message from [" + zmqMessage.getSender() + "] - request-ID : " + zmqMessage.getRequestID());
-			
 			byte[] originalPayload = ZmqUtil.removeVADsFromPayload(zmqMessage.getPayload());
 			VirtualAddress senderVA = ZmqUtil.getSenderVAD(zmqMessage.getPayload());
 			VirtualAddress recieverVA = ZmqUtil.getReceiverVAD(zmqMessage.getPayload());
 			String requestID = zmqMessage.getRequestID();
 			
-			// TODO determine the message type: request/response by reading the payload info
-			// TODO this info should be added to payload during sending a request from a sender
+			LOG.info("recieved message from [" + zmqMessage.getSender() + "] - virtualaddress: " + senderVA.toString() + " - request-ID : " + zmqMessage.getRequestID());
 			
-			// TODO should be something similarl to ZmqConstants.TYPE_RESPONSE.equals("REQ")
-			if(requestIdSenders.get(Integer.valueOf(requestID)) == null) {
+			if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_UNICAST_REQUEST) {
 				
 				/*
 				 * MESSAGE request arrived. Call the zmqBackbone.receiveData(). Once it has received the status send it as a response
 				 */
-				
-				LOG.info("REQ: " + " sender-VirtualAddress=" + senderVA.toString() + " - receiver-VirtualAddress=" + recieverVA.toString());
+				LOG.info("REQ: " + " sender-VAD: " + senderVA.toString() + " - receiver-VAD: " + recieverVA.toString() + " - requestID: " + requestID);
 				
 				NMResponse response = new NMResponse();
 
@@ -246,29 +241,34 @@ public class ZmqHandler {
 				//
 				BackboneMessage bbMessage = new BackboneMessage(recieverVA, senderVA, response.getMessageBytes(), true);
 				
-				LOG.info("REQ: sending response: " + " sender-VirtualAddress=" + bbMessage.getSenderVirtualAddress().toString() + " receiver-VirtualAddress=" + bbMessage.getReceiverVirtualAddress().toString());
+				LOG.info("REQ: sending response: " + " sender-VAD: " + bbMessage.getSenderVirtualAddress().toString() + " receiver-VAD: " + bbMessage.getReceiverVirtualAddress().toString() + " - requestID: " + requestID);
 				
 				String receiverPeerID = remotePeers.get(bbMessage.getReceiverVirtualAddress());
 				
 				if(receiverPeerID == null) {
-					LOG.error("REQ: unable to find PeerID for receiver virtual address: " + bbMessage.getReceiverVirtualAddress());
+					LOG.error("REQ: unable to find PeerID for receiver-VAD: " + bbMessage.getReceiverVirtualAddress());
+					return;
 				}
 				
 				if(bbMessage.isSync()) {
 					if(response.getMessage() == null) 
 						response.setMessage("");
-					boolean success = sendMessageResponse(bbMessage, receiverPeerID, requestID);
+					//
+					// sending response to incoming request
+					//
+					ZmqUtil.createResponseMessage(peerID, receiverPeerID, requestID, ZmqUtil.addVADsToPayload(bbMessage));
+					boolean success = publisher.publish(ZmqUtil.createResponseMessage(peerID, receiverPeerID, requestID, ZmqUtil.addVADsToPayload(bbMessage)));
+					
 					if(!success) {
 						LOG.error("REQ: Unable to send response to requestID: " + requestID + " from " + recieverVA.toString());
 					}
 				}
 
-			} else if(requestIdSenders.get(Integer.valueOf(requestID)) != null) {
-				// TODO should be something similarl to ZmqConstants.TYPE_RESPONSE.equals("RES")
+			} else if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_UNICAST_RESPONSE) {
 				/*
 				 * RESPONSE MESSAGE. NOTIFY the lock (in MessageSender.send(..)). 
 				 */
-				LOG.info("RES: Received response message from peer: " + zmqMessage.getSender() + " - requestID: " + Integer.valueOf(requestID));
+				LOG.info("RES: response message from peer [" + zmqMessage.getSender() + "] - sender-VAD: " + senderVA.toString() + " - requestID: " + Integer.valueOf(requestID));
 				MessageSender sender = requestIdSenders.get(Integer.valueOf(requestID));
 				if (sender != null) {
 					sender.notification(originalPayload);
@@ -276,13 +276,6 @@ public class ZmqHandler {
 			} else {
 				LOG.error("Received incompatible zmq message with type: ");
 			}
-		}
-		
-		private boolean sendMessageResponse(BackboneMessage bbMessage, String receiverPeerID, String requestID) {
-			if(publisher.publish(new ZmqMessage(receiverPeerID, ZmqConstants.MESSAGE_TYPE_UNICAST, System.currentTimeMillis(), peerID, requestID, ZmqUtil.addVADsToPayload(bbMessage))))
-				return true;
-			else
-				return false;
 		}
 	}
 	
@@ -301,7 +294,7 @@ public class ZmqHandler {
 
 		public void notification(byte[] payload) {
 			responseReceived = true;
-			LOG.info("Received response for requestID: " + requestID);
+			LOG.info("received notification for requestID: " + requestID);
 			resp.setBytesPrimary(true);
 			resp.setMessageBytes(payload);
 			synchronized (requestID) {
@@ -327,13 +320,11 @@ public class ZmqHandler {
 
 		public NMResponse send(BackboneMessage bbMessage, String receiverPeerID) {
 
-			LOG.info("sending message to peer: " + receiverPeerID + " - virtual addesss: " + bbMessage.getReceiverVirtualAddress() + " - requestID: " + requestID);
+			LOG.info("sending request-message to peer [" + receiverPeerID + "] - receiver-VAD: " + bbMessage.getReceiverVirtualAddress().toString() + " - requestID: " + requestID);
 			
-			// TODO add message_type (request or response)
-		
-			bbMessage.setBBMessageType(ZmqConstants.TYPE_REQUEST);
+			//ZmqMessage zmqMessage = new ZmqMessage(receiverPeerID, ZmqConstants.MESSAGE_TYPE_UNICAST_REQUEST, System.currentTimeMillis(), peerID, requestID.toString(), ZmqUtil.addVADsToPayload(bbMessage));
 			
-			if(publisher.publish(ZmqUtil.createPeerMessage(peerID, receiverPeerID, requestID.toString(), ZmqUtil.addVADsToPayload(bbMessage)))) {
+			if(publisher.publish(ZmqUtil.createRequestMessage(peerID, receiverPeerID, requestID.toString(), ZmqUtil.addVADsToPayload(bbMessage)))) {
 				resp.setStatus(NMResponse.STATUS_SUCCESS);
 				resp.setMessage("<Response>Success sending data to VirtualAddress = " + bbMessage.getReceiverVirtualAddress().toString() + "</Response>");
 				LOG.info("message send successfully for requestID: " + requestID);
