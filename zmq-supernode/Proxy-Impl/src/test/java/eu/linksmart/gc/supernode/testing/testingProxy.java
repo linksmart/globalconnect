@@ -1,4 +1,4 @@
-package eu.linksmart.global.backbone.zmq.tests;
+package eu.linksmart.gc.supernode.testing;
 
 /**
  * Created by carlos on 28.11.14.

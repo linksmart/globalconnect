@@ -1,8 +1,8 @@
-package eu.linksmart.global.backbone.zmq.tests;
+package eu.linksmart.gc.supernode.testing;
 
 
 
-import eu.linksmart.global.backbone.zmq.Constants;
+import eu.linksmart.gc.supernode.Constants;
 import org.zeromq.ZMQ;
 
 public class testingJzmqPublisher {
