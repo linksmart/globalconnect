@@ -26,10 +26,10 @@ public class ZmqHandler {
 	private static Logger LOG = Logger.getLogger(ZmqReceiver.class.getName());
 
 	private String peerID = null;
-	//private String xsubUri = "tcp://gando.fit.fraunhofer.de:7000";
-	//private String xpubUri = "tcp://gando.fit.fraunhofer.de:7001";
-	private String xsubUri = "tcp://129.26.162.10:7000";
-	private String xpubUri = "tcp://129.26.162.10:7001";
+	private String xsubUri = "tcp://gando.fit.fraunhofer.de:7000";
+	private String xpubUri = "tcp://gando.fit.fraunhofer.de:7001";
+	//private String xsubUri = "tcp://129.26.162.10:7000";
+	//private String xpubUri = "tcp://129.26.162.10:7001";
 	
 	private int heartBeatInterval = 2000;
 	
