@@ -120,12 +120,14 @@ public class BackboneZMQIT {
 		try {
 			Set<Registration> rservices = new HashSet<Registration>();
 			//Registration registration = new Registration(new VirtualAddress(), new Part[]{new Part(ServiceAttribute.DESCRIPTION.name(),"desc")});
+			//eu.linksmart.network.Message message = new eu.linksmart.network.Message(eu.linksmart.network.Message.TOPIC_APPLICATION, new VirtualAddress(), new VirtualAddress(), servicesBytes);
 			rservices.add(services[0]);
 			byte[] servicesBytes = eu.linksmart.utils.ByteArrayCodec.encodeObjectToBytes(rservices);
-			//eu.linksmart.network.Message message = new eu.linksmart.network.Message(eu.linksmart.network.Message.TOPIC_APPLICATION, new VirtualAddress(), new VirtualAddress(), servicesBytes);
 			isMessageSent = true;
-			NMResponse response = networkManager.sendData(networkManager.getVirtualAddress(),nm_virtualAddress, servicesBytes, true);
-			LOG.info("status: " + response.getStatus() + " - message: " + response.getMessage());
+			for (int i = 0; i < 2; i++) {
+				NMResponse response = networkManager.sendData(networkManager.getVirtualAddress(),services[0].getVirtualAddress(), servicesBytes, true);
+				LOG.info("status: " + response.getStatus() + " - message: " + response.getMessage() + " counter: " + i);
+			}
 		} catch (Exception e) {
 			LOG.error("error in sending message over network manager", e);
 		}
