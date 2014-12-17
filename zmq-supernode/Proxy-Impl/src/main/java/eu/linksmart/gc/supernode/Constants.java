@@ -1,4 +1,4 @@
-package eu.linksmart.global.backbone.zmq;
+package eu.linksmart.gc.supernode;
 
 /**
  * Created by carlos on 25.11.14.

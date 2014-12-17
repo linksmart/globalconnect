@@ -1,4 +1,4 @@
-package eu.linksmart.global.backbone.zmq.tests;
+package eu.linksmart.gc.supernode.testing;
 
 import java.util.Vector;
 

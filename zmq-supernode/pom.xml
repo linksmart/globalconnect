@@ -10,7 +10,7 @@
         <version>2.2.1</version>
     </parent>
 
-    <groupId>eu.linksmart.globalconnect</groupId>
+    <groupId>eu.linksmart.gc.zmqsupernode</groupId>
     <artifactId>zmq.proxy</artifactId>
     <version>0.1.1-SNAPSHOT</version>
 

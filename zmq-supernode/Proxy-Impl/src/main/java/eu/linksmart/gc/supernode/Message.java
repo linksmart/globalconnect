@@ -1,4 +1,4 @@
-package eu.linksmart.global.backbone.zmq;
+package eu.linksmart.gc.supernode;
 
 import org.apache.log4j.Logger;
 

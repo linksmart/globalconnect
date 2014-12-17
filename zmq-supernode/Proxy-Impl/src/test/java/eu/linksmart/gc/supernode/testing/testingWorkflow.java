@@ -1,6 +1,6 @@
-package eu.linksmart.global.backbone.zmq.tests;
+package eu.linksmart.gc.supernode.testing;
 
-import eu.linksmart.global.backbone.zmq.Proxy;
+import eu.linksmart.gc.supernode.Proxy;
 
 /**
  * Created by carlos on 28.11.14.
