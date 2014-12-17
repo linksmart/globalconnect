@@ -1,15 +1,25 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
+import eu.linksmart.network.Message;
 import eu.linksmart.network.NMResponse;
+import eu.linksmart.network.Registration;
 import eu.linksmart.network.VirtualAddress;
+import eu.linksmart.utils.Base64;
 
 public class ZmqHandler {
 	
@@ -18,8 +28,6 @@ public class ZmqHandler {
 	private String peerID = null;
 	private String xsubUri = "tcp://gando.fit.fraunhofer.de:7000";
 	private String xpubUri = "tcp://gando.fit.fraunhofer.de:7001";
-//	private String xsubUri = "tcp://129.26.162.10:7000";
-//	private String xpubUri = "tcp://129.26.162.10:7001";
 	
 	private int heartBeatInterval = 2000;
 	
@@ -106,7 +114,7 @@ public class ZmqHandler {
 			response.setStatus(NMResponse.STATUS_ERROR);
 			response.setMessage("unable to find PeerID for receiver virtual address: " + bbMessage.getReceiverVirtualAddress());
 			return response;
-		}
+		} 
 		
 		Integer requestID = getRequestIdCounter();
 		
@@ -199,7 +207,51 @@ public class ZmqHandler {
 			} 
 			// TODO check if new virtual address is received for already added peer	
 			byte[] payload = ZmqUtil.removeSenderVAD(zmqMessage.getPayload());
+			//
+			// read remote services information from payload after deserializing it
+			//
+			processBroadcastPayload(payload, senderVirtualAddress);
 			zmqBackbone.receiveDataAsynch(senderVirtualAddress, null, payload);
+		}
+		
+		private void processBroadcastPayload(byte[] payload, VirtualAddress senderVirtualAddress) {
+			Set<Registration> serviceRegistrations = deserializePayload(payload, senderVirtualAddress);
+			if (serviceRegistrations != null) {
+				Iterator<Registration> i = serviceRegistrations.iterator();
+				while (i.hasNext()) {
+					Registration serviceInfo = i.next();
+					if(!(getRemotePeers().containsKey(serviceInfo.getVirtualAddress()))) {
+						getRemotePeers().put(serviceInfo.getVirtualAddress(), zmqMessage.getSender());
+						LOG.info("added remote service: " + serviceInfo.getVirtualAddress() + " to peer [" + zmqMessage.getSender() + "]");
+					}
+				}
+			}
+		}
+		
+		@SuppressWarnings("unchecked")
+		private Set<Registration> deserializePayload(byte[] serializedPayload, VirtualAddress senderVirtualAddress) {
+			Properties properties = new Properties();
+			try {
+				properties.loadFromXML(new ByteArrayInputStream(serializedPayload));
+			} catch (InvalidPropertiesFormatException e) {
+				System.err.println("Unable to load properties from XML data. Data is not valid XML: " + new String(serializedPayload));
+			} catch (IOException e) {
+				System.err.println("Unable to load properties from XML data: " + new String(serializedPayload));
+			}
+			Set<Registration> serviceRegistrations = null;
+			try {
+				// create real message
+				Message message = new Message((String) properties.remove("topic"), senderVirtualAddress, null, (Base64.decode((String) properties.remove("applicationData"))));
+				ByteArrayInputStream bis = new ByteArrayInputStream(message.getData());
+				ObjectInput in = new ObjectInputStream(bis);
+				Object payloadObject = in.readObject();
+				serviceRegistrations = (Set<Registration>) payloadObject;
+				bis.close();
+				in.close();
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
+			return serviceRegistrations;
 		}
 		
 		private void processPeerDown() {
@@ -222,7 +274,7 @@ public class ZmqHandler {
 			VirtualAddress recieverVA = ZmqUtil.getReceiverVAD(zmqMessage.getPayload());
 			String requestID = zmqMessage.getRequestID();
 			
-			LOG.info("recieved message from [" + zmqMessage.getSender() + "] - virtualaddress: " + senderVA.toString() + " - request-ID : " + zmqMessage.getRequestID());
+			LOG.debug("recieved message from [" + zmqMessage.getSender() + "] - virtualaddress: " + senderVA.toString() + " - request-ID : " + zmqMessage.getRequestID());
 			
 			if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_UNICAST_REQUEST) {
 				
@@ -230,6 +282,13 @@ public class ZmqHandler {
 				 * MESSAGE request arrived. Call the zmqBackbone.receiveData(). Once it has received the status send it as a response
 				 */
 				LOG.info("REQ: " + " sender-VAD: " + senderVA.toString() + " - receiver-VAD: " + recieverVA.toString() + " - requestID: " + requestID);
+				
+				//
+				// add VAD of the sender
+				//
+				String senderPeerID =zmqMessage.getSender();
+				getRemotePeers().put(senderVA, senderPeerID);
+				
 				
 				NMResponse response = new NMResponse();
 
@@ -240,8 +299,6 @@ public class ZmqHandler {
 				// reverse source and destination because we (dest) send response back to source
 				//
 				BackboneMessage bbMessage = new BackboneMessage(recieverVA, senderVA, response.getMessageBytes(), true);
-				
-				LOG.info("REQ: sending response: " + " sender-VAD: " + bbMessage.getSenderVirtualAddress().toString() + " receiver-VAD: " + bbMessage.getReceiverVirtualAddress().toString() + " - requestID: " + requestID);
 				
 				String receiverPeerID = remotePeers.get(bbMessage.getReceiverVirtualAddress());
 				
@@ -294,7 +351,7 @@ public class ZmqHandler {
 
 		public void notification(byte[] payload) {
 			responseReceived = true;
-			LOG.info("received notification for requestID: " + requestID);
+			LOG.debug("received notification for requestID: " + requestID);
 			resp.setBytesPrimary(true);
 			resp.setMessageBytes(payload);
 			synchronized (requestID) {

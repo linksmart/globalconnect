@@ -4,7 +4,7 @@ ENV REFRESHED_AT 2014-12-17
 
 # update ubuntu image
 RUN apt-get update
-RUN apt-get install -y wget unzip openjdk-7-jdk git maven openssl
+RUN apt-get install -y wget unzip openjdk-7-jdk git maven openssl nmap mc nano
 
 # install the fraunhofer certificate
 RUN wget http://cdp1.pca.dfn.de/fraunhofer-ca/pub/cacert/cacert.pem -O /usr/local/share/ca-certificates/fhg.crt

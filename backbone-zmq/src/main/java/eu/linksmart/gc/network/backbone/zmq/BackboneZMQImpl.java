@@ -106,7 +106,24 @@ public class BackboneZMQImpl implements Backbone {
     	return null;
 	}
 
-    @Override
+	@Override
+	public List<SecurityProperty> getSecurityTypesRequired() {
+		String configuredSecurity = this.configurator.get(BackboneZMQConfigurator.SECURITY_PARAMETERS);
+		String[] securityTypes = configuredSecurity.split("\\|");
+		SecurityProperty oneProperty;
+		List<SecurityProperty> answer = new ArrayList<SecurityProperty>();
+		for (String s : securityTypes) {
+			try {
+				oneProperty = SecurityProperty.valueOf(s);
+				answer.add(oneProperty);
+			} catch (Exception e) {
+				LOGGER.error("Security property value from configuration is not recognized: " + s + ": " + e);
+			}
+		}
+		return answer;
+	}
+	
+	@Override
 	public String getEndpoint(VirtualAddress virtualAddress) {
 		return null;
 	}
@@ -123,23 +140,6 @@ public class BackboneZMQImpl implements Backbone {
 	
 	@Override
 	public void addEndpointForRemoteService(VirtualAddress senderVirtualAddress, VirtualAddress remoteVirtualAddress) {
-	}
-
-	@Override
-	public List<SecurityProperty> getSecurityTypesRequired() {
-		String configuredSecurity = this.configurator.get(BackboneZMQConfigurator.SECURITY_PARAMETERS);
-		String[] securityTypes = configuredSecurity.split("\\|");
-		SecurityProperty oneProperty;
-		List<SecurityProperty> answer = new ArrayList<SecurityProperty>();
-		for (String s : securityTypes) {
-			try {
-				oneProperty = SecurityProperty.valueOf(s);
-				answer.add(oneProperty);
-			} catch (Exception e) {
-				LOGGER.error("Security property value from configuration is not recognized: " + s + ": " + e);
-			}
-		}
-		return answer;
 	}
 
 	@Override
