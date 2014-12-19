@@ -12,7 +12,7 @@ public class HeartBeat extends Thread {
 	private boolean isRunning = false;
 	
 	private String peerID = null;
-	private int heatbeatInterval = 5000;
+	private int heartbeatInterval = 5000;
 	
 	ZMQ.Context context = null;
 	ZMQ.Socket publisher = null;
@@ -20,7 +20,7 @@ public class HeartBeat extends Thread {
 	public HeartBeat(ZmqHandler zmqHandler) {
 		this.zmqHandler = zmqHandler;
 		this.peerID = this.zmqHandler.getPeerID();
-		this.heatbeatInterval = this.zmqHandler.getHeartBeatInterval();
+		this.heartbeatInterval = this.zmqHandler.getHeartBeatInterval();
 		this.isRunning = true;
 	}
 	
@@ -34,18 +34,18 @@ public class HeartBeat extends Thread {
         	context = ZMQ.context(1);
         	publisher = context.socket(ZMQ.PUB);
     		publisher.connect(zmqHandler.getXSubUri()); 
-    		LOG.debug("[" + peerID + "] initialized publisher to send hearbeat to proxy");
+    		LOG.debug("[" + peerID + "] initialized publisher to send heartbeat to proxy");
     		
         	while(this.isRunning) {
-        		LOG.trace("[" + peerID + "] is sending hearbeat to proxy");
+        		LOG.trace("[" + peerID + "] is sending heartbeat to proxy");
     			publisher.sendMore(ZmqConstants.HEARTBEAT_TOPIC);
     			publisher.sendMore(new byte[]{ZmqConstants.PROTOCOL_VERSION});
-    			publisher.sendMore(new byte[]{ZmqConstants.MESSAGE_TYPE_HEART_BEAT});
+    			publisher.sendMore(new byte[]{ZmqConstants.MESSAGE_TYPE_HEARTBEAT});
     			publisher.sendMore("" + System.currentTimeMillis());
     			publisher.sendMore(peerID);
     			publisher.sendMore("");
     			publisher.send("".getBytes(), 0);
-    			Thread.sleep(heatbeatInterval);
+    			Thread.sleep(heartbeatInterval);
         	}
         	
 		} catch (InterruptedException ex) {

@@ -52,7 +52,7 @@ private static Logger LOG = Logger.getLogger(ZmqPublisher.class.getName());
 			publisher.send(zmqMessage.getPayload(), 0);
 			return true;
 		} catch (Exception e) {
-			LOG.error("error in publising message: " + e.getMessage(), e);
+			LOG.error("error in publishing message: " + e.getMessage(), e);
 		}
 		return false;
 	}

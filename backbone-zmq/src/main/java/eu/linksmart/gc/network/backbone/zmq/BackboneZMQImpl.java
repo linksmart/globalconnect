@@ -64,7 +64,7 @@ public class BackboneZMQImpl implements Backbone {
     	LOGGER.info("[activating BackboneZMQ]");
 		this.configurator = new BackboneZMQConfigurator(this, context.getBundleContext(), mConfigAdmin);
 		this.configurator.registerConfiguration();
-		zmqHandler = new ZmqHandler(this);
+		zmqHandler = new ZmqHandler(this, this.configurator.get("backbone.zmq.xpub.uri"), this.configurator.get("backbone.zmq.xsub.uri"));
 		zmqHandler.start();
 	}
 

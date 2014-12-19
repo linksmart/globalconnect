@@ -26,8 +26,8 @@ public class ZmqHandler {
 	private static Logger LOG = Logger.getLogger(ZmqReceiver.class.getName());
 
 	private String peerID = null;
-	private String xsubUri = "tcp://gando.fit.fraunhofer.de:7000";
-	private String xpubUri = "tcp://gando.fit.fraunhofer.de:7001";
+	private String xsubUri = "tcp://localhost:7000";
+	private String xpubUri = "tcp://localhost:7001";
 	
 	private int heartBeatInterval = 2000;
 	
@@ -37,9 +37,9 @@ public class ZmqHandler {
 	
 	private BackboneZMQImpl zmqBackbone = null;
 	
-	private Map<VirtualAddress, String> remotePeers = Collections.synchronizedMap(new HashMap<VirtualAddress, String>());
-	
-	private Map<Integer, MessageSender> requestIdSenders = Collections.synchronizedMap(new HashMap<Integer, MessageSender>());
+	private final Map<VirtualAddress, String> remoteServices = Collections.synchronizedMap(new HashMap<VirtualAddress, String>());
+
+	private final Map<Integer, MessageSender> requestIdSenders = Collections.synchronizedMap(new HashMap<Integer, MessageSender>());
 	
 	Integer counter = 0;
 
@@ -92,7 +92,7 @@ public class ZmqHandler {
 	
 	public NMResponse broadcast(BackboneMessage bbMessage) {
 		
-		LOG.info("sending broadcast message from virtual-address: " + bbMessage.getSenderVirtualAddress());
+		LOG.info("sending broadcast message from virtual address: " + bbMessage.getSenderVirtualAddress());
 		
 		publisher.publish(ZmqUtil.createBroadcastMessage(this.peerID, ZmqUtil.addSenderVADToPayload(bbMessage)));
 		
@@ -107,7 +107,7 @@ public class ZmqHandler {
 		
 		NMResponse response = new NMResponse();
 		
-		String receiverPeerID = this.remotePeers.get(bbMessage.getReceiverVirtualAddress());
+		String receiverPeerID = this.remoteServices.get(bbMessage.getReceiverVirtualAddress());
 		
 		if(receiverPeerID == null) {
 			LOG.error("unable to find PeerID for receiver virtual address: " + bbMessage.getReceiverVirtualAddress());
@@ -116,7 +116,7 @@ public class ZmqHandler {
 			return response;
 		} 
 		
-		Integer requestID = getRequestIdCounter();
+		Integer requestID = nextRequestIdCounter();
 		
 		MessageSender messageSender = new MessageSender(requestID);
 		
@@ -140,7 +140,7 @@ public class ZmqHandler {
 		return response;
 	}
 	
-	private synchronized Integer getRequestIdCounter() {
+	private synchronized Integer nextRequestIdCounter() {
 		counter = counter + 1;
 		return counter;
 	}
@@ -165,16 +165,39 @@ public class ZmqHandler {
 		this.heartBeatInterval = heartBeatTimer;
 	}
 	
-	public Map<VirtualAddress, String> getRemotePeers() {
-		return this.remotePeers;
+	public Map<VirtualAddress, String> getRemoteServices() {
+		return this.remoteServices;
+	}
+
+	public void addServiceIfMissing(VirtualAddress addr, String peerID) {
+		synchronized (this.remoteServices) {
+			if (!(this.remoteServices.containsKey(addr))) {
+				this.remoteServices.put(addr, peerID);
+				LOG.info("added remote service: " + addr + " to peer [" + peerID + "]");
+			}
+		}
+	}
+
+	public void removePeerServices(String peerID) {
+		synchronized (this.remoteServices) {
+			Iterator<String> services = this.remoteServices.values().iterator();
+			while(services.hasNext()) {
+				String value = services.next();
+				if(value.equals(peerID)) {
+					services.remove();
+					LOG.info("removing peer [" + peerID + "] from list");
+					break;
+				}
+			}
+		}
 	}
 	
 	////////////////////////////////////////////////////////
-	
+
 	public class MessageProcessor extends Thread {
-		
+
 		private ZmqMessage zmqMessage = null;
-		
+
 		public MessageProcessor(ZmqMessage zmqMessage) {
 			this.zmqMessage = zmqMessage;
 		}
@@ -187,56 +210,40 @@ public class ZmqHandler {
 					processPeerDown();
 				}
 			} else if(zmqMessage.getTopic().equals(getPeerID())) {
-				processPeerMessage();
+				processUnicast();
 			} else {
 	            LOG.warn("unknown topic [" + zmqMessage.getTopic() + "] detected. ignoring");
 	        }
 		}
-		
+
 		private void processDiscovery() {
-			
-			if(zmqMessage.getSender().equals(getPeerID())) 
+			// Ignore own service broadcasts
+			if(zmqMessage.getSender().equals(getPeerID()))
 				return;
-			
+
 			VirtualAddress senderVirtualAddress = ZmqUtil.getSenderVAD(zmqMessage.getPayload());
-			LOG.info("recieved broadcast message from [" + zmqMessage.getSender() + "] - virtual-address: " + senderVirtualAddress.toString());
-			
-			if(!(getRemotePeers().containsKey(senderVirtualAddress))) {
-				getRemotePeers().put(senderVirtualAddress, zmqMessage.getSender());
-				LOG.info("added peer [" + zmqMessage.getSender() + "] into list of known peers");
-			} 
-			// TODO check if new virtual address is received for already added peer	
+			LOG.info("received service broadcast from [" + zmqMessage.getSender() + "] - virtual address: " + senderVirtualAddress.toString());
+
+			addServiceIfMissing(senderVirtualAddress, zmqMessage.getSender());
+			// TODO check if new virtual address is received for already added peer <- ???
+			// TODO currently we never remove a Virtual Address until a peer goes down (then we remove all of them)
 			byte[] payload = ZmqUtil.removeSenderVAD(zmqMessage.getPayload());
 			//
 			// read remote services information from payload after deserializing it
 			//
-			processBroadcastPayload(payload, senderVirtualAddress);
+			processDiscoveryPayload(payload, senderVirtualAddress);
 			zmqBackbone.receiveDataAsynch(senderVirtualAddress, null, payload);
 		}
-		
-		private void processBroadcastPayload(byte[] payload, VirtualAddress senderVirtualAddress) {
-			Set<Registration> serviceRegistrations = deserializePayload(payload, senderVirtualAddress);
-			if (serviceRegistrations != null) {
-				Iterator<Registration> i = serviceRegistrations.iterator();
-				while (i.hasNext()) {
-					Registration serviceInfo = i.next();
-					if(!(getRemotePeers().containsKey(serviceInfo.getVirtualAddress()))) {
-						getRemotePeers().put(serviceInfo.getVirtualAddress(), zmqMessage.getSender());
-						LOG.info("added remote service: " + serviceInfo.getVirtualAddress() + " to peer [" + zmqMessage.getSender() + "]");
-					}
-				}
-			}
-		}
-		
-		@SuppressWarnings("unchecked")
-		private Set<Registration> deserializePayload(byte[] serializedPayload, VirtualAddress senderVirtualAddress) {
+
+		private void processDiscoveryPayload(byte[] payload, VirtualAddress senderVirtualAddress) {
+			// Deserialize the payload to get service registrations
 			Properties properties = new Properties();
 			try {
-				properties.loadFromXML(new ByteArrayInputStream(serializedPayload));
+				properties.loadFromXML(new ByteArrayInputStream(payload));
 			} catch (InvalidPropertiesFormatException e) {
-				System.err.println("Unable to load properties from XML data. Data is not valid XML: " + new String(serializedPayload));
+				LOG.error("Unable to load properties from XML data. Data is not valid XML: " + new String(payload));
 			} catch (IOException e) {
-				System.err.println("Unable to load properties from XML data: " + new String(serializedPayload));
+				LOG.error("Unable to load properties from XML data: " + new String(payload));
 			}
 			Set<Registration> serviceRegistrations = null;
 			try {
@@ -249,81 +256,72 @@ public class ZmqHandler {
 				bis.close();
 				in.close();
 			} catch (Exception e) {
-				System.err.println(e.getMessage());
+				LOG.error(e.getMessage());
 			}
-			return serviceRegistrations;
-		}
-		
-		private void processPeerDown() {
-			LOG.info("recieved peerdown message from [" + zmqMessage.getSender() + "]");
-			Iterator<String> iterator = getRemotePeers().values().iterator();
-			while(iterator.hasNext()) {
-			    String value = iterator.next();
-			    if(value.equals(zmqMessage.getSender())) {
-					iterator.remove();
-					LOG.info("removing peer [" + zmqMessage.getSender() + "] from list");
-					break;
+
+			// Update the remote peers hashtable with discovered services
+			if (serviceRegistrations != null) {
+				for (Registration serviceInfo : serviceRegistrations) {
+					addServiceIfMissing(serviceInfo.getVirtualAddress(), zmqMessage.getSender());
 				}
 			}
 		}
-		
-		private void processPeerMessage() {
-			
+
+		private void processPeerDown() {
+			LOG.info("received peerdown message for peer [" + zmqMessage.getSender() + "]");
+			removePeerServices(zmqMessage.getSender());
+		}
+
+		private void processUnicast() {
 			byte[] originalPayload = ZmqUtil.removeVADsFromPayload(zmqMessage.getPayload());
 			VirtualAddress senderVA = ZmqUtil.getSenderVAD(zmqMessage.getPayload());
-			VirtualAddress recieverVA = ZmqUtil.getReceiverVAD(zmqMessage.getPayload());
+			VirtualAddress receiverVA = ZmqUtil.getReceiverVAD(zmqMessage.getPayload());
 			String requestID = zmqMessage.getRequestID();
-			
+
 			LOG.debug("recieved message from [" + zmqMessage.getSender() + "] - virtualaddress: " + senderVA.toString() + " - request-ID : " + zmqMessage.getRequestID());
-			
+
 			if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_UNICAST_REQUEST) {
-				
+
 				/*
 				 * MESSAGE request arrived. Call the zmqBackbone.receiveData(). Once it has received the status send it as a response
 				 */
-				LOG.info("REQ: " + " sender-VAD: " + senderVA.toString() + " - receiver-VAD: " + recieverVA.toString() + " - requestID: " + requestID);
-				
-				//
-				// add VAD of the sender
-				//
-				String senderPeerID =zmqMessage.getSender();
-				getRemotePeers().put(senderVA, senderPeerID);
-				
-				
-				NMResponse response = new NMResponse();
+				LOG.info("REQ: " + " sender-VAD: " + senderVA.toString() + " - receiver-VAD: " + receiverVA.toString() + " - requestID: " + requestID);
 
-				response = zmqBackbone.receiveDataSynch(senderVA, recieverVA, originalPayload);
+				// add VAD of the sender to services
+				addServiceIfMissing(senderVA, zmqMessage.getSender());
+
+				NMResponse response = zmqBackbone.receiveDataSynch(senderVA, receiverVA, originalPayload);
 				LOG.info("REQ: received response from nm/router for requestID: " + requestID);
-				 				
+
 				//
 				// reverse source and destination because we (dest) send response back to source
 				//
-				BackboneMessage bbMessage = new BackboneMessage(recieverVA, senderVA, response.getMessageBytes(), true);
-				
-				String receiverPeerID = remotePeers.get(bbMessage.getReceiverVirtualAddress());
-				
+				BackboneMessage bbMessage = new BackboneMessage(receiverVA, senderVA, response.getMessageBytes(), true);
+
+				String receiverPeerID = remoteServices.get(bbMessage.getReceiverVirtualAddress());
+
 				if(receiverPeerID == null) {
 					LOG.error("REQ: unable to find PeerID for receiver-VAD: " + bbMessage.getReceiverVirtualAddress());
 					return;
 				}
-				
+
 				if(bbMessage.isSync()) {
-					if(response.getMessage() == null) 
+					if(response.getMessage() == null)
 						response.setMessage("");
 					//
 					// sending response to incoming request
 					//
 					ZmqUtil.createResponseMessage(peerID, receiverPeerID, requestID, ZmqUtil.addVADsToPayload(bbMessage));
 					boolean success = publisher.publish(ZmqUtil.createResponseMessage(peerID, receiverPeerID, requestID, ZmqUtil.addVADsToPayload(bbMessage)));
-					
+
 					if(!success) {
-						LOG.error("REQ: Unable to send response to requestID: " + requestID + " from " + recieverVA.toString());
+						LOG.error("REQ: Unable to send response to requestID: " + requestID + " from " + receiverVA.toString());
 					}
 				}
 
 			} else if(zmqMessage.getType() == ZmqConstants.MESSAGE_TYPE_UNICAST_RESPONSE) {
 				/*
-				 * RESPONSE MESSAGE. NOTIFY the lock (in MessageSender.send(..)). 
+				 * RESPONSE MESSAGE. NOTIFY the lock (in MessageSender.send(..)).
 				 */
 				LOG.info("RES: response message from peer [" + zmqMessage.getSender() + "] - sender-VAD: " + senderVA.toString() + " - requestID: " + Integer.valueOf(requestID));
 				MessageSender sender = requestIdSenders.get(Integer.valueOf(requestID));
@@ -335,13 +333,13 @@ public class ZmqHandler {
 			}
 		}
 	}
-	
+
 	/////////////////////////////////////////////////////////////////////
 	
 	public class MessageSender {
 		
 		private NMResponse resp = null;
-		private Integer requestID;
+		private final Integer requestID;
 		private boolean responseReceived = false;
 
 		public MessageSender(int requestID) {
@@ -362,15 +360,15 @@ public class ZmqHandler {
 		public NMResponse waitForResponseFromPeer() {
 			synchronized (requestID) {
 				try {
-					LOG.info("waiting for response to recieve for requestID: " + requestID);
+					LOG.info("waiting for response to receive for requestID: " + requestID);
 					requestID.wait(MAX_RESPONSE_TIME);
 				} catch (InterruptedException e) {
-					LOG.error("request timeout for repsonse from remote peer for requestID: " + requestID, e);
+					LOG.error("request timeout for response from remote peer for requestID: " + requestID, e);
 				}
 			}
 			if(!responseReceived) {
 				resp.setStatus(NMResponse.STATUS_ERROR);
-				resp.setMessage("request timeout for repsonse from remote peer for requestID: " + requestID);
+				resp.setMessage("request timeout for response from remote peer for requestID: " + requestID);
 			}
 			return resp;
 		}
