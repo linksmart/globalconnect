@@ -87,6 +87,7 @@ public class TestZmqSupernodeIT {
     public void shutdown() throws InterruptedException {
         try {
             proxy.stopProxy();
+            Thread.sleep(1000);
         }catch(Exception ex){
             ex.printStackTrace();
         }
