@@ -37,7 +37,7 @@ public class HeartBeat extends Thread {
     		LOG.debug("[" + peerID + "] initialized publisher to send heartbeat to proxy");
     		
         	while(this.isRunning) {
-        		LOG.trace("[" + peerID + "] is sending heartbeat to proxy");
+        		LOG.trace("[" + peerID + "] is sending heartbeat to "+zmqHandler.getXSubUri());
     			publisher.sendMore(ZmqConstants.HEARTBEAT_TOPIC);
     			publisher.sendMore(new byte[]{ZmqConstants.PROTOCOL_VERSION});
     			publisher.sendMore(new byte[]{ZmqConstants.MESSAGE_TYPE_HEARTBEAT});

@@ -1,20 +1,19 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
-
-import org.apache.felix.scr.annotations.*;
-import org.apache.log4j.Logger;
-import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.service.component.ComponentContext;
-
 import eu.linksmart.network.NMResponse;
 import eu.linksmart.network.VirtualAddress;
 import eu.linksmart.network.backbone.Backbone;
 import eu.linksmart.network.routing.BackboneRouter;
 import eu.linksmart.security.communication.SecurityProperty;
+import org.apache.felix.scr.annotations.*;
+import org.apache.log4j.Logger;
+import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.ComponentContext;
+
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
 
 @Component(name="BackboneZMQ", immediate=true)
 @Service({Backbone.class})
@@ -64,7 +63,11 @@ public class BackboneZMQImpl implements Backbone {
     	LOGGER.info("[activating BackboneZMQ]");
 		this.configurator = new BackboneZMQConfigurator(this, context.getBundleContext(), mConfigAdmin);
 		this.configurator.registerConfiguration();
-		zmqHandler = new ZmqHandler(this, this.configurator.get("backbone.zmq.xpub.uri"), this.configurator.get("backbone.zmq.xsub.uri"));
+        String xpubURI = this.configurator.get("backbone.zmq.xpub.uri");
+        LOGGER.debug("using xpub uri :  "+xpubURI);
+        String xsubURI = this.configurator.get("backbone.zmq.xsub.uri");
+        LOGGER.debug("using xsub uri :  "+xsubURI);
+		zmqHandler = new ZmqHandler(this, xpubURI, xsubURI);
 		zmqHandler.start();
 	}
 
