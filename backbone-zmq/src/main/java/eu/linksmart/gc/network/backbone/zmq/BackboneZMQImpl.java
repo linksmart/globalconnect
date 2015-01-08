@@ -10,15 +10,16 @@ import org.apache.log4j.Logger;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 @Component(name="BackboneZMQ", immediate=true)
 @Service({Backbone.class})
 public class BackboneZMQImpl implements Backbone {
 
+
+    private Map<VirtualAddress, URL> virtualAddressUrlMap;
 	private Logger LOGGER = Logger.getLogger(BackboneZMQImpl.class.getName());
 	
 	private ZmqHandler zmqHandler = null;
@@ -128,21 +129,43 @@ public class BackboneZMQImpl implements Backbone {
 	
 	@Override
 	public String getEndpoint(VirtualAddress virtualAddress) {
-		return null;
+        if (!virtualAddressUrlMap.containsKey(virtualAddress)) {
+            return null;
+        }
+        return virtualAddressUrlMap.get(virtualAddress).toString();
 	}
 
 	@Override
 	public boolean addEndpoint(VirtualAddress virtualAddress, String endpoint) {
-		return false;
-	}
+        if (this.virtualAddressUrlMap.containsKey(virtualAddress)) {
+            return false;
+        }
+        try {
+            URL url = new URL(endpoint);
+            this.virtualAddressUrlMap.put(virtualAddress, url);
+            return true;
+        } catch (MalformedURLException e) {
+            LOGGER.debug("Unable to add endpoint " + endpoint + " for VirtualAddress "
+                    + virtualAddress.toString(), e);
+        }
+        return false;	}
 
 	@Override
 	public boolean removeEndpoint(VirtualAddress virtualAddress) {
-		return false;
+
+        return this.virtualAddressUrlMap.remove(virtualAddress) != null;
 	}
 	
 	@Override
 	public void addEndpointForRemoteService(VirtualAddress senderVirtualAddress, VirtualAddress remoteVirtualAddress) {
+        URL endpoint = virtualAddressUrlMap.get(senderVirtualAddress);
+
+        if (endpoint != null) {
+            virtualAddressUrlMap.put(remoteVirtualAddress, endpoint);
+        } else {
+            LOGGER.error("Network Manager endpoint of VirtualAddress " + senderVirtualAddress
+                    + " cannot be found");
+        }
 	}
 
 	@Override
