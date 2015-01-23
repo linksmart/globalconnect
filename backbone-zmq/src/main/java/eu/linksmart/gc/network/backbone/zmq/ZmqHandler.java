@@ -243,9 +243,9 @@ public class ZmqHandler {
 			try {
 				properties.loadFromXML(new ByteArrayInputStream(payload));
 			} catch (InvalidPropertiesFormatException e) {
-				LOG.error("processDiscovery: unable to load properties from XML data. Data is not valid XML: " + new String(payload));
+				LOG.error("processBroadcast: unable to load properties from XML data. Data is not valid XML: " + new String(payload));
 			} catch (IOException e) {
-				LOG.error("processDiscovery: unable to load properties from XML data: " + new String(payload));
+				LOG.error("processBroadcast: unable to load properties from XML data: " + new String(payload));
 			}
 			Set<Registration> serviceRegistrations = null;
 			try {
@@ -258,7 +258,7 @@ public class ZmqHandler {
 				bis.close();
 				in.close();
 			} catch (Exception e) {
-				LOG.error(e.getMessage());
+				LOG.error("processBroadcast: error in deserializing message: " + e.getMessage());
 			}
 
 			// Update the remote peers hashtable with discovered services

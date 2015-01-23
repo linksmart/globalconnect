@@ -5,7 +5,7 @@ import org.junit.Test;
 public class BackboneZMQTest {
 
 	@Test
-	public void testSendDataAsynch() {
+	public void testZMQBackbone() {
 		
 	}
 

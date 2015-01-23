@@ -10,7 +10,7 @@ public class TestZmqHandler {
 	public void testHandler() {
 
         // TODO test is not running at all
-        // this test is supposed to be a integration test and requires OSGI env set.
+        // this test is supposed to be an integration test and requires OSGI env set.
 		
 		try {
 
