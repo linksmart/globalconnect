@@ -233,11 +233,12 @@ public class ZmqHandler {
 			//
 			// read remote services information from payload after deserializing it
 			//
-			processDiscoveryPayload(payload, senderVirtualAddress);
+			processBroadcastPayload(payload, senderVirtualAddress); 
 			zmqBackbone.receiveDataAsynch(senderVirtualAddress, null, payload);
 		}
 
-		private void processDiscoveryPayload(byte[] payload, VirtualAddress senderVirtualAddress) {
+		@SuppressWarnings("unchecked")
+		private void processBroadcastPayload(byte[] payload, VirtualAddress senderVirtualAddress) {
 			// Deserialize the payload to get service registrations
 			Properties properties = new Properties();
 			try {
@@ -248,17 +249,26 @@ public class ZmqHandler {
 				LOG.error("processBroadcast: unable to load properties from XML data: " + new String(payload));
 			}
 			Set<Registration> serviceRegistrations = null;
+			ByteArrayInputStream bis = null;
+			ObjectInput in = null;
 			try {
 				// create real message
 				Message message = new Message((String) properties.remove("topic"), senderVirtualAddress, null, (Base64.decode((String) properties.remove("applicationData"))));
-				ByteArrayInputStream bis = new ByteArrayInputStream(message.getData());
-				ObjectInput in = new ObjectInputStream(bis);
+				bis = new ByteArrayInputStream(message.getData());
+				in = new ObjectInputStream(bis);
 				Object payloadObject = in.readObject();
 				serviceRegistrations = (Set<Registration>) payloadObject;
-				bis.close();
-				in.close();
 			} catch (Exception e) {
-				LOG.error("processBroadcast: error in deserializing message: " + e.getMessage());
+				LOG.error("processBroadcast: error in deserializing broadcast payload object: " + e.getMessage());
+			} finally {
+				try {
+					if(bis != null)
+						bis.close();
+					if(in != null)
+						in.close();
+				} catch (IOException e) {
+					LOG.error("processBroadcast: error in closing input streams: " + e.getMessage());
+				}
 			}
 
 			// Update the remote peers hashtable with discovered services
