@@ -23,13 +23,13 @@ import eu.linksmart.utils.Base64;
 
 public class ZmqHandler {
 	
-	private static Logger LOG = Logger.getLogger(ZmqReceiver.class.getName());
+	private static Logger LOG = Logger.getLogger(ZmqHandler.class.getName());
 
 	private String peerID = null;
-	private String xsubUri = "tcp://localhost:7000";
-	private String xpubUri = "tcp://localhost:7001";
+	private String xsubUri = "tcp://gando.fit.fraunhofer.de:7000";
+	private String xpubUri = "tcp://gando.fit.fraunhofer.de:7001";
 	
-	private int heartBeatInterval = 2000;
+	private int HEART_BEAT_INTERVAL = 5000;
 	
 	private HeartBeat heartBeat = null;
 	private ZmqReceiver receiver = null;
@@ -38,11 +38,11 @@ public class ZmqHandler {
 	private BackboneZMQImpl zmqBackbone = null;
 	
 	private final Map<VirtualAddress, String> remoteServices = Collections.synchronizedMap(new HashMap<VirtualAddress, String>());
-
+	
 	private final Map<Integer, MessageSender> requestIdSenders = Collections.synchronizedMap(new HashMap<Integer, MessageSender>());
 	
-	Integer counter = 0;
-
+	private Integer counter = 0;
+	
 	private int MAX_RESPONSE_TIME = 60000;
 	
 	public ZmqHandler(BackboneZMQImpl zmqBackbone) {
@@ -158,11 +158,11 @@ public class ZmqHandler {
 	}
 	
 	public int getHeartBeatInterval() {
-		return this.heartBeatInterval;
+		return this.HEART_BEAT_INTERVAL;
 	}
 	
 	public void setHeartBeatInterval(int heartBeatTimer) {
-		this.heartBeatInterval = heartBeatTimer;
+		this.HEART_BEAT_INTERVAL = heartBeatTimer;
 	}
 	
 	public Map<VirtualAddress, String> getRemoteServices() {
@@ -173,20 +173,22 @@ public class ZmqHandler {
 		synchronized (this.remoteServices) {
 			if (!(this.remoteServices.containsKey(addr))) {
 				this.remoteServices.put(addr, peerID);
-				LOG.info("added remote service: " + addr + " to peer [" + peerID + "]");
+				LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "]");
 			}
 		}
 	}
 
 	public void removePeerServices(String peerID) {
 		synchronized (this.remoteServices) {
+			LOG.info("removing zmqPeer [" + peerID + "] and associated remote services");
 			Iterator<String> services = this.remoteServices.values().iterator();
 			while(services.hasNext()) {
 				String value = services.next();
 				if(value.equals(peerID)) {
 					services.remove();
-					LOG.info("removing peer [" + peerID + "] from list");
-					break;
+					LOG.info("removing remote service for peer [" + peerID + "] from list");
+					// TODO we want to remove all remote services associated with PeerID
+					//break;
 				}
 			}
 		}
@@ -222,7 +224,7 @@ public class ZmqHandler {
 				return;
 
 			VirtualAddress senderVirtualAddress = ZmqUtil.getSenderVAD(zmqMessage.getPayload());
-			LOG.info("received service broadcast from [" + zmqMessage.getSender() + "] - virtual address: " + senderVirtualAddress.toString());
+			LOG.info("received service broadcast from zmqPeer [" + zmqMessage.getSender() + "] - virtual address: " + senderVirtualAddress.toString());
 
 			addServiceIfMissing(senderVirtualAddress, zmqMessage.getSender());
 			// TODO check if new virtual address is received for already added peer <- ???
@@ -241,9 +243,9 @@ public class ZmqHandler {
 			try {
 				properties.loadFromXML(new ByteArrayInputStream(payload));
 			} catch (InvalidPropertiesFormatException e) {
-				LOG.error("Unable to load properties from XML data. Data is not valid XML: " + new String(payload));
+				LOG.error("processDiscovery: unable to load properties from XML data. Data is not valid XML: " + new String(payload));
 			} catch (IOException e) {
-				LOG.error("Unable to load properties from XML data: " + new String(payload));
+				LOG.error("processDiscovery: unable to load properties from XML data: " + new String(payload));
 			}
 			Set<Registration> serviceRegistrations = null;
 			try {

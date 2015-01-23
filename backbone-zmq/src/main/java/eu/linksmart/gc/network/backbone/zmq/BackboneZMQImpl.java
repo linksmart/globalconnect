@@ -5,6 +5,7 @@ import eu.linksmart.network.VirtualAddress;
 import eu.linksmart.network.backbone.Backbone;
 import eu.linksmart.network.routing.BackboneRouter;
 import eu.linksmart.security.communication.SecurityProperty;
+
 import org.apache.felix.scr.annotations.*;
 import org.apache.log4j.Logger;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -18,9 +19,9 @@ import java.util.*;
 @Service({Backbone.class})
 public class BackboneZMQImpl implements Backbone {
 
-
-    private Map<VirtualAddress, URL> virtualAddressUrlMap;
 	private Logger LOGGER = Logger.getLogger(BackboneZMQImpl.class.getName());
+	
+	private Map<VirtualAddress, URL> virtualAddressUrlMap = new HashMap<VirtualAddress, URL>();
 	
 	private ZmqHandler zmqHandler = null;
 	
@@ -65,9 +66,9 @@ public class BackboneZMQImpl implements Backbone {
 		this.configurator = new BackboneZMQConfigurator(this, context.getBundleContext(), mConfigAdmin);
 		this.configurator.registerConfiguration();
         String xpubURI = this.configurator.get("backbone.zmq.xpub.uri");
-        LOGGER.debug("using xpub uri :  "+xpubURI);
+        LOGGER.info("using xpub uri :  " + xpubURI);
         String xsubURI = this.configurator.get("backbone.zmq.xsub.uri");
-        LOGGER.debug("using xsub uri :  "+xsubURI);
+        LOGGER.info("using xsub uri :  " + xsubURI);
 		zmqHandler = new ZmqHandler(this, xpubURI, xsubURI);
 		zmqHandler.start();
 	}
@@ -145,26 +146,23 @@ public class BackboneZMQImpl implements Backbone {
             this.virtualAddressUrlMap.put(virtualAddress, url);
             return true;
         } catch (MalformedURLException e) {
-            LOGGER.debug("Unable to add endpoint " + endpoint + " for VirtualAddress "
-                    + virtualAddress.toString(), e);
+            LOGGER.debug("Unable to add endpoint " + endpoint + " for VirtualAddress " + virtualAddress.toString(), e);
         }
-        return false;	}
+        return false;
+    }
 
 	@Override
 	public boolean removeEndpoint(VirtualAddress virtualAddress) {
-
         return this.virtualAddressUrlMap.remove(virtualAddress) != null;
 	}
 	
 	@Override
 	public void addEndpointForRemoteService(VirtualAddress senderVirtualAddress, VirtualAddress remoteVirtualAddress) {
         URL endpoint = virtualAddressUrlMap.get(senderVirtualAddress);
-
         if (endpoint != null) {
             virtualAddressUrlMap.put(remoteVirtualAddress, endpoint);
         } else {
-            LOGGER.error("Network Manager endpoint of VirtualAddress " + senderVirtualAddress
-                    + " cannot be found");
+            LOGGER.error("Network Manager endpoint of VirtualAddress " + senderVirtualAddress + " cannot be found");
         }
 	}
 
