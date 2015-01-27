@@ -194,6 +194,13 @@ public class ZmqHandler {
 		}
 	}
 	
+	public void removePeerService(VirtualAddress removeVirtualAddress) {
+		synchronized (this.remoteServices) {
+			LOG.info("removing remoteService [" + removeVirtualAddress + "] from catalog");
+			this.remoteServices.remove(removeVirtualAddress);
+		}
+	}
+	
 	////////////////////////////////////////////////////////
 
 	public class MessageProcessor extends Thread {
@@ -248,34 +255,59 @@ public class ZmqHandler {
 			} catch (IOException e) {
 				LOG.error("processBroadcast: unable to load properties from XML data: " + new String(payload));
 			}
-			Set<Registration> serviceRegistrations = null;
-			ByteArrayInputStream bis = null;
-			ObjectInput in = null;
+			Message message = null;
 			try {
 				// create real message
-				Message message = new Message((String) properties.remove("topic"), senderVirtualAddress, null, (Base64.decode((String) properties.remove("applicationData"))));
-				bis = new ByteArrayInputStream(message.getData());
-				in = new ObjectInputStream(bis);
-				Object payloadObject = in.readObject();
-				serviceRegistrations = (Set<Registration>) payloadObject;
+				message = new Message((String) properties.remove("topic"), senderVirtualAddress, null, (Base64.decode((String) properties.remove("applicationData"))));
+				// go through the properties and add them to the message
+				boolean includeProps = true; 
+				if(includeProps) {
+					Iterator<Object> i = properties.keySet().iterator();
+					while (i.hasNext()) {
+						String key = (String) i.next();
+						message.setProperty(key, properties.getProperty(key));
+					}
+				}
 			} catch (Exception e) {
-				LOG.error("processBroadcast: error in deserializing broadcast payload object: " + e.getMessage());
-			} finally {
-				try {
-					if(bis != null)
-						bis.close();
-					if(in != null)
-						in.close();
-				} catch (IOException e) {
-					LOG.error("processBroadcast: error in closing input streams: " + e.getMessage());
-				}
+				LOG.error("processBroadcast: error in deserializing broadcast payload: " + e.getMessage());
 			}
-
-			// Update the remote peers hashtable with discovered services
-			if (serviceRegistrations != null) {
-				for (Registration serviceInfo : serviceRegistrations) {
-					addServiceIfMissing(serviceInfo.getVirtualAddress(), zmqMessage.getSender());
+			if(message == null)
+				return;
+			if(message.getTopic().equals("NMAdvertisement")) {
+				try {
+					ByteArrayInputStream bis = new ByteArrayInputStream(message.getData());
+					ObjectInput in = new ObjectInputStream(bis);
+					Object payloadObject = in.readObject();
+					bis.close();
+					in.close();
+					Set<Registration> serviceRegistrations = null;
+					serviceRegistrations = (Set<Registration>) payloadObject;
+					if (serviceRegistrations != null) {
+						for (Registration serviceInfo : serviceRegistrations) {
+							addServiceIfMissing(serviceInfo.getVirtualAddress(), zmqMessage.getSender());
+						}
+					}
+				} catch (Exception e) {
+					LOG.error("processBroadcast: error in decoding payload's registration[] object: " + e.getMessage());
+				}		
+			} else if(message.getTopic().equals("IDManagerServiceListUpdate")) {
+				String updates = new String(message.getData()); 
+				for (String oneUpdate : updates.split(" ")) {
+					String[] updateData = oneUpdate.split(";");
+					// at this point updateData 0 is operation type A/D, [1] is	Service, [2] is description (only if operation=A)
+					if (updateData[0].equals("A")) {
+						VirtualAddress newVirtualAddress = new VirtualAddress(updateData[1]);
+						Registration newServiceInfo = new Registration(newVirtualAddress, updateData[2]);
+						addServiceIfMissing(newServiceInfo.getVirtualAddress(), zmqMessage.getSender());
+					} else if (updateData[0].equals("D")) {
+						VirtualAddress removeVirtualAddress = new VirtualAddress(updateData[1]);
+						removePeerService(removeVirtualAddress);
+					} else {
+						throw new IllegalArgumentException("Unexpected update type for IDManager updates: " + updateData[0]);
+					}
 				}
+			} else {
+				LOG.warn("processBroadcast: unable to parse topic: " + message.getTopic());
 			}
 		}
 

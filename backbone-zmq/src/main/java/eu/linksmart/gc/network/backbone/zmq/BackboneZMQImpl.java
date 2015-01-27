@@ -162,7 +162,7 @@ public class BackboneZMQImpl implements Backbone {
         if (endpoint != null) {
             virtualAddressUrlMap.put(remoteVirtualAddress, endpoint);
         } else {
-            LOGGER.error("Network Manager endpoint of VirtualAddress " + senderVirtualAddress + " cannot be found");
+            LOGGER.warn("Network Manager endpoint of VirtualAddress " + senderVirtualAddress + " cannot be found");
         }
 	}
 
