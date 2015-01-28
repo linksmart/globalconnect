@@ -196,8 +196,9 @@ public class ZmqHandler {
 	
 	public void removePeerService(VirtualAddress removeVirtualAddress) {
 		synchronized (this.remoteServices) {
-			LOG.info("removing remoteService [" + removeVirtualAddress + "] from catalog");
-			this.remoteServices.remove(removeVirtualAddress);
+			if(this.remoteServices.remove(removeVirtualAddress) != null) {
+				LOG.info("removing remoteService [" + removeVirtualAddress + "] from catalog");
+			}
 		}
 	}
 	
