@@ -1,25 +1,17 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.log4j.Logger;
-
 import eu.linksmart.network.Message;
 import eu.linksmart.network.NMResponse;
 import eu.linksmart.network.Registration;
 import eu.linksmart.network.VirtualAddress;
 import eu.linksmart.utils.Base64;
+import org.apache.log4j.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.util.*;
 
 public class ZmqHandler {
 	
@@ -187,8 +179,6 @@ public class ZmqHandler {
 				if(value.equals(peerID)) {
 					services.remove();
 					LOG.info("removing remote service for peer [" + peerID + "] from list");
-					// TODO we want to remove all remote services associated with PeerID
-					//break;
 				}
 			}
 		}
