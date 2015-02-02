@@ -24,7 +24,7 @@ public class NetworkManagerRestIT {
     public Option[] config() {
         return new Option[] {
         		ITConfiguration.regressionDefaults(),
-        		features("mvn:eu.linksmart.gc.features/linksmart-gc-features/0.0.1-SNAPSHOT/xml/features","linksmart-light-gc"),  
+        		features("mvn:eu.linksmart.gc.features/linksmart-gc-features/0.0.1-SNAPSHOT/xml/features","network-manager-rest-it"),  
         };
     }
     
@@ -39,7 +39,7 @@ public class NetworkManagerRestIT {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println("unable to access networkmanager-rest service");
+			LOG.error("unable to access networkmanager-rest service: " + e.getMessage());
 		}
     }
     
