@@ -81,7 +81,7 @@ public class NetworkManagerRestIT {
         	NameValuePair[] query_qs = { new NameValuePair("query", "NetworkManager:LinkSmartUser") };
         	HttpMethod  query_qs_get_request = new GetMethod(base_url);
         	query_qs_get_request.setQueryString(query_qs);
-        	assertEquals(200, client.executeMethod(query_qs_get_request));
+        	assertEquals(404, client.executeMethod(query_qs_get_request));
         	System.out.println("query-response-string" + new String(query_qs_get_request.getResponseBody()));
         	query_qs_get_request.releaseConnection();
         	

@@ -67,24 +67,19 @@ public class NetworkManagerServlet extends HttpServlet {
 				String attributeName = queryAttribute.substring(0, separatorIndex);
 				String attributeValue = queryAttribute.substring(separatorIndex + 1);
 				if(attributeName.equals("description")) {
-					System.out.println("description: name: " + attributeName + " - value: " + attributeValue);
 					registrations = this.networkManagerPort.getNetworkManager().getServiceByDescription(removeCharacters(attributeValue));	
 				} else if(attributeName.equals("pid")) {
-					System.out.println("pid: name: " + attributeName + " - value: " + attributeValue);
 					Registration registration = this.networkManagerPort.getNetworkManager().getServiceByPID(removeCharacters(attributeValue));
 					if(registration != null) {
 						registrations = new Registration[] { registration };
 					}
 				} else if(attributeName.equals("query")) {
-					System.out.println("query: name: " + attributeName + " - value: " + attributeValue);
 					registrations = this.networkManagerPort.getNetworkManager().getServiceByQuery(removeCharacters(attributeValue));
 				} else {
-					System.out.println("single_part_attribute: name: " + attributeName + " - value: " + attributeValue);
 					Part single_part = new Part(attributeName, removeCharacters(attributeValue));
 					registrations = this.networkManagerPort.getNetworkManager().getServiceByAttributes(new Part[] { single_part });
 				}
 			} else {
-				System.out.println("multi_part_attributes");
 				ArrayList<Part> nmAttributes = new ArrayList<Part>();
 				long timeOut = 0;
 				boolean returnFirst = true;
@@ -111,7 +106,6 @@ public class NetworkManagerServlet extends HttpServlet {
 					else {
 						nmAttributes.add(new Part(attributeName, removeCharacters(attributeValue)));
 					}
-					System.out.println("multi_part: name: " + attributeName + " - value: " + attributeValue);
 			    }
 				if(timeOutInit && returnFirstInit && isStrictRequestInit)
 					registrations = this.networkManagerPort.getNetworkManager().getServiceByAttributes(nmAttributes.toArray(new Part[]{}), timeOut, returnFirst, isStrictRequest);
