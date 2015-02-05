@@ -11,6 +11,8 @@ import eu.linksmart.network.networkmanager.NetworkManager;
 public class NetworkManagerRestPort {
 
 	private static Logger LOG = Logger.getLogger(NetworkManagerRestPort.class.getName());
+	
+	private final String networkManagerRestPath = "/NetworkManager";
 
     @Reference(name="HttpService",
             cardinality = ReferenceCardinality.MANDATORY_UNARY,
@@ -49,7 +51,7 @@ public class NetworkManagerRestPort {
     @Activate
 	protected void activate(ComponentContext context) {
         try {
-			this.http.registerServlet("/NetworkManager", new NetworkManagerServlet(this), null, null);
+			this.http.registerServlet(networkManagerRestPath, new NetworkManagerServlet(this), null, null);
 		} catch (Exception e) {
 			LOG.error("error registering NetworkManager Servlet", e);
 		}
@@ -58,7 +60,7 @@ public class NetworkManagerRestPort {
     @Deactivate
 	protected void deactivate(ComponentContext context) {
 		try {
-			this.http.unregister("/NetworkManager");
+			this.http.unregister(networkManagerRestPath);
 		} catch (Exception e) {
 			LOG.error("error unregistering NetworkManager Servlet", e);
 		}	

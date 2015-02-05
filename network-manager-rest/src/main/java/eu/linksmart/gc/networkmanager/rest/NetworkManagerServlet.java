@@ -2,6 +2,7 @@ package eu.linksmart.gc.networkmanager.rest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,13 +11,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
-
-/*import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;*/
 
 import eu.linksmart.network.Registration;
 import eu.linksmart.network.VirtualAddress;
@@ -26,11 +24,14 @@ public class NetworkManagerServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 4799084413331453345L;
 	
+	private static Logger LOG = Logger.getLogger(NetworkManagerServlet.class.getName());
+	
 	private static final String KEY_ENDPOINT = "Endpoint";
 	private static final String KEY_BACKBONE_NAME = "BackboneName";
 	private static final String KEY_ATTRIBUTES = "Attributes";
-	private static final String MISSING_PARAMETERS_ERROR = "Some fields necessary for registration are missing from your request!";
 	private static final String KEY_VIRTUAL_ADDRESS = "VirtualAddress";
+	
+	private static final String TUNNELING_PATH = "/HttpTunneling/0/";
 	
 	private NetworkManagerRestPort networkManagerPort = null;
 
@@ -38,130 +39,367 @@ public class NetworkManagerServlet extends HttpServlet {
 		this.networkManagerPort = networkManagerPort;
 	}
 
-	public void doGet(HttpServletRequest request, HttpServletResponse response) 
-			throws IOException {
-		//take request and create JSONObject
-		ArrayList<Part> attributes = new ArrayList<Part>();		
-		if(request.getQueryString() == null || request.getQueryString().length() == 0) {
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		String queryString = request.getQueryString();
+		
+		LOG.debug("received Query String in doGet: " + queryString);
+			
+		if(queryString == null || queryString.length() == 0) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "service query string is empty");
 			return;
 		}
-		//divide query into individual attributes
-		String[] queryAttrs = request.getQueryString().split("&");
-
-		for(String queryAttr : queryAttrs) {
-			int separatorIndex = queryAttr.indexOf("=");
-			String attributeName = queryAttr.substring(0, separatorIndex).toUpperCase();
-
-			String attributeValue = queryAttr.substring(separatorIndex + 1);
-			if(attributeValue.startsWith("\"") && attributeValue.endsWith("\"")) {
-				//cut off quotation symbols
-				attributeValue = attributeValue.substring(1, attributeValue.length() - 1);
-			} else if(attributeValue.startsWith("%22") && attributeValue.endsWith("%22")) {
-				//cut off quotation symbols
-				attributeValue = attributeValue.substring(3, attributeValue.length() - 3);
-			} else {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "False format of service query");
-				return;
-			}
-			attributes.add(new Part(attributeName, attributeValue));
-		}			
-		Registration[] registrations = this.networkManagerPort.getNetworkManager().getServiceByAttributes(attributes.toArray(new Part[]{}));
-		JSONArray regsJson = new JSONArray();
-
+		
+		Registration[] registrations = null;
+		
 		try {
-			for(Registration reg : registrations) {
-				JSONObject regJson = new JSONObject();
-				regJson.put(KEY_VIRTUAL_ADDRESS, reg.getVirtualAddressAsString());
-				JSONObject attributesJson = new JSONObject();
-				for(Part p : reg.getAttributes()) {
-					attributesJson.put(p.getKey(), p.getValue());
+			
+			if(request.getCharacterEncoding() != null)
+				queryString = URLDecoder.decode(queryString, request.getCharacterEncoding());
+			else
+				queryString = URLDecoder.decode(queryString, "UTF-8");
+			
+			String[] queryAttributes = queryString.split("&");
+
+			if(queryAttributes.length == 1) {
+				String queryAttribute = queryAttributes[0];
+				int separatorIndex = queryAttribute.indexOf("=");
+				String attributeName = queryAttribute.substring(0, separatorIndex);
+				String attributeValue = queryAttribute.substring(separatorIndex + 1);
+				if(attributeName.equals("description")) {
+					System.out.println("description: name: " + attributeName + " - value: " + attributeValue);
+					registrations = this.networkManagerPort.getNetworkManager().getServiceByDescription(removeCharacters(attributeValue));	
+				} else if(attributeName.equals("pid")) {
+					System.out.println("pid: name: " + attributeName + " - value: " + attributeValue);
+					Registration registration = this.networkManagerPort.getNetworkManager().getServiceByPID(removeCharacters(attributeValue));
+					if(registration != null) {
+						registrations = new Registration[] { registration };
+					}
+				} else if(attributeName.equals("query")) {
+					System.out.println("query: name: " + attributeName + " - value: " + attributeValue);
+					registrations = this.networkManagerPort.getNetworkManager().getServiceByQuery(removeCharacters(attributeValue));
+				} else {
+					System.out.println("single_part_attribute: name: " + attributeName + " - value: " + attributeValue);
+					Part single_part = new Part(attributeName, removeCharacters(attributeValue));
+					registrations = this.networkManagerPort.getNetworkManager().getServiceByAttributes(new Part[] { single_part });
 				}
-				regJson.put(KEY_ATTRIBUTES, attributesJson);
-				regsJson.put(regJson);
+			} else {
+				System.out.println("multi_part_attributes");
+				ArrayList<Part> nmAttributes = new ArrayList<Part>();
+				long timeOut = 0;
+				boolean returnFirst = true;
+				boolean isStrictRequest = true;
+				boolean timeOutInit = false;
+				boolean returnFirstInit = false;
+				boolean isStrictRequestInit = false;
+				for(String queryAttribute : queryAttributes) {
+					int separatorIndex = queryAttribute.indexOf("=");
+					String attributeName = queryAttribute.substring(0, separatorIndex);
+					String attributeValue = queryAttribute.substring(separatorIndex + 1);
+					if(attributeName.equals("timeOut")) {
+						timeOut = Long.parseLong(attributeValue);
+						timeOutInit = true;
+					}
+					else if(attributeName.equals("returnFirst")) {
+						returnFirst = Boolean.parseBoolean(attributeValue);
+						returnFirstInit = true;
+					}
+					else if(attributeName.equals("isStrictRequest")) {
+						isStrictRequest = Boolean.parseBoolean(attributeValue);
+						isStrictRequestInit = true;
+					}
+					else {
+						nmAttributes.add(new Part(attributeName, removeCharacters(attributeValue)));
+					}
+					System.out.println("multi_part: name: " + attributeName + " - value: " + attributeValue);
+			    }
+				if(timeOutInit && returnFirstInit && isStrictRequestInit)
+					registrations = this.networkManagerPort.getNetworkManager().getServiceByAttributes(nmAttributes.toArray(new Part[]{}), timeOut, returnFirst, isStrictRequest);
+				else
+					registrations = this.networkManagerPort.getNetworkManager().getServiceByAttributes(nmAttributes.toArray(new Part[]{}));
 			}
 		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
+		}
+		
+		if(registrations == null) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "unable to create registration(s)");
+			return;
+		}
+		
+		if(registrations.length == 0) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "no such registration(s) found");
+			return;
+		}
+		
+		if(registrations.length == 1) {
+			if(registrations[0] == null) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "no such registration(s) found");
+				return;
+			}
+		}
+		
+		JSONArray registrationsJson = new JSONArray();
+
+		try {
+			for(Registration registration : registrations) {
+				JSONObject registrationJson = new JSONObject();
+				registrationJson.put(KEY_VIRTUAL_ADDRESS, registration.getVirtualAddressAsString());
+				registrationJson.put(KEY_ENDPOINT, "http://" + request.getServerName() + ":" + request.getServerPort() + TUNNELING_PATH + registration.getVirtualAddressAsString());
+				JSONObject attributesJson = new JSONObject();
+				if(registration.getAttributes() != null) {
+					for(Part p : registration.getAttributes()) {
+						attributesJson.put(p.getKey(), p.getValue());
+					}
+					registrationJson.put(KEY_ATTRIBUTES, attributesJson);
+				}
+				registrationsJson.put(registrationJson);
+			}
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			return;
 		}
 
-		String responseString = regsJson.toString();
+		String responseString = registrationsJson.toString();
 		response.setContentLength(responseString.length());
 		response.getOutputStream().write(responseString.getBytes());
 		response.getOutputStream().close();
 	}
 	
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		//take message body and create JSONObject
+		
+		//
+		// create JSONObject from message payload
+		//
 		StringBuilder requestBuilder = new StringBuilder();
+		
 		if (request.getContentLength() > 0) {
 			try {
 				BufferedReader reader = request.getReader();
 				for (String line = null; (line = reader.readLine()) != null;)
 					requestBuilder.append(line);
+				reader.close();
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "unable to read from request stream");
+				return;
 			}
 		} else {
+			response.sendError(HttpServletResponse.SC_NO_CONTENT, "request content is empty");
 			return;
 		}
 
 		ArrayList<Part> attributes = new ArrayList<Part>();
 		String endpoint = null;
 		String backboneName = null;
+		
 		try {
 			JSONObject registrationJson = new JSONObject(requestBuilder.toString());
 			endpoint = registrationJson.getString(KEY_ENDPOINT);
 			backboneName = registrationJson.getString(KEY_BACKBONE_NAME);
 			JSONObject attributesJson = registrationJson.getJSONObject(KEY_ATTRIBUTES);
-			Iterator i = attributesJson.keys();
-			while (i.hasNext()) {
-				String key = (String)i.next();
+			Iterator iterator = attributesJson.keys();
+			while (iterator.hasNext()) {
+				String key = (String) iterator.next();
 				attributes.add(new Part(key.toUpperCase(), attributesJson.getString(key)));
 			}
 		} catch (JSONException e) {
+			LOG.error(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 			return;
 		}
-		//error handling
+		
 		if(endpoint == null || backboneName == null || attributes.size() == 0) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, MISSING_PARAMETERS_ERROR);
+			LOG.error("Some required fields/attributes for registration are missing from request");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Some required fields/attributes for registration are missing from request");
 			return;
 		}
-		//register service at Network Manager
+		
 		Registration registration = null;
+		
 		try {
 			registration = this.networkManagerPort.getNetworkManager().registerService(attributes.toArray(new Part[]{}), endpoint, backboneName);
 		} catch (RemoteException e) {
-			// local invocation - not relevant
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
 		}
 
-		//return new registration as json
-		JSONObject regJson = new JSONObject();
+		//
+		// return new registration as json
+		//
+		JSONObject registrationJson = new JSONObject();
+		
 		try {
 			if(registration != null) {
-				regJson.put(KEY_VIRTUAL_ADDRESS, registration.getVirtualAddressAsString());
+				registrationJson.put(KEY_VIRTUAL_ADDRESS, registration.getVirtualAddressAsString());
+				registrationJson.put(KEY_ENDPOINT, "http://" + request.getServerName() + ":" + request.getServerPort() + TUNNELING_PATH + registration.getVirtualAddressAsString());
 				JSONObject attributesJson = new JSONObject();
 				for(Part p : registration.getAttributes()) {
 					attributesJson.put(p.getKey(), p.getValue());
 				}
-				regJson.put(KEY_ATTRIBUTES, attributesJson);
+				registrationJson.put(KEY_ATTRIBUTES, attributesJson);
 			}
 		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			return;
 		}
 		
-		response.setContentLength(regJson.toString().length());
-		response.getOutputStream().write(regJson.toString().getBytes());
+		String responseString = registrationJson.toString();
+		response.setContentLength(responseString.length());
+		response.getOutputStream().write(responseString.getBytes());
+		response.getOutputStream().close();
+	}
+	
+	public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		//
+		// create JSONObject from message payload
+		//
+		StringBuilder requestBuilder = new StringBuilder();
+		
+		if (request.getContentLength() > 0) {
+			try {
+				BufferedReader reader = request.getReader();
+				for (String line = null; (line = reader.readLine()) != null;)
+					requestBuilder.append(line);
+				reader.close();
+			} catch (Exception e) {
+				LOG.error(e.getMessage(), e);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "unable to read from request stream");
+				return;
+			}
+		} else {
+			response.sendError(HttpServletResponse.SC_NO_CONTENT, "request content is empty");
+			return;
+		}
+
+		ArrayList<Part> attributes = new ArrayList<Part>();
+		String endpoint = null;
+		String backboneName = null;
+		String virtualAddress = null;
+		
+		try {
+			JSONObject registrationJson = new JSONObject(requestBuilder.toString());
+			endpoint = registrationJson.getString(KEY_ENDPOINT);
+			backboneName = registrationJson.getString(KEY_BACKBONE_NAME);
+			virtualAddress = registrationJson.getString(KEY_VIRTUAL_ADDRESS);
+			JSONObject attributesJson = registrationJson.getJSONObject(KEY_ATTRIBUTES);
+			Iterator iterator = attributesJson.keys();
+			while (iterator.hasNext()) {
+				String key = (String) iterator.next();
+				attributes.add(new Part(key.toUpperCase(), attributesJson.getString(key)));
+			}
+		} catch (JSONException e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+			return;
+		}
+		
+		if(endpoint == null || backboneName == null || attributes.size() == 0) {
+			LOG.error("Some required fields/attributes for registration update are missing from request");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Some required fields/attributes for registration update are missing from request");
+			return;
+		}
+		
+//		if(virtualAddress.length() != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
+//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided virtual-address doesn't conform to its format");
+//			return;
+//		}
+		
+		try {
+			boolean serviceFound = this.networkManagerPort.getNetworkManager().removeService(new VirtualAddress(virtualAddress));
+			if(!serviceFound) {
+				LOG.error("no such service registered with virtual address: " + virtualAddress);
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "no such service registered with this virtual address: " + virtualAddress);
+				return;
+			} 
+		} catch (RemoteException e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
+		}
+		
+		Registration registration = null;
+		
+		try {
+			registration = this.networkManagerPort.getNetworkManager().registerService(attributes.toArray(new Part[]{}), endpoint, backboneName);
+		} catch (RemoteException e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
+		}
+
+		//
+		// return new registration as json
+		//
+		JSONObject registrationJson = new JSONObject();
+		
+		try {
+			if(registration != null) {
+				registrationJson.put(KEY_VIRTUAL_ADDRESS, registration.getVirtualAddressAsString());
+				registrationJson.put(KEY_ENDPOINT, "http://" + request.getServerName() + ":" + request.getServerPort() + TUNNELING_PATH + registration.getVirtualAddressAsString());
+				JSONObject attributesJson = new JSONObject();
+				for(Part p : registration.getAttributes()) {
+					attributesJson.put(p.getKey(), p.getValue());
+				}
+				registrationJson.put(KEY_ATTRIBUTES, attributesJson);
+			}
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
+		}
+		
+		String responseString = registrationJson.toString();
+		response.setContentLength(responseString.length());
+		response.getOutputStream().write(responseString.getBytes());
 		response.getOutputStream().close();
 	}
 	
 	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String virtualAddress = request.getPathInfo().substring(1);
-		boolean resp = this.networkManagerPort.getNetworkManager().removeService(new VirtualAddress(virtualAddress));
-		if(!resp) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		
+		String pathInfo = request.getPathInfo();
+		
+		if(pathInfo == null || pathInfo.length() == 0) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "pathInfo is empty, no virtual-address is given");
+			return;
 		}
+		
+		String virtualAddress = request.getPathInfo().substring(1);
+		
+//		if(virtualAddress.length() != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
+//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided virtual-address doesn't conform to its format");
+//			return;
+//		}
+		
+		try {
+			boolean resp = this.networkManagerPort.getNetworkManager().removeService(new VirtualAddress(virtualAddress));
+			if(!resp) {
+				LOG.error("no such service registered with virtual address: " + virtualAddress);
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "no such service registered with this virtual address: " + virtualAddress);
+			} 
+		} catch (RemoteException e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
+		}
+	}
+	
+	private String removeCharacters(String attributeValue) {
+		//
+		// remove quotation symbols
+		//
+		if(attributeValue.startsWith("\"") && attributeValue.endsWith("\"")) {
+			attributeValue = attributeValue.substring(1, attributeValue.length() - 1);
+		} else if(attributeValue.startsWith("%22") && attributeValue.endsWith("%22")) {
+			attributeValue = attributeValue.substring(3, attributeValue.length() - 3);
+		} 
+		return attributeValue;
 	}
 
 }
