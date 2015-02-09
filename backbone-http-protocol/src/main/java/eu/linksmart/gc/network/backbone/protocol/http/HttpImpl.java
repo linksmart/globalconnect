@@ -72,13 +72,21 @@ public class HttpImpl implements Backbone {
 	}
     
     @Override
-	public NMResponse broadcastData(VirtualAddress senderVirtualAddress, byte[] data) {
-    	return null;
-	}
-	
-    @Override
 	public NMResponse sendDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
-    	return null;
+    	
+    	URL urlEndpoint = virtualAddressUrlMap.get(receiverVirtualAddress);
+		if (urlEndpoint == null) {
+			throw new IllegalArgumentException("Cannot send data to VirtualAddress " + receiverVirtualAddress.toString() + ", unknown endpoint");
+		}
+		
+		String dataString = new String(data);
+		LOGGER.info("HttpImpl received a message: " + dataString);
+		
+		NMResponse resp = new NMResponse();
+		resp.setStatus(NMResponse.STATUS_SUCCESS);
+		resp.setMessage("HttpImpl-response");
+		
+		return resp;
 	}
 	
     @Override
@@ -95,6 +103,11 @@ public class HttpImpl implements Backbone {
     @Override
 	public NMResponse receiveDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress,
 			byte[] receivedData) {
+    	return null;
+	}
+    
+    @Override
+	public NMResponse broadcastData(VirtualAddress senderVirtualAddress, byte[] data) {
     	return null;
 	}
 
@@ -126,11 +139,13 @@ public class HttpImpl implements Backbone {
 	@Override
 	public boolean addEndpoint(VirtualAddress virtualAddress, String endpoint) {
         if (this.virtualAddressUrlMap.containsKey(virtualAddress)) {
+        	LOGGER.info("virtual-addess is already store for endpoint: " + endpoint);
             return false;
         }
         try {
             URL url = new URL(endpoint);
             this.virtualAddressUrlMap.put(virtualAddress, url);
+            LOGGER.info("virtual-addess is added for endpoint: " + endpoint);
             return true;
         } catch (MalformedURLException e) {
             LOGGER.debug("Unable to add endpoint " + endpoint + " for VirtualAddress " + virtualAddress.toString(), e);

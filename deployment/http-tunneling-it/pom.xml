@@ -11,19 +11,27 @@
     </parent>
 
 	<groupId>eu.linksmart.gc.testing</groupId>
-    <artifactId>network-manager-rest-it</artifactId>
+    <artifactId>http-tunneling-it</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     
-    <name>NetworkManager-Rest Integration Testing</name>
+    <name>HTTP Tunneling Integration Test</name>
 
 	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
-			<groupId>eu.linksmart.gc</groupId>
-			<artifactId>eu.linksmart.gc.networkmanager.rest</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+            <groupId>eu.linksmart</groupId>
+            <artifactId>eu.linksmart.api.network</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.linksmart</groupId>
+            <artifactId>eu.linksmart.api.utils</artifactId>
+        </dependency>
+		<dependency>
+            <groupId>org.json</groupId>
+            <artifactId>com.springsource.org.json</artifactId>
+            <version>${org-json.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.commons-httpclient</artifactId>

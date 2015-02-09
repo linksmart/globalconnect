@@ -300,10 +300,11 @@ public class NetworkManagerServlet extends HttpServlet {
 			return;
 		}
 		
-//		if(virtualAddress.length() != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
-//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided virtual-address doesn't conform to its format");
-//			return;
-//		}
+		if(new VirtualAddress(virtualAddress).getBytes().length != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
+			LOG.error("provided virtual-address doesn't conform to its format: " + virtualAddress);
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided virtual-address doesn't conform to its format: " + virtualAddress);
+			return;
+		}
 		
 		try {
 			boolean serviceFound = this.networkManagerPort.getNetworkManager().removeService(new VirtualAddress(virtualAddress));
@@ -366,11 +367,12 @@ public class NetworkManagerServlet extends HttpServlet {
 		
 		String virtualAddress = request.getPathInfo().substring(1);
 		
-//		if(virtualAddress.length() != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
-//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided virtual-address doesn't conform to its format");
-//			return;
-//		}
-		
+		if(new VirtualAddress(virtualAddress).getBytes().length != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
+			LOG.error("provided virtual-address doesn't conform to its format: " + virtualAddress);
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided virtual-address doesn't conform to its format: " + virtualAddress);
+			return;
+		}
+				
 		try {
 			boolean resp = this.networkManagerPort.getNetworkManager().removeService(new VirtualAddress(virtualAddress));
 			if(!resp) {

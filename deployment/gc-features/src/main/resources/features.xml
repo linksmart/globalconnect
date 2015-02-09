@@ -78,6 +78,9 @@
         <bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-codec/${commons-codec.version}</bundle>
     	<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-httpclient/${commons-httpclient.version}</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.networkmanager.rest/${linksmart.gc.version}</bundle>
+        
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.tunneling.http/${linksmart.gc.version}</bundle>
+        
     </feature>
        
 </features>

@@ -15,6 +15,8 @@ import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
+import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
+import org.ops4j.pax.exam.spi.reactors.PerClass;
 
 import static org.junit.Assert.*;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
@@ -23,6 +25,7 @@ import eu.linksmart.network.ServiceAttribute;
 import eu.linksmart.utils.Part;
 
 @RunWith(PaxExam.class)
+@ExamReactorStrategy(PerClass.class)
 public class NetworkManagerRestIT {
 	
 	private static Logger LOG = Logger.getLogger(NetworkManagerRestIT.class.getName());
@@ -42,18 +45,18 @@ public class NetworkManagerRestIT {
         };
     }
     
-    @Test
-    public void testNMRest() {
-    	
-    	HttpClient client = new HttpClient();
+    //@Test
+    public void testGetMethod() {
     	
     	try {
-    			
+
+    		HttpClient client = new HttpClient();
+    		
     		//
     		// test service discovery/search by paramerization
     		//
     		
-    		LOG.info("testing Get Method");
+    		LOG.info("testing Get Method: " + base_url);
     			  	
         	//
         	// with queryString  ?description=NetworkManager:LinkSmartUser
@@ -118,17 +121,25 @@ public class NetworkManagerRestIT {
         	System.out.println("multi_att_params-response-string" + new String(multi_att_params_qs_get_request.getResponseBody()));
         	multi_att_params_qs_get_request.releaseConnection();
         	
+        	LOG.info("testGetMethod successfully completed");
+        	
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+    }
+    
+    @Test
+    public void testOtherMethods() {
     	
     	try {
+    		
+    		HttpClient client = new HttpClient();
     		
     		//
         	// register service
         	//
     		
-    		LOG.info("testing POST method");
+    		LOG.info("testing POST method: " + base_url);
     		
     		JSONObject registrationJson = new JSONObject();
     		
@@ -161,7 +172,7 @@ public class NetworkManagerRestIT {
         	// updating service
         	//
 			
-			LOG.info("testing PUT method");
+			LOG.info("testing PUT method: " + base_url);
         	
         	JSONObject updateJson = new JSONObject();
         	
@@ -195,14 +206,14 @@ public class NetworkManagerRestIT {
         	// removing service
         	//
 			
-			LOG.info("testing DELETE method");
+			LOG.info("testing DELETE method: " + base_url);
 			
         	DeleteMethod delete_request = new DeleteMethod(base_url + "/" + updated_virtualAddress);
 			assertEquals(200, client.executeMethod(delete_request));
 			System.out.println("delete-response-string" + new String(delete_request.getResponseBody()));
         	delete_request.releaseConnection();
         	
-        	LOG.info("testNMRest successfully completed");
+        	LOG.info("testOtherMethods successfully completed");
         	
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -189,8 +189,8 @@ public class NetworkManagerCoreImplDummy implements NetworkManagerCore, MessageD
 	
 	@Override
 	public NMResponse sendMessage(Message message, boolean synch) {
-		byte[] serializedData = MessageSerializerUtiliy.serializeMessage(message, true, true);
-		NMResponse response = this.backboneRouter.sendDataSynch(message.getSenderVirtualAddress(), message.getReceiverVirtualAddress(), serializedData);
+		//byte[] serializedData = MessageSerializerUtiliy.serializeMessage(message, true, true);
+		NMResponse response = this.backboneRouter.sendDataSynch(message.getSenderVirtualAddress(), message.getReceiverVirtualAddress(), message.getData());
 		return response;
 	}
 	

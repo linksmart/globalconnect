@@ -1,5 +1,25 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.apache.log4j.Logger;
+
 import eu.linksmart.network.Message;
 import eu.linksmart.network.NMResponse;
 import eu.linksmart.network.Registration;
@@ -36,6 +56,9 @@ public class ZmqHandler {
 	private Integer counter = 0;
 	
 	private int MAX_RESPONSE_TIME = 60000;
+	
+	//private ExecutorService executor = Executors.newCachedThreadPool();
+	//private ReadWriteLock lock = new ReentrantReadWriteLock();
 	
 	public ZmqHandler(BackboneZMQImpl zmqBackbone) {
 		this.zmqBackbone = zmqBackbone;
@@ -76,10 +99,26 @@ public class ZmqHandler {
 		receiver.stopReceiver();
 		publisher.stopPublisher();
 		LOG.info("ZmqPeer [" + this.peerID + "] is stopped");
+//		try {
+//			executor.shutdown();
+//			// Wait a while for existing tasks to terminate
+//		    if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+//		    	executor.shutdownNow(); // Cancel currently executing tasks
+//		      // Wait a while for tasks to respond to being cancelled
+//		      if (!executor.awaitTermination(10, TimeUnit.SECONDS))
+//		    	  LOG.error("Executor did not terminate");
+//		   }
+//		} catch (InterruptedException ie) {
+//			// (Re-)Cancel if current thread also interrupted
+//			executor.shutdownNow();
+//		    // Preserve interrupt status
+//		    Thread.currentThread().interrupt();
+//		}
 	}
 	
 	public void notify(ZmqMessage zmqMessage) {
 		new MessageProcessor(zmqMessage).start();
+		//executor.execute(new MessageProcessor(zmqMessage));
 	}
 	
 	public NMResponse broadcast(BackboneMessage bbMessage) {
@@ -167,6 +206,12 @@ public class ZmqHandler {
 				this.remoteServices.put(addr, peerID);
 				LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "]");
 			}
+//			try {
+//                lock.writeLock().lock();
+//                this.remoteServices.put(addr, peerID);
+//            } finally {
+//                lock.writeLock().unlock();
+//            }
 		}
 	}
 

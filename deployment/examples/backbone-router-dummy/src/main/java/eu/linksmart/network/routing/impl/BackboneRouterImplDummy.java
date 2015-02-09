@@ -104,13 +104,21 @@ public class BackboneRouterImplDummy implements BackboneRouter {
     public boolean addRouteToBackbone(VirtualAddress virtualAddress, String backboneName, String endpoint) {
     	Backbone backbone = availableBackbones.get(backboneName);
     	if(backbone != null) {
-    		if (activeRouteMap.containsKey(virtualAddress)) 
-                return false;
-        	if (!backbone.addEndpoint(virtualAddress, endpoint)) 
+    		LOG.info("backbone found with name: " + backbone.getName());
+    		if (activeRouteMap.containsKey(virtualAddress)) {
+    			LOG.info("VAD is already added in router map: " + virtualAddress);
     			return false;
-        	activeRouteMap.put(virtualAddress, null);
+    		}   
+        	if (!backbone.addEndpoint(virtualAddress, endpoint)) {
+        		LOG.error("addEndpoint to backbone failed");
+        		return false;
+        	}
+        	LOG.info("adding VAD to router map: " + virtualAddress);	
+        	activeRouteMap.put(virtualAddress, backbone);
             return true;
-    	} 
+    	} else {
+    		LOG.error("backbone is not found with name: " + backboneName);
+    	}
     	return false;	
     }
     	
@@ -128,11 +136,15 @@ public class BackboneRouterImplDummy implements BackboneRouter {
 
     @Override
     public NMResponse sendDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
+    	LOG.info("received request by Backbone router for VAD: " + receiverVirtualAddress);
         Backbone b = (Backbone) activeRouteMap.get(receiverVirtualAddress);
-        if(b!= null) 
+        if(b!= null)  {
+        	LOG.info("found Backbone in map for VAD: " + receiverVirtualAddress + " - with name: " + b.getName());
         	return b.sendDataSynch(senderVirtualAddress, receiverVirtualAddress, data);
-        else
+        } else {
+        	LOG.info("Backbone not found by router for VAD: " + receiverVirtualAddress);
         	return new NMResponse(NMResponse.STATUS_ERROR);
+        }	
     }
 
     @Override
