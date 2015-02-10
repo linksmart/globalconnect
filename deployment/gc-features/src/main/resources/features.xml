@@ -72,6 +72,7 @@
    		
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.network.networkmanager.dummy/${linksmart.gc.version}</bundle>
         
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.types/${linksmart.gc.version}</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.protocol.http/${linksmart.gc.version}</bundle>
         
         <bundle>mvn:org.json/com.springsource.org.json/${org-json.version}</bundle> 

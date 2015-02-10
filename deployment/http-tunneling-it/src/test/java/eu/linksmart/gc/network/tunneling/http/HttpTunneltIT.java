@@ -58,7 +58,7 @@ public class HttpTunneltIT {
         	//
     		JSONObject registrationJson = new JSONObject();
     		
-			registrationJson.put(KEY_ENDPOINT, "http://localhost:9090/cxf/services/Calculator");
+			registrationJson.put(KEY_ENDPOINT, "http://localhost:8080/api/calculator");
 			registrationJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
 			
 			Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "Calculator"), 
@@ -112,13 +112,14 @@ public class HttpTunneltIT {
     		
     		HttpClient client = new HttpClient();
     		
+    		String service_path = "/test/resource_id?name=value";
+    		
+    		endPoint = endPoint + service_path;
+    		
 			LOG.info("invoking service at endpoint: " + endPoint);
 			
 			HttpMethod  tunnel_get_request = new GetMethod(endPoint);
-			int statusCode = client.executeMethod(tunnel_get_request);
-			
-        	System.out.println("statusCode: " + statusCode);
-			//assertEquals(200, client.executeMethod(tunnel_get_request));
+			assertEquals(200, client.executeMethod(tunnel_get_request));
         	
         	LOG.info("tunnel-service-response: " + new String(tunnel_get_request.getResponseBody()));
         	tunnel_get_request.releaseConnection();

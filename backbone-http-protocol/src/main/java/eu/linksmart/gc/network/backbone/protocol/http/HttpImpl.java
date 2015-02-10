@@ -1,5 +1,8 @@
 package eu.linksmart.gc.network.backbone.protocol.http;
 
+import eu.linksmart.gc.api.types.TunnelRequest;
+import eu.linksmart.gc.api.types.TunnelResponse;
+import eu.linksmart.gc.api.types.utils.SerializationUtil;
 import eu.linksmart.network.NMResponse;
 import eu.linksmart.network.VirtualAddress;
 import eu.linksmart.network.backbone.Backbone;
@@ -74,17 +77,51 @@ public class HttpImpl implements Backbone {
     @Override
 	public NMResponse sendDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
     	
-    	URL urlEndpoint = virtualAddressUrlMap.get(receiverVirtualAddress);
-		if (urlEndpoint == null) {
-			throw new IllegalArgumentException("Cannot send data to VirtualAddress " + receiverVirtualAddress.toString() + ", unknown endpoint");
+		NMResponse resp = null;
+		
+		try {
+			
+			//
+			// check if service endpoint is available
+			//
+			//TODO create proper NMResponse with exception message
+			URL urlEndpoint = virtualAddressUrlMap.get(receiverVirtualAddress);
+			if (urlEndpoint == null) {
+				throw new IllegalArgumentException("Cannot send data to VirtualAddress " + receiverVirtualAddress.toString() + ", unknown endpoint");
+			}
+			
+			//
+			// reading tunnel request
+			//
+			TunnelRequest tunnel_request = (TunnelRequest) SerializationUtil.deserialize(data);
+			
+			LOGGER.info("method: " + tunnel_request.getMethod());
+			LOGGER.info("path: " + tunnel_request.getPath());
+			LOGGER.info("headers: " + tunnel_request.getHeaders());
+			LOGGER.info("body: " + tunnel_request.getBody());
+			
+			//
+			// invoke service endpoint
+			//
+			
+			//
+			// create tunnel response
+			//
+			TunnelResponse tunnel_response = new TunnelResponse();
+			tunnel_response.setStatusCode(200);
+			tunnel_response.setHeaders("");
+			tunnel_response.setBody("HttpImpl-service-response".getBytes());
+			
+			//
+			// wrap tunnel response inside network-manager response object
+			//
+			resp = new NMResponse();
+			resp.setStatus(NMResponse.STATUS_SUCCESS);
+			resp.setBytesPrimary(true);
+			resp.setMessageBytes(SerializationUtil.serialize(tunnel_response));
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		
-		String dataString = new String(data);
-		LOGGER.info("HttpImpl received a message: " + dataString);
-		
-		NMResponse resp = new NMResponse();
-		resp.setStatus(NMResponse.STATUS_SUCCESS);
-		resp.setMessage("HttpImpl-response");
 		
 		return resp;
 	}

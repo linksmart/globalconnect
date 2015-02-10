@@ -16,6 +16,9 @@
 
 	<name>LinkSmart Types API</name>
 	<description>LinkSmart Types API</description>
+	
+	<dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>

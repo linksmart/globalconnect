@@ -33,11 +33,12 @@
 
 package eu.linksmart.gc.network.tunneling.http;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +46,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import eu.linksmart.gc.api.types.TunnelRequest;
+import eu.linksmart.gc.api.types.TunnelResponse;
+import eu.linksmart.gc.api.types.utils.SerializationUtil;
 import eu.linksmart.network.NMResponse;
 import eu.linksmart.network.VirtualAddress;
 import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
@@ -77,7 +81,6 @@ public class HttpTunnelServlet extends HttpServlet {
 	 * @param request HttpServletRequest that encapsulates the request to the servlet 
 	 * @param response HttpServletResponse that encapsulates the response from the servlet
 	 */
-
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		//
@@ -93,86 +96,151 @@ public class HttpTunnelServlet extends HttpServlet {
 			return;
 		}
 		
-		//
-		// extract virtual addresses from path
-		//
-		String parts[] = pathInfo.split("/", 4);
-		VirtualAddress senderVAD = (parts[1].contentEquals("0")) ? nmCore.getVirtualAddress() : new VirtualAddress(parts[1]);
-		VirtualAddress receiverVAD = new VirtualAddress(parts[2]);
+		StringTokenizer path_tokens = new StringTokenizer(pathInfo, "/");
 		
-		//
-		//add additional path
-		//
-		StringBuilder additionalPath = new StringBuilder();
-		if (parts.length == 4 && !parts[3].equals("wsdl") && !parts[3].endsWith("0/hola")) {
-			additionalPath.append(parts[3].replace("0/hola/", "").replace("/wsdl", ""));
+		if(path_tokens.countTokens() < 2) {
+			LOG.error("sender/receiver virtual-address(s) are missing");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "sender/receiver virtual-address(s) are missing");
+			return;
 		}
-
-		//
-		// build parameter string, check if path requests wsdl or has some additional query - not possible to have both
-		//
-		StringBuilder queryBuilder = new StringBuilder();
-		if (parts.length == 4 && parts[3].endsWith("wsdl")) {
-			queryBuilder.append("?wsdl");
-		} else {
-			//if attributes were passed with the url add them
-			String originalQuery = request.getQueryString();
-			if (originalQuery != null && originalQuery.length() != 0) {
-				queryBuilder.append("?");
-				queryBuilder.append(originalQuery);
-			}
-		}
-
-		//
-		// build request
-		//
-		StringBuilder requestBuilder = new StringBuilder();
-		// append request line
-		requestBuilder.append(request.getMethod()).append(" /");
-		if (additionalPath.length() > 0) {
-			requestBuilder.append(additionalPath.toString());
-		}
-		if (queryBuilder.length() > 0) {
-			requestBuilder.append(queryBuilder.toString());
-		}
-		requestBuilder.append(" ").append(request.getProtocol()).append("\r\n");
-
-		//
-		// append headers - no body because this is a GET request
-		//
-		requestBuilder.append(buildHeaders(request));
 		
-		//
-		// send request to NetworkManagerCore
-		//
-		NMResponse nm_response = null;
+		VirtualAddress senderVAD = null;
+		VirtualAddress receiverVAD = null;
+		byte[] tunnel_request_data = null;
+		
 		try {
-			nm_response = this.nmCore.sendData(senderVAD, receiverVAD, requestBuilder.toString().getBytes(), true);
-			LOG.info("received response from nm: " + nm_response.getMessage() + " - status: " + nm_response.getStatus());
+			
+			//
+			// extract sender virtual address from path
+			//
+			String sender_vad_string = path_tokens.nextToken();
+			
+			senderVAD = getSenderVAD(sender_vad_string);
+			
+			if(senderVAD == null) {
+				LOG.error("unable to retrieve sender virtual-address from path token: " + sender_vad_string);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST,"unable to retrieve sender virtual-address from path token: " + sender_vad_string);
+				return;
+			}
+			if(senderVAD != null) {
+				if(senderVAD.getBytes().length != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
+					LOG.error("provided sender virtual-address doesn't conform to its format: " + senderVAD.toString());
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided sender virtual-address doesn't conform to its format: " + senderVAD.toString());
+					return;
+				}
+				if(senderVAD.toString() == "0.0.0.0") {
+					LOG.error("computed sender virtual-address doesn't conform to its format: " + senderVAD.toString());
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "computed sender virtual-address doesn't conform to its format: " + senderVAD.toString());
+					return;
+				}
+			}
+			
+			//
+			// extract receiver virtual address from path
+			//
+			String receiver_vad_string = path_tokens.nextToken();
+			
+			receiverVAD = getReceiverVAD(receiver_vad_string);
+			
+			if(receiverVAD == null) {
+				LOG.error("unable to retrieve receiver virtual-address from path token: " + receiver_vad_string);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST,"unable to retrieve receiver virtual-address from path token: " + receiver_vad_string);
+				return;
+			}
+			if(receiverVAD != null) {
+				if(receiverVAD.getBytes().length != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
+					LOG.error("provided reciever virtual-address doesn't conform to its format: " + receiverVAD.toString());
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "provided reciever virtual-address doesn't conform to its format: " + receiverVAD.toString());
+					return;
+				}
+				if(receiverVAD.toString() == "0.0.0.0") {
+					LOG.error("computed reciever virtual-address doesn't conform to its format: " + receiverVAD.toString());
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "computed reciever virtual-address doesn't conform to its format: " + receiverVAD.toString());
+					return;
+				}
+			}
+			
+			//
+			// add service_path, attributes (if any) and headers
+			//
+			String service_path = "";
+			
+			while(path_tokens.hasMoreTokens()) {
+				service_path = service_path + "/" + path_tokens.nextToken();
+			}
+			
+			StringBuilder queryBuilder = new StringBuilder();
+			String query_string = request.getQueryString();
+			if (query_string != null && query_string.length() != 0) {
+				queryBuilder.append("?");
+				queryBuilder.append(query_string);
+			}
+			
+			StringBuilder servicePathBuilder = new StringBuilder();
+			servicePathBuilder.append(service_path);
+			servicePathBuilder.append(queryBuilder.toString());
+			
+			TunnelRequest tunnel_request = new TunnelRequest();
+			
+			tunnel_request.setMethod(request.getMethod());
+			tunnel_request.setPath(servicePathBuilder.toString());
+			tunnel_request.setHeaders(buildHeaders(request));
+			
+			tunnel_request_data = SerializationUtil.serialize(tunnel_request);
+			
+			LOG.info("s-vad: " + senderVAD.toString());
+			LOG.info("r-vad: " + receiverVAD.toString());		
+			LOG.info("servicePath: " + servicePathBuilder.toString());
+			LOG.info("headers: " + tunnel_request.getHeaders());
+			
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			return;
 		}
 		
-		byte[] byteData = null;
-		byte[] body = null;
-		
-		if (!(nm_response.getMessage().startsWith("HTTP/1.1 200 OK"))) {
-			response.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
-			//set whole response data as body
-			body = nm_response.getMessage().getBytes();
-		} else {
-			//take headers from data and add them to response
-			byteData = nm_response.getMessageBytes();
-			body = composeResponse(byteData, response);
+		//
+		// send tunnel request to NetworkManagerCore
+		//
+		NMResponse nm_response = null;
+		try {
+			nm_response = this.nmCore.sendData(senderVAD, receiverVAD, tunnel_request_data, true);
+			LOG.info("received response from nm - status: " + nm_response.getStatus());
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
 		}
 		
 		//
-		//write body data
+		// read tunnel response
 		//
-		response.setContentLength(body.length);
-		response.getOutputStream().write(body);
+		TunnelResponse tunnel_response = null;
+		try {
+			tunnel_response = (TunnelResponse) SerializationUtil.deserialize(nm_response.getMessageBytes());
+			LOG.info("http-tunnel-status: " + tunnel_response.getStatusCode());
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			return;
+		}
+		
+		byte[] servlet_response_body = null;
+		
+		if (tunnel_response.getStatusCode() != HttpServletResponse.SC_OK) {
+			response.setStatus(tunnel_response.getStatusCode());
+			//set whole response data as servlet body
+			servlet_response_body = tunnel_response.getBody();
+		} else {
+			//take headers from data and add them to response body
+			servlet_response_body = addHeadersToResponse(tunnel_response.getBody(), response);
+		}
+		
+		//
+		// write servlet_response_body data
+		//
+		response.setContentLength(servlet_response_body.length);
+		response.getOutputStream().write(servlet_response_body);
 		response.getOutputStream().close();		
 	}
 	
@@ -256,8 +324,8 @@ public class HttpTunnelServlet extends HttpServlet {
 
 		return builder.toString();
 	}
-
-	private byte[] composeResponse(byte[] byteData, HttpServletResponse response) {
+	
+	private byte[] addHeadersToResponse(byte[] byteData, HttpServletResponse response) {
 		int bodyStartIndex = 0;
 		byte[] headerEnd = new String("\r\n\r\n").getBytes();
 		//find end of header
@@ -288,5 +356,29 @@ public class HttpTunnelServlet extends HttpServlet {
 			}
 		}
 		return Arrays.copyOfRange(byteData, bodyStartIndex, byteData.length);
+	}
+	
+	private VirtualAddress getSenderVAD(String token) throws Exception {
+		VirtualAddress senderVAD = null;
+		if(token.contentEquals("0")) {
+			senderVAD = this.nmCore.getVirtualAddress();
+		} else {
+			Pattern s_pattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+");
+			Matcher s_matcher = s_pattern.matcher(token);
+			if(s_matcher.find()) {
+				senderVAD = new VirtualAddress(s_matcher.group());
+			}
+		}
+		return senderVAD;
+	}
+	
+	private VirtualAddress getReceiverVAD(String token) throws Exception {
+		VirtualAddress receiverVAD = null;
+		Pattern r_pattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+");
+		Matcher r_matcher = r_pattern.matcher(token);
+		if(r_matcher.find()) {
+			receiverVAD = new VirtualAddress(r_matcher.group());
+		} 
+		return receiverVAD;
 	}
 }

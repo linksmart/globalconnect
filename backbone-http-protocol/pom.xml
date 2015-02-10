@@ -28,6 +28,15 @@
             <groupId>eu.linksmart</groupId>
             <artifactId>eu.linksmart.api.backbone.router</artifactId>
         </dependency>
+        <dependency>
+            <groupId>eu.linksmart</groupId>
+            <artifactId>eu.linksmart.api.network</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>eu.linksmart.gc</groupId>
+        	<artifactId>eu.linksmart.gc.api.types</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+      	</dependency>
     </dependencies>
 
     <build>
