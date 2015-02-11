@@ -117,12 +117,15 @@ public class HttpTunnelServlet extends HttpServlet {
 			
 			tunnel_request.setMethod(request.getMethod());
 			tunnel_request.setPath(service_path);
-			tunnel_request.setHeaders(TunnelProcessor.buildHeaders(request));
+			tunnel_request.setHeaders(TunnelProcessor.getHeaders(request));
 			
 			LOG.info("s-vad: " + senderVAD.toString());
 			LOG.info("r-vad: " + receiverVAD.toString());		
 			LOG.info("servicePath: " + service_path);
-			LOG.info("headers: " + tunnel_request.getHeaders());
+			String[] headers = tunnel_request.getHeaders();
+			for (int i = 0; i < headers.length; i++) {
+				LOG.info("header: " + headers[i]);
+			}
 			
 			//
 			// send tunnel request & read response
@@ -211,13 +214,16 @@ public class HttpTunnelServlet extends HttpServlet {
 			
 			tunnel_request.setMethod(request.getMethod());
 			tunnel_request.setPath(service_path);
-			tunnel_request.setHeaders(TunnelProcessor.buildHeaders(request));
+			tunnel_request.setHeaders(TunnelProcessor.getHeaders(request));
 			tunnel_request.setBody(content.getBytes());
 			
 			LOG.info("s-vad: " + senderVAD.toString());
 			LOG.info("r-vad: " + receiverVAD.toString());		
 			LOG.info("servicePath: " + service_path);
-			LOG.info("headers: " + tunnel_request.getHeaders());
+			String[] headers = tunnel_request.getHeaders();
+			for (int i = 0; i < headers.length; i++) {
+				LOG.info("header: " + headers[i]);
+			}
 			LOG.info("content: " + new String(tunnel_request.getBody()));
 			
 			//

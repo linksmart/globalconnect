@@ -97,7 +97,7 @@ public class HttpImpl implements Backbone {
 			
 			LOGGER.info("method: " + tunnel_request.getMethod());
 			LOGGER.info("path: " + tunnel_request.getPath());
-			LOGGER.info("headers: " + tunnel_request.getHeaders());
+			LOGGER.info("headers: " + tunnel_request.getHeaders().length);
 			LOGGER.info("body: " + tunnel_request.getBody());
 			
 			//
@@ -109,7 +109,7 @@ public class HttpImpl implements Backbone {
 			//
 			TunnelResponse tunnel_response = new TunnelResponse();
 			tunnel_response.setStatusCode(200);
-			tunnel_response.setHeaders("");
+			tunnel_response.setHeaders(new String[]{"testheader:value"});
 			tunnel_response.setBody("HttpImpl-service-response".getBytes());
 			
 			//

@@ -7,7 +7,7 @@ public class TunnelResponse implements Serializable {
 	private static final long serialVersionUID = -8671214558120003281L;
 	
 	private int status_code = 0;
-	private String http_headers = null;
+	private String[] http_headers = null;
 	private byte[] http_body = null;
 	
 	public TunnelResponse() {
@@ -21,11 +21,11 @@ public class TunnelResponse implements Serializable {
 		return this.status_code;
 	}
 	
-	public void setHeaders(String http_headers) {
+	public void setHeaders(String[] http_headers) {
 		this.http_headers = http_headers;
 	}
 	
-	public String getHeaders() {
+	public String[] getHeaders() {
 		return this.http_headers;
 	}
 	

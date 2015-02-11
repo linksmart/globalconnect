@@ -1,8 +1,10 @@
 package eu.linksmart.gc.network.tunneling.http;
 
 import java.io.BufferedReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -143,17 +145,17 @@ public class TunnelProcessor {
 		return tunnel_response;
 	}
 	
-	public static String buildHeaders(HttpServletRequest request) throws TunnelException, Exception {
-		StringBuilder builder = new StringBuilder();
+	public static String[] getHeaders(HttpServletRequest request) throws TunnelException, Exception {
+		//StringBuilder builder = new StringBuilder();
+		List<String> headers = new ArrayList<String>();
 		Enumeration<?> headerNames = request.getHeaderNames();
-
 		while (headerNames.hasMoreElements()) {
 			String header = (String) headerNames.nextElement();
 			String value = request.getHeader(header);
-			builder.append(header + ": " + value + "\r\n");
+			headers.add(header + ": " + value);
+			//builder.append(header + ": " + value + "\r\n");
 		}
-
-		return builder.toString();
+		return headers.toArray(new String[headers.size()]);
 	}
 	
 	public static byte[] addHeadersToResponse(byte[] byteData, HttpServletResponse response) throws TunnelException, Exception {
