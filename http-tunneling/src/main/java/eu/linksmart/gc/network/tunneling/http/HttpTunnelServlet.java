@@ -76,89 +76,7 @@ public class HttpTunnelServlet extends HttpServlet {
 	 * @param response HttpServletResponse that encapsulates the response from the servlet
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		
-		//
-		// get path info
-		//
-		String pathInfo = request.getPathInfo();
-		LOG.info("doGet - pathInfo:" + pathInfo);
-		
-		StringTokenizer path_tokens = null;
-		VirtualAddress senderVAD = null;
-		VirtualAddress receiverVAD = null;
-		TunnelRequest tunnel_request = null;
-		TunnelResponse tunnel_response = null;
-		
-		try {
-			
-			//
-			// verify & extract tokens from path 
-			//
-			path_tokens = TunnelProcessor.getPathTokens(pathInfo);
-			
-			//
-			// extract sender virtual address from path
-			//
-			String sender_vad_string = path_tokens.nextToken();
-			senderVAD = TunnelProcessor.getSenderVAD(sender_vad_string, this.nmCore.getVirtualAddress());
-			
-			//
-			// extract receiver virtual address from path
-			//
-			String receiver_vad_string = path_tokens.nextToken();
-			receiverVAD = TunnelProcessor.getReceiverVAD(receiver_vad_string);
-			
-			//
-			// add service_path, attributes (if any) and headers
-			//
-			String service_path = TunnelProcessor.getServicePath(path_tokens, request, true);
-			
-			tunnel_request = new TunnelRequest();
-			
-			tunnel_request.setMethod(request.getMethod());
-			tunnel_request.setPath(service_path);
-			tunnel_request.setHeaders(TunnelProcessor.getHeaders(request));
-			
-			LOG.info("s-vad: " + senderVAD.toString());
-			LOG.info("r-vad: " + receiverVAD.toString());		
-			LOG.info("servicePath: " + service_path);
-			String[] headers = tunnel_request.getHeaders();
-			for (int i = 0; i < headers.length; i++) {
-				LOG.info("header: " + headers[i]);
-			}
-			
-			//
-			// send tunnel request & read response
-			//
-			tunnel_response = TunnelProcessor.sendTunnelRequest(tunnel_request, nmCore, senderVAD, receiverVAD);
-			LOG.info("http-tunnel-status: " + tunnel_response.getStatusCode());
-			
-		} catch (TunnelException e) {
-			LOG.error(e.getMessage(), e);
-			response.sendError(e.getError(), e.getMessage());
-			return;
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-			return;
-		}
-		
-//		if (tunnel_response.getStatusCode() != HttpServletResponse.SC_OK) {
-//			//set whole response data as servlet body
-//			servlet_response_body = tunnel_response.getBody();
-//		} else {
-//			//take headers from data and add them to response body
-//			servlet_response_body = addHeadersToResponse(tunnel_response.getBody(), response);
-		
-		response.setStatus(tunnel_response.getStatusCode());
-		byte[] servlet_response_body = tunnel_response.getBody();
-		
-		//
-		// write servlet_response_body data
-		//
-		response.setContentLength(servlet_response_body.length);
-		response.getOutputStream().write(servlet_response_body);
-		response.getOutputStream().close();		
+		process(request, response);		
 	}
 	
 	/**
@@ -168,49 +86,73 @@ public class HttpTunnelServlet extends HttpServlet {
 	 * @param response HttpServletResponse that encapsulates the response from the servlet
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		
-		//
-		// get path info
-		//
-		String pathInfo = request.getPathInfo();
-		LOG.info("doPost - pathInfo:" + pathInfo);
-		
-		StringTokenizer path_tokens = null;
-		VirtualAddress senderVAD = null;
-		VirtualAddress receiverVAD = null;
-		TunnelRequest tunnel_request = null;
-		TunnelResponse tunnel_response = null;
+		process(request, response);
+	}
+	
+	/**
+	 * Performs the HTTP PUT operation
+	 * @param request HttpServletRequest that encapsulates the request to the servlet 
+	 * @param response HttpServletResponse that encapsulates the response from the servlet
+	 */
+	public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		process(request, response);
+	}
+	
+	/**
+	 * Performs the HTTP DELETE operation
+	 * Is identical to GET
+	 * @param request HttpServletRequest that encapsulates the request to the servlet 
+	 * @param response HttpServletResponse that encapsulates the response from the servlet
+	 */
+	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		process(request, response);
+	}
+	
+	private void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		try {
 			
 			//
+			// get path info
+			//
+			String pathInfo = request.getPathInfo();
+			LOG.info("pathInfo: " + pathInfo);
+			
+			//
 			// verify & extract tokens from path 
 			//
-			path_tokens = TunnelProcessor.getPathTokens(pathInfo);
+			StringTokenizer path_tokens = TunnelProcessor.getPathTokens(pathInfo);
 			
 			//
 			// extract sender virtual address from path
 			//
 			String sender_vad_string = path_tokens.nextToken();
-			senderVAD = TunnelProcessor.getSenderVAD(sender_vad_string, this.nmCore.getVirtualAddress());
+			VirtualAddress senderVAD = TunnelProcessor.getSenderVAD(sender_vad_string, this.nmCore.getVirtualAddress());
 			
 			//
 			// extract receiver virtual address from path
 			//
 			String receiver_vad_string = path_tokens.nextToken();
-			receiverVAD = TunnelProcessor.getReceiverVAD(receiver_vad_string);
+			VirtualAddress receiverVAD = TunnelProcessor.getReceiverVAD(receiver_vad_string);
 			
 			//
 			// add service_path, attributes (if any) and headers
 			//
-			String service_path = TunnelProcessor.getServicePath(path_tokens, request, false);
-			
-			//
 			// read request content
 			//
-			String content = TunnelProcessor.getContent(request);
+			String service_path = "";
+			String content = "";
 			
-			tunnel_request = new TunnelRequest();
+			if(request.getMethod().equals("GET")) {
+				service_path = TunnelProcessor.getServicePath(path_tokens, request, true);
+			} else if(request.getMethod().equals("POST") || request.getMethod().equals("PUT")) {
+				service_path = TunnelProcessor.getServicePath(path_tokens, request, false);
+				content = TunnelProcessor.getContent(request);
+			} else if(request.getMethod().equals("DELETE")) {
+				service_path = TunnelProcessor.getServicePath(path_tokens, request, false);
+			}
+			
+			TunnelRequest tunnel_request = new TunnelRequest();
 			
 			tunnel_request.setMethod(request.getMethod());
 			tunnel_request.setPath(service_path);
@@ -224,13 +166,29 @@ public class HttpTunnelServlet extends HttpServlet {
 			for (int i = 0; i < headers.length; i++) {
 				LOG.info("header: " + headers[i]);
 			}
-			LOG.info("content: " + new String(tunnel_request.getBody()));
 			
 			//
 			// send tunnel request & read response
 			//
-			tunnel_response = TunnelProcessor.sendTunnelRequest(tunnel_request, nmCore, senderVAD, receiverVAD);
+			TunnelResponse tunnel_response = TunnelProcessor.sendTunnelRequest(tunnel_request, nmCore, senderVAD, receiverVAD);
 			LOG.info("http-tunnel-status: " + tunnel_response.getStatusCode());
+			
+//			if (tunnel_response.getStatusCode() != HttpServletResponse.SC_OK) {
+//			//set whole response data as servlet body
+//			servlet_response_body = tunnel_response.getBody();
+//		} else {
+//			//take headers from data and add them to response body
+//			servlet_response_body = addHeadersToResponse(tunnel_response.getBody(), response);
+		
+			response.setStatus(tunnel_response.getStatusCode());
+			byte[] servlet_response_body = tunnel_response.getBody();
+		
+			//
+			// write servlet_response_body data
+			//
+			response.setContentLength(servlet_response_body.length);
+			response.getOutputStream().write(servlet_response_body);
+			response.getOutputStream().close();	
 			
 		} catch (TunnelException e) {
 			LOG.error(e.getMessage(), e);
@@ -241,32 +199,6 @@ public class HttpTunnelServlet extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			return;
 		}
-				
-		response.setStatus(tunnel_response.getStatusCode());
-		byte[] servlet_response_body = tunnel_response.getBody();
-		
-		//
-		// write servlet_response_body data
-		//
-		response.setContentLength(servlet_response_body.length);
-		response.getOutputStream().write(servlet_response_body);
-		response.getOutputStream().close();
 	}
 	
-	/**
-	 * Performs the HTTP DELETE operation
-	 * Is identical to GET
-	 * @param request HttpServletRequest that encapsulates the request to the servlet 
-	 * @param response HttpServletResponse that encapsulates the response from the servlet
-	 */
-	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	}
-	
-	/**
-	 * Performs the HTTP PUT operation
-	 * @param request HttpServletRequest that encapsulates the request to the servlet 
-	 * @param response HttpServletResponse that encapsulates the response from the servlet
-	 */
-	public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	}
 }

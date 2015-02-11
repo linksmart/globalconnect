@@ -98,7 +98,7 @@ public class HttpImpl implements Backbone {
 			LOGGER.info("method: " + tunnel_request.getMethod());
 			LOGGER.info("path: " + tunnel_request.getPath());
 			LOGGER.info("headers: " + tunnel_request.getHeaders().length);
-			LOGGER.info("body: " + tunnel_request.getBody());
+			LOGGER.info("body: " + new String(tunnel_request.getBody()));
 			
 			//
 			// invoke service endpoint
