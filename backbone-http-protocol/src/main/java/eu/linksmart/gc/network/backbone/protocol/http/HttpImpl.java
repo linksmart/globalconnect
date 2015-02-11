@@ -1,5 +1,15 @@
 package eu.linksmart.gc.network.backbone.protocol.http;
 
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
+
 import eu.linksmart.gc.api.types.TunnelRequest;
 import eu.linksmart.gc.api.types.TunnelResponse;
 import eu.linksmart.gc.api.types.utils.SerializationUtil;
@@ -16,7 +26,10 @@ import org.osgi.service.component.ComponentContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
+import java.io.IOException;
 
 @Component(name="BackboneHTTP", immediate=true)
 @Service({Backbone.class})
@@ -103,7 +116,44 @@ public class HttpImpl implements Backbone {
 			//
 			// invoke service endpoint
 			//
-			
+            URI uriEndpoint;
+            try {
+                uriEndpoint = urlEndpoint.toURI();
+            } catch (URISyntaxException e) {
+                // TO DO
+                throw new IllegalArgumentException("Cannot convert URL to URI, URL = " + urlEndpoint.toString());
+            }
+
+            String dataString = new String(data);
+            LOGGER.info("HttpImpl received a message: " + dataString);
+
+            resp.setStatus(NMResponse.STATUS_SUCCESS);
+            resp.setMessage("HttpImpl-response");
+
+            HttpMethod action;
+            String uriString = uriEndpoint.toString();
+            //decode properties & Decode64
+            if (dataString.startsWith("GET")) {
+
+                action = new GetMethod( uriString);
+                resp = processMessage(action, dataString, resp);
+
+            } else {
+
+                if (dataString.startsWith("POST")) { action = new PostMethod( uriString);
+
+                } else if (dataString.startsWith("PUT")) { action = new PutMethod( uriString);
+
+                } else if (dataString.startsWith("DELETE")) { action = new DeleteMethod( uriString);
+
+                } else {
+                    // no HttpMethod detected!!
+                    throw new IllegalArgumentException("Cannot detect a HTTP Method! in the request message: " + dataString);
+                }
+
+                processMessage(action, dataString, resp);
+            }
+
 			//
 			// create tunnel response
 			//
@@ -125,7 +175,40 @@ public class HttpImpl implements Backbone {
 		
 		return resp;
 	}
-	
+
+    /**
+     * Processes HTTP message
+     *
+     * @param action
+     *            HttpMethod to be used
+     * @param data
+     *            header data as String
+     * @param resp
+     *            response from SOAP service
+     */
+    private NMResponse processMessage(HttpMethod action, String data, NMResponse resp) {
+
+        resp = new NMResponse();
+        HttpClient client = new HttpClient();
+
+        action.setQueryString( data);
+        try {
+            int statusCode = client.executeMethod( action);
+            if( statusCode == 200 || statusCode == 404){
+                byte[] response = action.getResponseBody();
+                resp.setMessageBytes( response);
+                resp.setStatus(NMResponse.STATUS_SUCCESS);
+            } else {
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resp;
+    }
+
+
     @Override
 	public NMResponse sendDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
     	throw new RuntimeException("Asynchronous sending not supported by HTTP!");
