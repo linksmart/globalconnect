@@ -49,6 +49,8 @@ import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
 
 /**
  * HTTP Tunnel servlet
+ * 
+ * @author Hassan Rasheed
  */
 public class HttpTunnelServlet extends HttpServlet {
 

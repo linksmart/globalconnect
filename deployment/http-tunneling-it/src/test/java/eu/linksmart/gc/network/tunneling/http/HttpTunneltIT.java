@@ -3,8 +3,10 @@ package eu.linksmart.gc.network.tunneling.http;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -112,17 +114,49 @@ public class HttpTunneltIT {
     		
     		HttpClient client = new HttpClient();
     		
-    		String service_path = "/test/resource_id?name=value";
-    		
-    		endPoint = endPoint + service_path;
-    		
-			LOG.info("invoking service at endpoint: " + endPoint);
-			
-			HttpMethod  tunnel_get_request = new GetMethod(endPoint);
+			//
+        	// GET method
+        	//
+    		String get_service_path = "/test/resource_id?name=value";
+			LOG.info("invoking service at endpoint: " + endPoint + get_service_path);
+			HttpMethod  tunnel_get_request = new GetMethod(endPoint + get_service_path);
 			assertEquals(200, client.executeMethod(tunnel_get_request));
-        	
-        	LOG.info("tunnel-service-response: " + new String(tunnel_get_request.getResponseBody()));
+        	LOG.info("get-tunnel-response: " + new String(tunnel_get_request.getResponseBody()));
         	tunnel_get_request.releaseConnection();
+        	
+        	//
+        	// POST method
+        	//
+        	PostMethod post_request = new PostMethod(endPoint);
+        	String post_service_path = "/test/resource_id/add";
+			LOG.info("invoking service at endpoint: " + endPoint + post_service_path);
+			StringRequestEntity post_requestEntity = new StringRequestEntity("post-body-content-sample", "application/json", "UTF-8");
+			post_request.setRequestEntity(post_requestEntity);
+    		assertEquals(200, client.executeMethod(post_request));
+        	LOG.info("post-tunnel-response: " + new String(post_request.getResponseBody()));
+        	post_request.releaseConnection();
+        	
+        	//
+        	// PUT method
+        	//
+        	PutMethod put_request = new PutMethod(endPoint);
+        	String put_service_path = "/test/resource_id/update";
+			LOG.info("invoking service at endpoint: " + endPoint + put_service_path);
+			StringRequestEntity put_requestEntity = new StringRequestEntity("put-body-content-sample", "application/json", "UTF-8");
+			put_request.setRequestEntity(put_requestEntity);
+    		assertEquals(200, client.executeMethod(put_request));
+        	LOG.info("put-tunnel-response: " + new String(put_request.getResponseBody()));
+        	put_request.releaseConnection();
+        	
+        	//
+        	// DELETE method
+        	//
+        	DeleteMethod delete_request = new DeleteMethod(endPoint);
+        	String delete_service_path = "/test/resource_id";
+			LOG.info("invoking service at endpoint: " + endPoint + delete_service_path);
+    		assertEquals(200, client.executeMethod(delete_request));
+        	LOG.info("delete-tunnel-response: " + new String(delete_request.getResponseBody()));
+        	delete_request.releaseConnection();
 			
         	LOG.info("HttpTunnel test successfully completed");
         	
