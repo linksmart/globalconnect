@@ -60,11 +60,11 @@ public class HttpTunneltIT {
         	//
     		JSONObject registrationJson = new JSONObject();
     		
-			registrationJson.put(KEY_ENDPOINT, "http://localhost:8080/api/calculator");
+			registrationJson.put(KEY_ENDPOINT, "http://localhost:8882/NetworkManager");
 			registrationJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
 			
-			Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "Calculator"), 
-					new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.testing.calculator") };
+			Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "NetworkManagerTest"), 
+					new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.testing.nm") };
 			
 			JSONObject attributesJson = new JSONObject();
 			for(Part p : attributes) {
@@ -85,7 +85,7 @@ public class HttpTunneltIT {
     		//
     		// get service registration from network-manager using its ResT interface with queryString  ?description=name
     		//
-        	NameValuePair[] description_qs = { new NameValuePair("description", "Calculator") };
+        	NameValuePair[] description_qs = { new NameValuePair("description", "NetworkManagerTest") };
         	HttpMethod  description_get_request = new GetMethod(nm_base_url);
         	description_get_request.setQueryString(description_qs);
         	assertEquals(200, client.executeMethod(description_get_request));
@@ -127,33 +127,42 @@ public class HttpTunneltIT {
         	//
         	// POST method
         	//
+        	LOG.info("invoking service at endpoint: " + endPoint);
         	PostMethod post_request = new PostMethod(endPoint);
-        	String post_service_path = "/test/resource_id/add";
-			LOG.info("invoking service at endpoint: " + endPoint + post_service_path);
-			StringRequestEntity post_requestEntity = new StringRequestEntity("post-body-content-sample", "application/json", "UTF-8");
+			String reg_post_String = getPostString();
+			StringRequestEntity post_requestEntity = new StringRequestEntity(reg_post_String, "application/json", "UTF-8");
 			post_request.setRequestEntity(post_requestEntity);
     		assertEquals(200, client.executeMethod(post_request));
-        	LOG.info("post-tunnel-response: " + new String(post_request.getResponseBody()));
+    		String post_JsonString = new String(post_request.getResponseBody());
+        	LOG.info("post-tunnel-response: " + post_JsonString);
         	post_request.releaseConnection();
         	
+        	JSONObject jsonObject = new JSONObject(post_JsonString);
+    		String virtualAddress = jsonObject.getString(KEY_VIRTUAL_ADDRESS);
+    		
         	//
         	// PUT method
         	//
+    		LOG.info("invoking service at endpoint: " + endPoint);
         	PutMethod put_request = new PutMethod(endPoint);
-        	String put_service_path = "/test/resource_id/update";
-			LOG.info("invoking service at endpoint: " + endPoint + put_service_path);
-			StringRequestEntity put_requestEntity = new StringRequestEntity("put-body-content-sample", "application/json", "UTF-8");
+			String reg_put_String = getPutString(virtualAddress);
+			StringRequestEntity put_requestEntity = new StringRequestEntity(reg_put_String, "application/json", "UTF-8");
 			put_request.setRequestEntity(put_requestEntity);
     		assertEquals(200, client.executeMethod(put_request));
-        	LOG.info("put-tunnel-response: " + new String(put_request.getResponseBody()));
+    		String put_JsonString = new String(put_request.getResponseBody());
+        	LOG.info("put-tunnel-response: " + put_JsonString);
         	put_request.releaseConnection();
         	
+        	JSONObject updateJsonObject = new JSONObject(put_JsonString);
+			String updated_virtualAddress = updateJsonObject.getString(KEY_VIRTUAL_ADDRESS);
+			
         	//
         	// DELETE method
         	//
-        	DeleteMethod delete_request = new DeleteMethod(endPoint);
-        	String delete_service_path = "/test/resource_id";
-			LOG.info("invoking service at endpoint: " + endPoint + delete_service_path);
+        	String service_path = updated_virtualAddress;
+        	endPoint = endPoint + "/" + service_path;
+			LOG.info("invoking service at endpoint: " + endPoint);
+			DeleteMethod delete_request = new DeleteMethod(endPoint);
     		assertEquals(200, client.executeMethod(delete_request));
         	LOG.info("delete-tunnel-response: " + new String(delete_request.getResponseBody()));
         	delete_request.releaseConnection();
@@ -163,5 +172,43 @@ public class HttpTunneltIT {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+    }
+    
+    private String getPostString() throws Exception {
+    	
+    	JSONObject registrationJson = new JSONObject();
+		
+		registrationJson.put(KEY_ENDPOINT, "http://localhost:8882/NetworkManager");
+		registrationJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
+		
+		Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "NetworkManager_Test_Post"), 
+				new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.testing.nm.post") };
+		
+		JSONObject attributesJson = new JSONObject();
+		for(Part p : attributes) {
+			attributesJson.put(p.getKey(), p.getValue());
+		}
+		registrationJson.put(KEY_ATTRIBUTES, attributesJson);
+		return registrationJson.toString();
+    }
+    
+    private String getPutString(String virtualAddress) throws Exception {
+    	
+    	JSONObject updateJson = new JSONObject();
+    	
+    	updateJson.put(KEY_ENDPOINT, "http://localhost:8882/NetworkManager");
+    	updateJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
+    	updateJson.put(KEY_VIRTUAL_ADDRESS, virtualAddress);
+    	
+		Part[] update_attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "NetworkManager_Test_Put"), 
+				new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.testing.nm.put") };
+
+		JSONObject update_attributesJson = new JSONObject();
+		for(Part p : update_attributes) {
+			update_attributesJson.put(p.getKey(), p.getValue());
+		}
+		updateJson.put(KEY_ATTRIBUTES, update_attributesJson);
+		
+		return updateJson.toString();
     }
 }

@@ -1,6 +1,5 @@
 package eu.linksmart.gc.network.backbone.protocol.http;
 
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
@@ -26,8 +25,6 @@ import org.osgi.service.component.ComponentContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.io.IOException;
 
@@ -90,18 +87,7 @@ public class HttpImpl implements Backbone {
     @Override
 	public NMResponse sendDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
     	
-		NMResponse resp = null;
-		
 		try {
-			
-			//
-			// check if service endpoint is available
-			//
-			//TODO create proper NMResponse with exception message
-			URL urlEndpoint = virtualAddressUrlMap.get(receiverVirtualAddress);
-			if (urlEndpoint == null) {
-				throw new IllegalArgumentException("Cannot send data to VirtualAddress " + receiverVirtualAddress.toString() + ", unknown endpoint");
-			}
 			
 			//
 			// reading tunnel request
@@ -112,102 +98,156 @@ public class HttpImpl implements Backbone {
 			LOGGER.info("path: " + tunnel_request.getPath());
 			LOGGER.info("headers: " + tunnel_request.getHeaders().length);
 			LOGGER.info("body: " + new String(tunnel_request.getBody()));
+				
+			//
+			// check if service endpoint is available
+			//
+			URL urlEndpoint = virtualAddressUrlMap.get(receiverVirtualAddress);
+			 
+			if (urlEndpoint == null) {
+				String message = "cannot send data to service at virtualAddress: " + receiverVirtualAddress.toString() + ", unknown endpoint";
+				TunnelResponse tunnel_response = new TunnelResponse();
+				tunnel_response.setStatusCode(404);
+				tunnel_response.setBody(message.getBytes());
+				NMResponse nm_response = new NMResponse();
+				nm_response.setStatus(NMResponse.STATUS_ERROR);
+				nm_response.setBytesPrimary(true);
+				nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
+				return nm_response;
+			}
+			
+			String uriEndpoint = urlEndpoint.toURI().toString();
+			
+			NMResponse nm_response = null;
 			
 			//
-			// invoke service endpoint
+			// determine HTTP method
 			//
-            URI uriEndpoint;
-            try {
-                uriEndpoint = urlEndpoint.toURI();
-            } catch (URISyntaxException e) {
-                // TO DO
-                throw new IllegalArgumentException("Cannot convert URL to URI, URL = " + urlEndpoint.toString());
-            }
-
-            String dataString = new String(data);
-            LOGGER.info("HttpImpl received a message: " + dataString);
-
-            resp.setStatus(NMResponse.STATUS_SUCCESS);
-            resp.setMessage("HttpImpl-response");
-
-            HttpMethod action;
-            String uriString = uriEndpoint.toString();
-            //decode properties & Decode64
-            if (dataString.startsWith("GET")) {
-
-                action = new GetMethod( uriString);
-                resp = processMessage(action, dataString, resp);
-
-            } else {
-
-                if (dataString.startsWith("POST")) { action = new PostMethod( uriString);
-
-                } else if (dataString.startsWith("PUT")) { action = new PutMethod( uriString);
-
-                } else if (dataString.startsWith("DELETE")) { action = new DeleteMethod( uriString);
-
-                } else {
-                    // no HttpMethod detected!!
-                    throw new IllegalArgumentException("Cannot detect a HTTP Method! in the request message: " + dataString);
-                }
-
-                processMessage(action, dataString, resp);
-            }
-
-			//
-			// create tunnel response
-			//
-			TunnelResponse tunnel_response = new TunnelResponse();
-			tunnel_response.setStatusCode(200);
-			tunnel_response.setHeaders(new String[]{"testheader:value"});
-			tunnel_response.setBody("HttpImpl-service-response".getBytes());
+			if(tunnel_request.getMethod().equals("GET")) {
+				nm_response = processGET(tunnel_request, uriEndpoint);
+			} else if(tunnel_request.getMethod().equals("POST")) {
+				nm_response = processPOST(tunnel_request, uriEndpoint);
+			} else if(tunnel_request.getMethod().equals("PUT")) {
+				nm_response = processPUT(tunnel_request, uriEndpoint);
+			} else if(tunnel_request.getMethod().equals("DELETE")) {
+				nm_response = processDELETE(tunnel_request, uriEndpoint);
+			} else {
+				throw new Exception("unsupported HTTP method");
+			}
 			
-			//
-			// wrap tunnel response inside network-manager response object
-			//
-			resp = new NMResponse();
-			resp.setStatus(NMResponse.STATUS_SUCCESS);
-			resp.setBytesPrimary(true);
-			resp.setMessageBytes(SerializationUtil.serialize(tunnel_response));
+			return nm_response;
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			TunnelResponse tunnel_response = new TunnelResponse();
+			tunnel_response.setStatusCode(500);
+			tunnel_response.setBody(e.getMessage().getBytes());
+			NMResponse nm_response = new NMResponse();
+			nm_response.setStatus(NMResponse.STATUS_ERROR);
+			nm_response.setBytesPrimary(true);
+			try { nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response)); } catch (IOException e1) {	e1.printStackTrace(); }
+			return nm_response;
 		}
-		
-		return resp;
 	}
-
-    /**
-     * Processes HTTP message
-     *
-     * @param action
-     *            HttpMethod to be used
-     * @param data
-     *            header data as String
-     * @param resp
-     *            response from SOAP service
-     */
-    private NMResponse processMessage(HttpMethod action, String data, NMResponse resp) {
-
-        resp = new NMResponse();
-        HttpClient client = new HttpClient();
-
-        action.setQueryString( data);
-        try {
-            int statusCode = client.executeMethod( action);
-            if( statusCode == 200 || statusCode == 404){
-                byte[] response = action.getResponseBody();
-                resp.setMessageBytes( response);
-                resp.setStatus(NMResponse.STATUS_SUCCESS);
-            } else {
-
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return resp;
+    
+    private NMResponse processGET(TunnelRequest tunnel_request, String uriEndpoint) throws Exception {
+    	
+    	NMResponse nm_response = new NMResponse();
+    	
+    	TunnelResponse tunnel_response = new TunnelResponse();
+    	
+    	//
+		// invoke service endpoint
+		//
+		HttpClient client = new HttpClient();
+		NameValuePair[] description_qs = { new NameValuePair("description", "NetworkManager:LinkSmartUser") };
+    	HttpMethod  get_request = new GetMethod("http://localhost:8882/NetworkManager");
+    	get_request.setQueryString(description_qs);
+    	int status_code = client.executeMethod(get_request);
+    	byte[] service_response = get_request.getResponseBody();
+    	get_request.releaseConnection();
+    	
+    	//
+		// wrap tunnel response inside network-manager response object
+		//
+    	tunnel_response.setStatusCode(status_code);
+		tunnel_response.setBody(service_response);
+		//TODO tunnel_response.setHeaders()
+		nm_response.setStatus(NMResponse.STATUS_SUCCESS);
+		nm_response.setBytesPrimary(true);
+		nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
+		
+		return nm_response;
     }
+    
+    private NMResponse processPOST(TunnelRequest tunnel_request, String uriEndpoint) throws Exception {
+    	
+    	NMResponse nm_response = new NMResponse();
+    	
+    	TunnelResponse tunnel_response = new TunnelResponse();
+    	
+		HttpClient client = new HttpClient();
+		PostMethod post_request = new PostMethod(uriEndpoint + tunnel_request.getPath());
+		StringRequestEntity requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), "application/json", "UTF-8");
+		post_request.setRequestEntity(requestEntity);
+		int status_code = client.executeMethod(post_request);
+    	byte[] service_response = post_request.getResponseBody();
+    	post_request.releaseConnection();
+    	
+    	tunnel_response.setStatusCode(status_code);
+		tunnel_response.setBody(service_response);
+		//TODO tunnel_response.setHeaders()
+		nm_response.setStatus(NMResponse.STATUS_SUCCESS);
+		nm_response.setBytesPrimary(true);
+		nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
+		
+		return nm_response;
+    }
+    
+    private NMResponse processPUT(TunnelRequest tunnel_request, String uriEndpoint) throws Exception {
+    	
+    	NMResponse nm_response = new NMResponse();
+    	
+    	TunnelResponse tunnel_response = new TunnelResponse();
+    	
+		HttpClient client = new HttpClient();
+		PutMethod put_request = new PutMethod(uriEndpoint + tunnel_request.getPath());
+		StringRequestEntity put_requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), "application/json", "UTF-8");
+		put_request.setRequestEntity(put_requestEntity);
+		int status_code = client.executeMethod(put_request);
+    	byte[] service_response = put_request.getResponseBody();
+    	put_request.releaseConnection();
+    	
+    	tunnel_response.setStatusCode(status_code);
+		tunnel_response.setBody(service_response);
+		//TODO tunnel_response.setHeaders()
+		nm_response.setStatus(NMResponse.STATUS_SUCCESS);
+		nm_response.setBytesPrimary(true);
+		nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
+		
+		return nm_response;
+    }
+    
+    private NMResponse processDELETE(TunnelRequest tunnel_request, String uriEndpoint) throws Exception {
 
+    	NMResponse nm_response = new NMResponse();
+    	
+    	TunnelResponse tunnel_response = new TunnelResponse();
+    	
+		HttpClient client = new HttpClient();
+		DeleteMethod delete_request = new DeleteMethod(uriEndpoint + tunnel_request.getPath());
+		int status_code = client.executeMethod(delete_request);
+		byte[] service_response = delete_request.getResponseBody();
+    	delete_request.releaseConnection();
+    	
+    	tunnel_response.setStatusCode(status_code);
+		tunnel_response.setBody(service_response);
+		//TODO tunnel_response.setHeaders()
+		nm_response.setStatus(NMResponse.STATUS_SUCCESS);
+		nm_response.setBytesPrimary(true);
+		nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
+		
+		return nm_response;
+    }
 
     @Override
 	public NMResponse sendDataAsynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
