@@ -136,13 +136,13 @@ public class BackboneRouterImplDummy implements BackboneRouter {
 
     @Override
     public NMResponse sendDataSynch(VirtualAddress senderVirtualAddress, VirtualAddress receiverVirtualAddress, byte[] data) {
-    	LOG.info("received request by Backbone router for VAD: " + receiverVirtualAddress);
+    	LOG.debug("received request by Backbone router for VAD: " + receiverVirtualAddress);
         Backbone b = (Backbone) activeRouteMap.get(receiverVirtualAddress);
         if(b!= null)  {
-        	LOG.info("found Backbone in map for VAD: " + receiverVirtualAddress + " - with name: " + b.getName());
+        	LOG.debug("found Backbone in map for VAD: " + receiverVirtualAddress + " - with name: " + b.getName());
         	return b.sendDataSynch(senderVirtualAddress, receiverVirtualAddress, data);
         } else {
-        	LOG.info("Backbone not found by router for VAD: " + receiverVirtualAddress);
+        	LOG.debug("Backbone not found by router for VAD: " + receiverVirtualAddress);
         	return new NMResponse(NMResponse.STATUS_ERROR);
         }	
     }

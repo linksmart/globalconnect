@@ -21,8 +21,6 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import static org.junit.Assert.*;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
 import eu.linksmart.it.utils.ITConfiguration;
-import eu.linksmart.network.ServiceAttribute;
-import eu.linksmart.utils.Part;
 
 @RunWith(PaxExam.class)
 public class HttpTunneltIT {
@@ -32,9 +30,8 @@ public class HttpTunneltIT {
 	private String nm_base_url = "http://localhost:8882/NetworkManager";
 	
 	private static final String KEY_ENDPOINT = "Endpoint";
-	private static final String KEY_BACKBONE_NAME = "BackboneName";
-	private static final String KEY_ATTRIBUTES = "Attributes";
-	private static final String KEY_VIRTUAL_ADDRESS = "VirtualAddress";
+	
+	private static final String KEY_TEMPERATURE = "Temperature";
 	
 	private String endPoint = null;
 	
@@ -51,41 +48,12 @@ public class HttpTunneltIT {
     	
     	try {
     		
-    		LOG.info("registreing service into NetworkManager & retrieve service Endpoint for Tunneling");
-    		
     		HttpClient client = new HttpClient();
     		
     		//
-        	// register service
-        	//
-    		JSONObject registrationJson = new JSONObject();
-    		
-			registrationJson.put(KEY_ENDPOINT, "http://localhost:8882/NetworkManager");
-			registrationJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
-			
-			Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "NetworkManagerTest"), 
-					new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.testing.nm") };
-			
-			JSONObject attributesJson = new JSONObject();
-			for(Part p : attributes) {
-				attributesJson.put(p.getKey(), p.getValue());
-			}
-			registrationJson.put(KEY_ATTRIBUTES, attributesJson);
-			
-			PostMethod post_request = new PostMethod(nm_base_url);
-			
-			StringRequestEntity requestEntity = new StringRequestEntity(registrationJson.toString(), "application/json", "UTF-8");
-			post_request.setRequestEntity(requestEntity);
-			
-    		assertEquals(200, client.executeMethod(post_request));
-    		String registrationJsonString = new String(post_request.getResponseBody());
-        	LOG.info("register-service-response: " + registrationJsonString);
-        	post_request.releaseConnection();
-        	
-    		//
     		// get service registration from network-manager using its ResT interface with queryString  ?description=name
     		//
-        	NameValuePair[] description_qs = { new NameValuePair("description", "NetworkManagerTest") };
+        	NameValuePair[] description_qs = { new NameValuePair("description", "WeatherService") };
         	HttpMethod  description_get_request = new GetMethod(nm_base_url);
         	description_get_request.setQueryString(description_qs);
         	assertEquals(200, client.executeMethod(description_get_request));
@@ -117,56 +85,60 @@ public class HttpTunneltIT {
 			//
         	// GET method
         	//
-    		String get_service_path = "/test/resource_id?name=value";
-			LOG.info("invoking service at endpoint: " + endPoint + get_service_path);
+    		String get_service_path = "/sensor/1?loc=abc";
+			LOG.info("invoking GET at endpoint: " + endPoint + get_service_path);
 			HttpMethod  tunnel_get_request = new GetMethod(endPoint + get_service_path);
-			assertEquals(200, client.executeMethod(tunnel_get_request));
+			int get_status_code = client.executeMethod(tunnel_get_request);
         	LOG.info("get-tunnel-response: " + new String(tunnel_get_request.getResponseBody()));
         	tunnel_get_request.releaseConnection();
+        	assertEquals(200, get_status_code);
         	
         	//
         	// POST method
         	//
-        	LOG.info("invoking service at endpoint: " + endPoint);
+        	LOG.info("invoking POST at endpoint: " + endPoint);
         	PostMethod post_request = new PostMethod(endPoint);
 			String reg_post_String = getPostString();
 			StringRequestEntity post_requestEntity = new StringRequestEntity(reg_post_String, "application/json", "UTF-8");
 			post_request.setRequestEntity(post_requestEntity);
-    		assertEquals(200, client.executeMethod(post_request));
+			int post_status_code = client.executeMethod(post_request);
     		String post_JsonString = new String(post_request.getResponseBody());
         	LOG.info("post-tunnel-response: " + post_JsonString);
         	post_request.releaseConnection();
+        	assertEquals(200, post_status_code);
         	
         	JSONObject jsonObject = new JSONObject(post_JsonString);
-    		String virtualAddress = jsonObject.getString(KEY_VIRTUAL_ADDRESS);
+    		int temperature = jsonObject.getInt(KEY_TEMPERATURE);
     		
         	//
         	// PUT method
         	//
-    		LOG.info("invoking service at endpoint: " + endPoint);
+    		LOG.info("invoking PUT at endpoint: " + endPoint);
         	PutMethod put_request = new PutMethod(endPoint);
-			String reg_put_String = getPutString(virtualAddress);
+			String reg_put_String = getPutString();
 			StringRequestEntity put_requestEntity = new StringRequestEntity(reg_put_String, "application/json", "UTF-8");
 			put_request.setRequestEntity(put_requestEntity);
-    		assertEquals(200, client.executeMethod(put_request));
+			int put_status_code = client.executeMethod(put_request);
     		String put_JsonString = new String(put_request.getResponseBody());
         	LOG.info("put-tunnel-response: " + put_JsonString);
         	put_request.releaseConnection();
+        	assertEquals(200, put_status_code);
         	
         	JSONObject updateJsonObject = new JSONObject(put_JsonString);
-			String updated_virtualAddress = updateJsonObject.getString(KEY_VIRTUAL_ADDRESS);
+        	int updated_temperature = updateJsonObject.getInt(KEY_TEMPERATURE);
 			
         	//
         	// DELETE method
         	//
-        	String service_path = updated_virtualAddress;
+        	String service_path = "123";
         	endPoint = endPoint + "/" + service_path;
-			LOG.info("invoking service at endpoint: " + endPoint);
+			LOG.info("invoking DELETE at endpoint: " + endPoint);
 			DeleteMethod delete_request = new DeleteMethod(endPoint);
-    		assertEquals(200, client.executeMethod(delete_request));
+			int delete_status_code = client.executeMethod(delete_request);
         	LOG.info("delete-tunnel-response: " + new String(delete_request.getResponseBody()));
         	delete_request.releaseConnection();
-			
+        	assertEquals(200, delete_status_code);
+        	
         	LOG.info("HttpTunnel test successfully completed");
         	
 		} catch (Exception e) {
@@ -175,40 +147,15 @@ public class HttpTunneltIT {
     }
     
     private String getPostString() throws Exception {
-    	
-    	JSONObject registrationJson = new JSONObject();
-		
-		registrationJson.put(KEY_ENDPOINT, "http://localhost:8882/NetworkManager");
-		registrationJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
-		
-		Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "NetworkManager_Test_Post"), 
-				new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.testing.nm.post") };
-		
-		JSONObject attributesJson = new JSONObject();
-		for(Part p : attributes) {
-			attributesJson.put(p.getKey(), p.getValue());
-		}
-		registrationJson.put(KEY_ATTRIBUTES, attributesJson);
-		return registrationJson.toString();
+    	JSONObject postJson = new JSONObject();
+    	postJson.put("Temperature", 28);
+		return postJson.toString();
     }
     
-    private String getPutString(String virtualAddress) throws Exception {
+    private String getPutString() throws Exception {
     	
     	JSONObject updateJson = new JSONObject();
-    	
-    	updateJson.put(KEY_ENDPOINT, "http://localhost:8882/NetworkManager");
-    	updateJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
-    	updateJson.put(KEY_VIRTUAL_ADDRESS, virtualAddress);
-    	
-		Part[] update_attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "NetworkManager_Test_Put"), 
-				new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.testing.nm.put") };
-
-		JSONObject update_attributesJson = new JSONObject();
-		for(Part p : update_attributes) {
-			update_attributesJson.put(p.getKey(), p.getValue());
-		}
-		updateJson.put(KEY_ATTRIBUTES, update_attributesJson);
-		
+    	updateJson.put("Temperature", 20);
 		return updateJson.toString();
     }
 }

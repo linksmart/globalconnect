@@ -32,22 +32,18 @@ public class HttpTunnel {
 	private NetworkManagerCore nmCore;
 	
 	protected void bindHttpServlet(HttpService http) {
-		LOG.debug("HttpTunnel::binding http-service");
 		this.http = http;
 	}
 	
 	protected void unbindHttpServlet(HttpService http) {
-		LOG.debug("HttpTunnel::un-binding http-service");
 		this.http = null;
 	}
 	
 	protected void bindNetworkManagerCore(NetworkManagerCore nmCore) {
-		LOG.debug("HttpTunnel::binding network-manager-core");
 		this.nmCore = nmCore;
 	}
 	
 	protected void unbindNetworkManagerCore(NetworkManagerCore nmCore) {
-		LOG.debug("HttpTunnel::un-binding network-manager-core");
 		this.nmCore = null;
 	}
 	

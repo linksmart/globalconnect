@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import eu.linksmart.gc.api.types.TunnelRequest;
 import eu.linksmart.gc.api.types.TunnelResponse;
 import eu.linksmart.gc.api.types.utils.SerializationUtil;
+import eu.linksmart.network.Message;
 import eu.linksmart.network.NMResponse;
 import eu.linksmart.network.VirtualAddress;
 import eu.linksmart.network.backbone.Backbone;
@@ -32,7 +33,10 @@ import java.io.IOException;
 @Service({Backbone.class})
 public class HttpImpl implements Backbone {
 
-	private Logger LOGGER = Logger.getLogger(HttpImpl.class.getName());
+	private Logger LOG = Logger.getLogger(HttpImpl.class.getName());
+	
+	private final String APPLICATION_JSON_CONTENT_TYPE = "application/json";
+	private final String ENDCODING_TYPE = "UTF-8";
 	
 	private Map<VirtualAddress, URL> virtualAddressUrlMap = new HashMap<VirtualAddress, URL>();
 	
@@ -53,35 +57,31 @@ public class HttpImpl implements Backbone {
 	private BackboneRouter bbRouter;
 	
     protected void bindConfigAdmin(ConfigurationAdmin configAdmin) {
-    	LOGGER.debug("HttpImpl::binding configAdmin");
         this.mConfigAdmin = configAdmin;
     }
 
     protected void unbindConfigAdmin(ConfigurationAdmin configAdmin) {
-    	LOGGER.debug("HttpImpl::un-binding configAdmin");
         this.mConfigAdmin = null;
     }
     
     protected void bindBackboneRouter(BackboneRouter bbRouter) {
-    	LOGGER.debug("HttpImpl::binding backbone-router");
         this.bbRouter = bbRouter;
     }
 
     protected void unbindBackboneRouter(BackboneRouter bbRouter) {
-    	LOGGER.debug("HttpImpl::un-binding backbone-router");
         this.bbRouter = null;
     }
     
     @Activate
 	protected void activate(ComponentContext context) {
-    	LOGGER.info("[activating Backbone HttpProtocol]");
+    	LOG.info("[activating Backbone HttpProtocol]");
     	this.configurator = new HttpConfigurator(this, context.getBundleContext(), mConfigAdmin);
 		this.configurator.registerConfiguration();
 	}
 
     @Deactivate
 	public void deactivate(ComponentContext context) {
-    	LOGGER.info("[de-activating Backbone HttpProtocol]");
+    	LOG.info("[de-activating Backbone HttpProtocol]");
 	}
     
     @Override
@@ -89,15 +89,22 @@ public class HttpImpl implements Backbone {
     	
 		try {
 			
-			//
-			// reading tunnel request
-			//
-			TunnelRequest tunnel_request = (TunnelRequest) SerializationUtil.deserialize(data);
+			//TODO perform decoding if Encoding of messages is in place through http.properties 
 			
-			LOGGER.info("method: " + tunnel_request.getMethod());
-			LOGGER.info("path: " + tunnel_request.getPath());
-			LOGGER.info("headers: " + tunnel_request.getHeaders().length);
-			LOGGER.info("body: " + new String(tunnel_request.getBody()));
+			//
+			// decoding LinkSmart Message Object
+			//
+			byte[] tunnel_data = SerializationUtil.deserializeMessage(data, senderVirtualAddress).getData();
+			
+			//
+			// deserialize tunnel request
+			//
+			TunnelRequest tunnel_request = (TunnelRequest) SerializationUtil.deserialize(tunnel_data);
+			
+			LOG.info("method: " + tunnel_request.getMethod());
+			LOG.info("path: " + tunnel_request.getPath());
+			LOG.info("headers: " + tunnel_request.getHeaders().length);
+			LOG.info("body: " + new String(tunnel_request.getBody()));
 				
 			//
 			// check if service endpoint is available
@@ -105,7 +112,8 @@ public class HttpImpl implements Backbone {
 			URL urlEndpoint = virtualAddressUrlMap.get(receiverVirtualAddress);
 			 
 			if (urlEndpoint == null) {
-				String message = "cannot send data to service at virtualAddress: " + receiverVirtualAddress.toString() + ", unknown endpoint";
+				String message = "cannot send tunneled data to service at virtualAddress: " + receiverVirtualAddress.toString() + ", unknown endpoint";
+				LOG.error(message);
 				TunnelResponse tunnel_response = new TunnelResponse();
 				tunnel_response.setStatusCode(404);
 				tunnel_response.setBody(message.getBytes());
@@ -132,12 +140,19 @@ public class HttpImpl implements Backbone {
 			} else if(tunnel_request.getMethod().equals("DELETE")) {
 				nm_response = processDELETE(tunnel_request, uriEndpoint);
 			} else {
-				throw new Exception("unsupported HTTP method");
+				throw new Exception("unsupported HTTP method for endpoint:" + uriEndpoint);
 			}
+			
+			//
+			// creating & encoding LinkSmart Message Object
+			//
+			Message r_message = new Message("applicationData", senderVirtualAddress, receiverVirtualAddress, nm_response.getMessageBytes());
+			nm_response.setMessageBytes(SerializationUtil.serializeMessage(r_message, true));
 			
 			return nm_response;
 			
 		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
 			TunnelResponse tunnel_response = new TunnelResponse();
 			tunnel_response.setStatusCode(500);
 			tunnel_response.setBody(e.getMessage().getBytes());
@@ -156,12 +171,48 @@ public class HttpImpl implements Backbone {
     	TunnelResponse tunnel_response = new TunnelResponse();
     	
     	//
+    	// parse service path for query string
+    	//
+    	List<NameValuePair> query_string_pairs = new ArrayList<NameValuePair>();
+    	
+		String query_string = null;
+		
+		String path = tunnel_request.getPath();
+		
+		if(path != null && !(path.isEmpty())) {
+			if(path.contains("?")) {
+				if(path.startsWith("?")) {
+					query_string = path.substring(1);
+				} else {
+					StringTokenizer path_tokens = new StringTokenizer(path, "?");
+					uriEndpoint = uriEndpoint + path_tokens.nextToken();
+					query_string = path_tokens.nextToken();
+				}
+				if(query_string != null) {
+		    		StringTokenizer query_tokens = new StringTokenizer(query_string, "&");
+		    		while(query_tokens.hasMoreTokens()) {
+		    			String[] parameter = query_tokens.nextToken().split("=");
+		    			if(parameter.length == 2) {
+		    				query_string_pairs.add(new NameValuePair(parameter[0], parameter[1]));
+		    			}
+		    		}
+				}
+	    	} else {
+	    		uriEndpoint = uriEndpoint + path;
+	    	}
+		} 
+			
+    	//
 		// invoke service endpoint
 		//
 		HttpClient client = new HttpClient();
-		NameValuePair[] description_qs = { new NameValuePair("description", "NetworkManager:LinkSmartUser") };
-    	HttpMethod  get_request = new GetMethod("http://localhost:8882/NetworkManager");
-    	get_request.setQueryString(description_qs);
+
+    	HttpMethod  get_request = new GetMethod(uriEndpoint);
+    	
+    	if(query_string_pairs.size() > 0) {
+    		get_request.setQueryString(query_string_pairs.toArray(new NameValuePair[query_string_pairs.size()]));
+    	}
+    	
     	int status_code = client.executeMethod(get_request);
     	byte[] service_response = get_request.getResponseBody();
     	get_request.releaseConnection();
@@ -187,12 +238,12 @@ public class HttpImpl implements Backbone {
     	
 		HttpClient client = new HttpClient();
 		PostMethod post_request = new PostMethod(uriEndpoint + tunnel_request.getPath());
-		StringRequestEntity requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), "application/json", "UTF-8");
+		StringRequestEntity requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), APPLICATION_JSON_CONTENT_TYPE, ENDCODING_TYPE);
 		post_request.setRequestEntity(requestEntity);
 		int status_code = client.executeMethod(post_request);
     	byte[] service_response = post_request.getResponseBody();
     	post_request.releaseConnection();
-    	
+    	//TODO check for chunk response
     	tunnel_response.setStatusCode(status_code);
 		tunnel_response.setBody(service_response);
 		//TODO tunnel_response.setHeaders()
@@ -211,12 +262,12 @@ public class HttpImpl implements Backbone {
     	
 		HttpClient client = new HttpClient();
 		PutMethod put_request = new PutMethod(uriEndpoint + tunnel_request.getPath());
-		StringRequestEntity put_requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), "application/json", "UTF-8");
+		StringRequestEntity put_requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), APPLICATION_JSON_CONTENT_TYPE, ENDCODING_TYPE);
 		put_request.setRequestEntity(put_requestEntity);
 		int status_code = client.executeMethod(put_request);
     	byte[] service_response = put_request.getResponseBody();
     	put_request.releaseConnection();
-    	
+    	//TODO check for chunk response
     	tunnel_response.setStatusCode(status_code);
 		tunnel_response.setBody(service_response);
 		//TODO tunnel_response.setHeaders()
@@ -282,7 +333,7 @@ public class HttpImpl implements Backbone {
 				oneProperty = SecurityProperty.valueOf(s);
 				answer.add(oneProperty);
 			} catch (Exception e) {
-				LOGGER.error("Security property value from configuration is not recognized: " + s + ": " + e);
+				LOG.error("Security property value from configuration is not recognized: " + s + ": " + e);
 			}
 		}
 		return answer;
@@ -299,16 +350,16 @@ public class HttpImpl implements Backbone {
 	@Override
 	public boolean addEndpoint(VirtualAddress virtualAddress, String endpoint) {
         if (this.virtualAddressUrlMap.containsKey(virtualAddress)) {
-        	LOGGER.info("virtual-addess is already store for endpoint: " + endpoint);
+        	LOG.info("virtual-addess is already store for endpoint: " + endpoint);
             return false;
         }
         try {
             URL url = new URL(endpoint);
             this.virtualAddressUrlMap.put(virtualAddress, url);
-            LOGGER.info("virtual-addess is added for endpoint: " + endpoint);
+            LOG.info("virtual-addess is added for endpoint: " + endpoint);
             return true;
         } catch (MalformedURLException e) {
-            LOGGER.debug("Unable to add endpoint " + endpoint + " for VirtualAddress " + virtualAddress.toString(), e);
+            LOG.debug("Unable to add endpoint " + endpoint + " for VirtualAddress " + virtualAddress.toString(), e);
         }
         return false;
     }
@@ -324,7 +375,7 @@ public class HttpImpl implements Backbone {
         if (endpoint != null) {
             virtualAddressUrlMap.put(remoteVirtualAddress, endpoint);
         } else {
-            LOGGER.warn("endpoint of VirtualAddress " + senderVirtualAddress + " cannot be found");
+            LOG.warn("endpoint of VirtualAddress " + senderVirtualAddress + " cannot be found");
         }
 	}
 

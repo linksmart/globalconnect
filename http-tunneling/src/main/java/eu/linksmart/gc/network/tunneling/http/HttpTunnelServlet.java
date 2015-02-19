@@ -118,7 +118,7 @@ public class HttpTunnelServlet extends HttpServlet {
 			// get path info
 			//
 			String pathInfo = request.getPathInfo();
-			LOG.info("pathInfo: " + pathInfo);
+			LOG.debug("pathInfo: " + pathInfo);
 			
 			//
 			// verify & extract tokens from path 
@@ -154,6 +154,9 @@ public class HttpTunnelServlet extends HttpServlet {
 				service_path = TunnelProcessor.getServicePath(path_tokens, request, false);
 			}
 			
+			//
+			// create tunnel request
+			//
 			TunnelRequest tunnel_request = new TunnelRequest();
 			
 			tunnel_request.setMethod(request.getMethod());
@@ -161,19 +164,19 @@ public class HttpTunnelServlet extends HttpServlet {
 			tunnel_request.setHeaders(TunnelProcessor.getHeaders(request));
 			tunnel_request.setBody(content.getBytes());
 			
-			LOG.info("s-vad: " + senderVAD.toString());
-			LOG.info("r-vad: " + receiverVAD.toString());		
-			LOG.info("servicePath: " + service_path);
+			LOG.debug("s-vad: " + senderVAD.toString());
+			LOG.debug("r-vad: " + receiverVAD.toString());		
+			LOG.debug("servicePath: " + service_path);
 			String[] headers = tunnel_request.getHeaders();
 			for (int i = 0; i < headers.length; i++) {
-				LOG.info("header: " + headers[i]);
+				LOG.debug("header: " + headers[i]);
 			}
 			
 			//
 			// send tunnel request & read response
 			//
 			TunnelResponse tunnel_response = TunnelProcessor.sendTunnelRequest(tunnel_request, nmCore, senderVAD, receiverVAD);
-			LOG.info("http-tunnel-status: " + tunnel_response.getStatusCode());
+			LOG.debug("http-tunnel status: " + tunnel_response.getStatusCode());
 			
 //			if (tunnel_response.getStatusCode() != HttpServletResponse.SC_OK) {
 //			//set whole response data as servlet body
@@ -202,5 +205,4 @@ public class HttpTunnelServlet extends HttpServlet {
 			return;
 		}
 	}
-	
 }

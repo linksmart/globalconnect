@@ -7,6 +7,13 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.InvalidPropertiesFormatException;
+import java.util.Iterator;
+import java.util.Properties;
+
+import eu.linksmart.network.Message;
+import eu.linksmart.network.VirtualAddress;
+import eu.linksmart.utils.Base64;
 
 public class SerializationUtil {
 	
@@ -27,6 +34,64 @@ public class SerializationUtil {
 		bis.close();
 		in.close();
 		return o;
+	}
+	
+	public static Message deserializeMessage(byte[] payload, VirtualAddress senderVirtualAddress) throws Exception {
+		
+		//
+		// reading XML data document
+		//
+		Properties properties = new Properties();
+		try {
+			properties.loadFromXML(new ByteArrayInputStream(payload));
+		} catch (InvalidPropertiesFormatException e) {
+			throw new Exception("deserializeMessage: unable to load properties from XML data. Data is not valid XML: " + new String(payload));
+		} catch (IOException e) {
+			throw new Exception("deserializeMessage: unable to load properties from XML data: " + new String(payload));
+		}
+		
+		//
+		// extracting message
+		//
+		Message ls_message = new Message((String) properties.remove("topic"), senderVirtualAddress, null, (Base64.decode((String) properties.remove("applicationData"))));
+		
+		//
+		// go through the properties and add them to the message
+		//
+		boolean includeProps = true; 
+		if(includeProps) {
+			Iterator<Object> i = properties.keySet().iterator();
+			while (i.hasNext()) {
+				String key = (String) i.next();
+				ls_message.setProperty(key, properties.getProperty(key));
+			}
+		}
+					
+		return ls_message;
+	}
+	
+	public static byte[] serializeMessage(Message msg, boolean includeProperties) throws Exception {
+		
+		Properties props = new Properties();
+		if(includeProperties) {
+			// read the properties of the message and put it into the properties
+			Iterator<String> i = msg.getKeySet().iterator();
+			while (i.hasNext()) {
+				String key = i.next();
+				props.put(key, msg.getProperty(key));
+			}
+		}
+		// put application data into properties
+		props.put("applicationData", Base64.encodeBytes(msg.getData()));
+		props.put("topic", msg.getTopic());
+		//convert properties to xml and put it into stream
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		byte[] serializedCommand = null;
+		props.storeToXML(bos, null);
+		serializedCommand = bos.toByteArray();
+		bos.close();
+		
+		return serializedCommand;
 	}
 
 }

@@ -18,6 +18,10 @@
 	<description>LinkSmart Types API</description>
 	
 	<dependencies>
+		<dependency>
+            <groupId>eu.linksmart</groupId>
+            <artifactId>eu.linksmart.api.network</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>

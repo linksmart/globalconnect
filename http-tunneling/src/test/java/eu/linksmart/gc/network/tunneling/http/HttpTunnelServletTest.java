@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -190,6 +191,41 @@ public class HttpTunnelServletTest {
 //			//successful test
 //		}
 //	}
+	
+	//@Test
+	public void testToken() {
+		
+		String uriEndpoint = "http://localhost:8882/NetworkManager";
+		String path = "/get-asd/1?a=b&c=";
+		//String path = "?a=b";
+		String service_endpoint = null;
+		String query_string = null;
+		if(path.contains("?")) {
+			if(path.startsWith("?")) {
+				query_string = path.substring(1);
+				service_endpoint = uriEndpoint;
+			} else {
+				StringTokenizer path_tokens = new StringTokenizer(path, "?");
+				service_endpoint = uriEndpoint + path_tokens.nextToken();
+				query_string = path_tokens.nextToken();
+			}
+			if(query_string != null) {
+				System.out.println("query-string: " + query_string);
+	    		StringTokenizer query_tokens = new StringTokenizer(query_string, "&");
+	    		while(query_tokens.hasMoreTokens()) {
+	    			String query_parameter = query_tokens.nextToken();
+	    			String[] parameter = query_parameter.split("=");
+	    			if(parameter.length == 2) {
+	    				System.out.println("name: " + parameter[0] + " - value: " + parameter[1]);
+	    			}
+	    			
+	    		}
+			}
+    	} else {
+    		service_endpoint = uriEndpoint + path;
+    	}
+		System.out.println("endpoint: " + service_endpoint);
+	}
 }
 
 
