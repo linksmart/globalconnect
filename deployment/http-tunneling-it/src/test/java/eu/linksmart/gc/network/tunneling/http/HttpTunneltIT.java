@@ -24,26 +24,26 @@ import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
 
 @RunWith(PaxExam.class)
 public class HttpTunneltIT {
-	
+
 	private static Logger LOG = Logger.getLogger(HttpTunneltIT.class.getName());
-	
+
 	private String nmBaseUrl = "http://localhost:8882/NetworkManager";
 	private static final String KEY_ENDPOINT = "Endpoint";
 	private static final String KEY_TEMPERATURE = "Temperature";
 	private String endPoint = null;
     private HttpClient httpClient = new HttpClient();
-	
+
     @Configuration
     public Option[] config() {
         return new Option[] {
         		ITConfiguration.regressionDefaults(),
-        		features("mvn:eu.linksmart.gc.features/linksmart-gc-features/0.0.1-SNAPSHOT/xml/features","http-tunneling-it"),  
+        		features("mvn:eu.linksmart.gc.features/linksmart-gc-features/0.0.1-SNAPSHOT/xml/features","http-tunneling-it"),
         };
     }
-    
+
     @Before
     public void setUp() {
-    	
+
     	try {
     		//
     		// get service registration from network-manager using its ResT interface with queryString  ?description=name
@@ -56,48 +56,42 @@ public class HttpTunneltIT {
         	String serviceJson = new String(getMethod.getResponseBody());
         	LOG.info("get-service-response: " + serviceJson);
         	getMethod.releaseConnection();
-        	
+
         	JSONArray registrationsJson = new JSONArray(serviceJson);
         	JSONObject jsonObject = registrationsJson.getJSONObject(0);
         	endPoint = jsonObject.getString(KEY_ENDPOINT);
-        	
+
         	LOG.info("setup completed, service is accessible at endpoint: " + endPoint);
-        	
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     }
-    
+
     @Test
     public void testHttpTunnel() {
-        String resBody;
+        LOG.info("testing HttpTunnel");
 
-    	try {
-    		LOG.info("testing HttpTunnel");
+        // GET
+        testGETRequest(endPoint + "/sensor/1?loc=abc", HttpStatus.SC_OK);
+        testGETRequest(endPoint + "/sensor/1?loc=nowhere", HttpStatus.SC_NOT_FOUND);
 
-        	// GET
-            testGETRequest(endPoint + "/sensor/1?loc=abc", HttpStatus.SC_OK);
-            testGETRequest(endPoint + "/sensor/1?loc=nowhere", HttpStatus.SC_NOT_FOUND);
-
-        	// POST
-            testPOSTRequest(endPoint, HttpStatus.SC_OK);
+        // POST
+        testPOSTRequest(endPoint, HttpStatus.SC_OK);
 //        	JSONObject jsonObject = new JSONObject(resBody);
 //    		int temperature = jsonObject.getInt(KEY_TEMPERATURE);
 
-        	// PUT
-            testPUTRequest(endPoint, HttpStatus.SC_OK);
+        // PUT
+        testPUTRequest(endPoint, HttpStatus.SC_OK);
 //        	JSONObject updateJsonObject = new JSONObject(resBody);
 //        	int updated_temperature = updateJsonObject.getInt(KEY_TEMPERATURE);
 
-        	// DELETE
-            testDELETERequest(endPoint + "/123", HttpStatus.SC_OK);
+        // DELETE
+        testDELETERequest(endPoint + "/123", HttpStatus.SC_OK);
 
-        	LOG.info("HttpTunnel test successfully completed");
-        	
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
+        LOG.info("HttpTunnel test successfully completed");
+	}
+
 
     @Test
     public void testInvalidVAD() {
