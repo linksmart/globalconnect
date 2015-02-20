@@ -1,13 +1,11 @@
 package eu.linksmart.gc.network.tunneling.http;
 
+import eu.linksmart.it.utils.ITConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.*;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,22 +16,22 @@ import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
-import eu.linksmart.it.utils.ITConfiguration;
 
 @RunWith(PaxExam.class)
 public class HttpTunneltIT {
 	
 	private static Logger LOG = Logger.getLogger(HttpTunneltIT.class.getName());
 	
-	private String nm_base_url = "http://localhost:8882/NetworkManager";
-	
+	private String nmBaseUrl = "http://localhost:8882/NetworkManager";
 	private static final String KEY_ENDPOINT = "Endpoint";
-	
 	private static final String KEY_TEMPERATURE = "Temperature";
-	
 	private String endPoint = null;
+    private HttpClient httpClient = new HttpClient();
 	
     @Configuration
     public Option[] config() {
@@ -47,23 +45,20 @@ public class HttpTunneltIT {
     public void setUp() {
     	
     	try {
-    		
-    		HttpClient client = new HttpClient();
-    		
     		//
     		// get service registration from network-manager using its ResT interface with queryString  ?description=name
     		//
-        	NameValuePair[] description_qs = { new NameValuePair("description", "WeatherService") };
-        	HttpMethod  description_get_request = new GetMethod(nm_base_url);
-        	description_get_request.setQueryString(description_qs);
-        	assertEquals(200, client.executeMethod(description_get_request));
-        	String serviceJsonString = new String(description_get_request.getResponseBody());
-        	LOG.info("get-service-response: " + serviceJsonString);
-        	description_get_request.releaseConnection();
+        	NameValuePair[] qs = { new NameValuePair("description", "WeatherService") };
+        	HttpMethod  getMethod = new GetMethod(nmBaseUrl);
+        	getMethod.setQueryString(qs);
+
+        	assertEquals(HttpStatus.SC_OK, httpClient.executeMethod(getMethod));
+        	String serviceJson = new String(getMethod.getResponseBody());
+        	LOG.info("get-service-response: " + serviceJson);
+        	getMethod.releaseConnection();
         	
-        	JSONArray registrationsJson = new JSONArray(serviceJsonString);
+        	JSONArray registrationsJson = new JSONArray(serviceJson);
         	JSONObject jsonObject = registrationsJson.getJSONObject(0);
-			
         	endPoint = jsonObject.getString(KEY_ENDPOINT);
         	
         	LOG.info("setup completed, service is accessible at endpoint: " + endPoint);
@@ -75,75 +70,58 @@ public class HttpTunneltIT {
     
     @Test
     public void testHttpTunnel() {
-    	
+        String resBody;
+
     	try {
-    		
     		LOG.info("testing HttpTunnel");
-    		
-    		HttpClient client = new HttpClient();
-    		
-			//
-        	// GET method
-        	//
-    		String get_service_path = "/sensor/1?loc=abc";
-			LOG.info("invoking GET at endpoint: " + endPoint + get_service_path);
-			HttpMethod  tunnel_get_request = new GetMethod(endPoint + get_service_path);
-			int get_status_code = client.executeMethod(tunnel_get_request);
-        	LOG.info("get-tunnel-response: " + new String(tunnel_get_request.getResponseBody()));
-        	tunnel_get_request.releaseConnection();
-        	assertEquals(200, get_status_code);
-        	
-        	//
-        	// POST method
-        	//
-        	LOG.info("invoking POST at endpoint: " + endPoint);
-        	PostMethod post_request = new PostMethod(endPoint);
-			String reg_post_String = getPostString();
-			StringRequestEntity post_requestEntity = new StringRequestEntity(reg_post_String, "application/json", "UTF-8");
-			post_request.setRequestEntity(post_requestEntity);
-			int post_status_code = client.executeMethod(post_request);
-    		String post_JsonString = new String(post_request.getResponseBody());
-        	LOG.info("post-tunnel-response: " + post_JsonString);
-        	post_request.releaseConnection();
-        	assertEquals(200, post_status_code);
-        	
-        	JSONObject jsonObject = new JSONObject(post_JsonString);
-    		int temperature = jsonObject.getInt(KEY_TEMPERATURE);
-    		
-        	//
-        	// PUT method
-        	//
-    		LOG.info("invoking PUT at endpoint: " + endPoint);
-        	PutMethod put_request = new PutMethod(endPoint);
-			String reg_put_String = getPutString();
-			StringRequestEntity put_requestEntity = new StringRequestEntity(reg_put_String, "application/json", "UTF-8");
-			put_request.setRequestEntity(put_requestEntity);
-			int put_status_code = client.executeMethod(put_request);
-    		String put_JsonString = new String(put_request.getResponseBody());
-        	LOG.info("put-tunnel-response: " + put_JsonString);
-        	put_request.releaseConnection();
-        	assertEquals(200, put_status_code);
-        	
-        	JSONObject updateJsonObject = new JSONObject(put_JsonString);
-        	int updated_temperature = updateJsonObject.getInt(KEY_TEMPERATURE);
-			
-        	//
-        	// DELETE method
-        	//
-        	String service_path = "123";
-        	endPoint = endPoint + "/" + service_path;
-			LOG.info("invoking DELETE at endpoint: " + endPoint);
-			DeleteMethod delete_request = new DeleteMethod(endPoint);
-			int delete_status_code = client.executeMethod(delete_request);
-        	LOG.info("delete-tunnel-response: " + new String(delete_request.getResponseBody()));
-        	delete_request.releaseConnection();
-        	assertEquals(200, delete_status_code);
-        	
+
+        	// GET
+            testGETRequest(endPoint + "/sensor/1?loc=abc", HttpStatus.SC_OK);
+            testGETRequest(endPoint + "/sensor/1?loc=nowhere", HttpStatus.SC_NOT_FOUND);
+
+        	// POST
+            testPOSTRequest(endPoint, HttpStatus.SC_OK);
+//        	JSONObject jsonObject = new JSONObject(resBody);
+//    		int temperature = jsonObject.getInt(KEY_TEMPERATURE);
+
+        	// PUT
+            testPUTRequest(endPoint, HttpStatus.SC_OK);
+//        	JSONObject updateJsonObject = new JSONObject(resBody);
+//        	int updated_temperature = updateJsonObject.getInt(KEY_TEMPERATURE);
+
+        	// DELETE
+            testDELETERequest(endPoint + "/123", HttpStatus.SC_OK);
+
         	LOG.info("HttpTunnel test successfully completed");
         	
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+    }
+
+    @Test
+    public void testInvalidVAD() {
+        LOG.info("testing requests to invalid VAD on HttpTunnel");
+        String endpoint;
+
+        // Create an endpoint with malicious VAD
+        String[] endpointParts = endPoint.split("/");
+        endpointParts[endpointParts.length - 1] = "malicious-vad";
+        endpoint = join(endpointParts, "/");
+
+        // GET
+        testGETRequest(endpoint + "/service/path?foo=bar", HttpStatus.SC_BAD_REQUEST);
+
+        // POST
+        testPOSTRequest(endpoint, HttpStatus.SC_BAD_REQUEST);
+
+        // PUT
+        testPUTRequest(endpoint, HttpStatus.SC_BAD_REQUEST);
+
+        // DELETE
+        testDELETERequest(endpoint, HttpStatus.SC_BAD_REQUEST);
+
+        LOG.info("Test on requests to invalid VAD on HttpTunnel successfully completed");
     }
     
     private String getPostString() throws Exception {
@@ -157,5 +135,110 @@ public class HttpTunneltIT {
     	JSONObject updateJson = new JSONObject();
     	updateJson.put("Temperature", 20);
 		return updateJson.toString();
+    }
+
+    private String testGETRequest(String endpoint, int expectedStatus) {
+        int statusCode = 0;
+        String resBody = null;
+
+        LOG.info("invoking GET at endpoint: " + endpoint);
+        HttpMethod getMethod = new GetMethod(endpoint);
+        try {
+            statusCode = httpClient.executeMethod(getMethod);
+            resBody = new String(getMethod.getResponseBody());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("Exception: " + e.getMessage());
+        }
+        LOG.info("get-tunnel-response: " + resBody);
+        getMethod.releaseConnection();
+        assertEquals(expectedStatus, statusCode);
+
+        return resBody;
+    }
+
+    private String testPOSTRequest(String endpoint, int expectedStatus) {
+        int statusCode = 0;
+        String resBody = null;
+        StringRequestEntity requestEntity = null;
+
+        LOG.info("invoking POST at endpoint: " + endpoint);
+        PostMethod postMethod = new PostMethod(endpoint);
+        try {
+            String postString = getPostString();
+            requestEntity = new StringRequestEntity(postString, "application/json", "UTF-8");
+            postMethod.setRequestEntity(requestEntity);
+
+            statusCode = httpClient.executeMethod(postMethod);
+            resBody = new String(postMethod.getResponseBody());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception: " + e.getMessage());
+        }
+
+        LOG.info("post-tunnel-response: " + resBody);
+        postMethod.releaseConnection();
+        assertEquals(expectedStatus, statusCode);
+
+        return resBody;
+    }
+
+    private String testPUTRequest(String endpoint, int expectedStatus) {
+        int statusCode = 0;
+        String resBody = null;
+        StringRequestEntity requestEntity = null;
+
+        LOG.info("invoking PUT at endpoint: " + endpoint);
+        PutMethod putMethod = new PutMethod(endpoint);
+        String putString = null;
+        try {
+            putString = getPutString();
+            requestEntity = new StringRequestEntity(putString, "application/json", "UTF-8");
+            putMethod.setRequestEntity(requestEntity);
+
+            statusCode = httpClient.executeMethod(putMethod);
+            resBody = new String(putMethod.getResponseBody());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception: " + e.getMessage());
+        }
+
+        LOG.info("put-tunnel-response: " + resBody);
+        putMethod.releaseConnection();
+        assertEquals(expectedStatus, statusCode);
+
+        return resBody;
+    }
+
+    private String testDELETERequest(String endpoint, int expectedStatus) {
+        int statusCode = 0;
+        String resBody = null;
+        StringRequestEntity requestEntity = null;
+
+        LOG.info("invoking DELETE at endpoint: " + endpoint);
+        DeleteMethod deleteMethod = new DeleteMethod(endpoint);
+        try {
+            statusCode = httpClient.executeMethod(deleteMethod);
+            resBody = new String(deleteMethod.getResponseBody());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception: " + e.getMessage());
+        }
+        LOG.info("delete-tunnel-response: " + resBody);
+        deleteMethod.releaseConnection();
+        assertEquals(expectedStatus, statusCode);
+
+        return resBody;
+    }
+
+    // Big hello to java folks
+    public static String join(String r[],String d)
+    {
+        if (r.length == 0) return "";
+        StringBuilder sb = new StringBuilder();
+        int i;
+        for(i=0;i<r.length-1;i++)
+            sb.append(r[i]+d);
+        return sb.toString()+r[i];
     }
 }

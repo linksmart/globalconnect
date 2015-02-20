@@ -1,16 +1,15 @@
 package eu.linksmart.gc.examples.weather.service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.net.URLDecoder;
+import org.apache.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import org.json.JSONObject;
-import org.json.JSONException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.net.URLDecoder;
 
 public class WeatherServiceServlet extends HttpServlet {
 
@@ -33,9 +32,13 @@ public class WeatherServiceServlet extends HttpServlet {
 			else
 				queryString = URLDecoder.decode(queryString, "UTF-8");
 		}
-		
+
 		String responseString = null;
-		
+
+        if ((queryString != null) && queryString.equals("loc=nowhere")) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "");
+        }
+
 		try {
 			
 			JSONObject getJson = new JSONObject();
@@ -82,7 +85,7 @@ public class WeatherServiceServlet extends HttpServlet {
 	}
 	
 	private void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		
+
 		//
 		// create JSONObject from message payload
 		//
