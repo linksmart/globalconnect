@@ -104,9 +104,26 @@ public class HttpTunneltIT {
         LOG.info("testing requests to invalid VAD on HttpTunnel");
         String endpoint;
 
-        // Create an endpoint with malicious VAD
+        // Malicious sennder VAD
         String[] endpointParts = endPoint.split("/");
-        endpointParts[endpointParts.length - 1] = "malicious-vad";
+        endpointParts[endpointParts.length - 1] = "malicious-sender-vad";
+        endpoint = join(endpointParts, "/");
+
+        // GET
+        testGETRequest(endpoint + "/service/path?foo=bar", HttpStatus.SC_BAD_REQUEST);
+
+        // POST
+        testPOSTRequest(endpoint, HttpStatus.SC_BAD_REQUEST);
+
+        // PUT
+        testPUTRequest(endpoint, HttpStatus.SC_BAD_REQUEST);
+
+        // DELETE
+        testDELETERequest(endpoint, HttpStatus.SC_BAD_REQUEST);
+
+        // Malicious receiver VAD
+        endpointParts = endPoint.split("/");
+        endpointParts[endpointParts.length - 2] = "malicious-receiver-vad";
         endpoint = join(endpointParts, "/");
 
         // GET
