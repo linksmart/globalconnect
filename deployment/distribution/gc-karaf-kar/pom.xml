@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-    	<groupId>eu.linksmart.distribution</groupId>
-    	<artifactId>zmq-packaging-parent</artifactId>
+    	<groupId>eu.linksmart.gc.distribution</groupId>
+    	<artifactId>eu.linksmart.gc.distribution.parent</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </parent>
     
-    <artifactId>zmq-kar</artifactId>
+    <artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
 
-    <name>LSGC zmq KAR</name>
-    <description>Triggers assembly of Karaf archive of LS main distribution</description>
+    <name>LSGC Karaf KAR</name>
+    <description>Triggers assembly of Karaf archive of GC main distribution</description>
 
 	<packaging>kar</packaging>
 	
@@ -31,7 +31,7 @@
                             <goal>features-create-kar</goal>
                         </goals>
                         <configuration>
-                            <featuresFile>mvn:eu.linksmart.gc.features/linksmart-gc-features/0.0.1-SNAPSHOT/xml/features</featuresFile>
+                            <featuresFile>${gc.features.repository.url}</featuresFile>
                         </configuration>
                     </execution>
                 </executions>

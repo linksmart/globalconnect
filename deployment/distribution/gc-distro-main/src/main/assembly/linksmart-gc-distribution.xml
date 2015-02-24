@@ -10,17 +10,16 @@
 
     <fileSets>
         <fileSet>
-            <directory>target/linksmart-resources/apache-karaf-${karaf.version}</directory>
+            <directory>target/linksmart-gc-resources/apache-karaf-${karaf.version}</directory>
 			<outputDirectory>/</outputDirectory>
 			<fileMode>755</fileMode>
 			<excludes>
-
                 <exclude>/etc/org.apache.karaf.features.cfg</exclude>
                 <exclude>/etc/org.ops4j.pax.url.mvn.cfg</exclude>
       		</excludes>
 		</fileSet>
 		<fileSet>
-			<directory>target/linksmart-resources/unpacked-resources/repository</directory>
+			<directory>target/linksmart-gc-resources/unpacked-resources/repository</directory>
 			<outputDirectory>system</outputDirectory>
 		</fileSet>
 		<fileSet>
@@ -34,7 +33,7 @@
         <file>
             <source>src/main/resources/doc/README</source>
             <outputDirectory>/</outputDirectory>
-            <destName>README-LS</destName>
+            <destName>README-GC</destName>
             <filtered>true</filtered>
         </file>
     </files>

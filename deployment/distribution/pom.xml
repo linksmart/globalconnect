@@ -5,25 +5,62 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>eu.linksmart</groupId>
-        <artifactId>linksmart-parent</artifactId>
-        <version>2.2.2-SNAPSHOT</version>
+        <groupId>eu.linksmart.gc</groupId>
+		<artifactId>eu.linksmart.gc.parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>eu.linksmart.distribution</groupId>    
-    <artifactId>zmq-packaging-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-
+    <groupId>eu.linksmart.gc.distribution</groupId>    
+    <artifactId>eu.linksmart.gc.distribution.parent</artifactId>
     
-    <name>LS suite - zmq distribution</name>
-    <description>Triggers KAR build and final assembly of zmq based LS</description>
+    <name>LS suite - GC Distribution</name>
+    <description>Triggers KAR build and final assembly of GC based LS</description>
 
 	<packaging>pom</packaging>
 	
     <modules>
-        <module>zmq-kar</module>
-        <module>zmq-packaging</module>
+        <module>gc-karaf-kar</module>
+        <module>gc-distro-main</module>
     </modules>
-
+    
+    <properties>
+        <gc.features.repository.url>mvn:eu.linksmart.gc.deployment/eu.linksmart.gc.deployment.features.core/${linksmart.gc.version}/xml/features</gc.features.repository.url>
+    </properties>
+    
+    <dependencyManagement>
+    	<dependencies>
+    		<dependency>
+            	<groupId>eu.linksmart.gc.distribution</groupId>
+            	<artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
+            	<version>${linksmart.gc.version}</version>
+            	<type>kar</type>
+        	</dependency>
+        	<dependency>
+            	<groupId>org.apache.karaf</groupId>
+            	<artifactId>apache-karaf</artifactId>
+            	<version>${karaf.version}</version>
+            	<type>tar.gz</type>
+        	</dependency>
+    	</dependencies>
+    </dependencyManagement>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+            	<plugin>
+                	<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+            	</plugin>
+            	<plugin>
+		            <groupId>org.apache.maven.plugins</groupId>
+		            <artifactId>maven-antrun-plugin</artifactId>
+		        </plugin>
+		        <plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+				</plugin>        
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

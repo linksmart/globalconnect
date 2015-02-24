@@ -2,28 +2,27 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-	    <groupId>eu.linksmart.distribution</groupId>
-	    <artifactId>zmq-packaging-parent</artifactId>
-	    <version>0.0.1-SNAPSHOT</version>
+	    <groupId>eu.linksmart.gc.distribution</groupId>
+    	<artifactId>eu.linksmart.gc.distribution.parent</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
      </parent>
-    <artifactId>linksmart-zmq-distribution</artifactId>
+     
+    <artifactId>eu.linksmart.gc.distribution.main</artifactId>
     
-    <name>LSGC zmq zip archive</name>
-    <description>Delivers a LinkSmart Server zmq distribution as ZIP and GZIP</description>
+    <name>LS GC Main zip archive</name>
+    <description>Delivers a LinkSmart GC distribution as ZIP and GZIP</description>
     
     <packaging>pom</packaging>
      
     <dependencies>
     	<dependency>
-            <groupId>eu.linksmart.distribution</groupId>
-            <artifactId>zmq-kar</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <groupId>eu.linksmart.gc.distribution</groupId>
+            <artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
             <type>kar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.karaf</groupId>
             <artifactId>apache-karaf</artifactId>
-            <version>3.0.1</version>
             <type>tar.gz</type>
         </dependency>
     </dependencies>
@@ -50,7 +49,7 @@
 						</executions>
 						<configuration>
 							<descriptors>
-								<descriptor>src/main/assembly/linksmart-distribution.xml</descriptor>
+								<descriptor>src/main/assembly/linksmart-gc-distribution.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</plugin>
@@ -71,7 +70,7 @@
                                             <groupId>org.apache.karaf</groupId>
                                             <artifactId>apache-karaf</artifactId>
                                             <type>tar.gz</type>
-                                            <outputDirectory>target/linksmart-resources</outputDirectory>
+                                            <outputDirectory>target/linksmart-gc-resources</outputDirectory>
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>
@@ -85,11 +84,11 @@
 								<configuration>
 					            	<artifactItems>
 										<artifactItem>
-											<groupId>eu.linksmart.distribution</groupId>
-											<artifactId>zmq-kar</artifactId>
+											<groupId>eu.linksmart.gc.distribution</groupId>
+            								<artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
 											<type>kar</type>
-											<outputDirectory>target/linksmart-resources</outputDirectory>
-											<destFileName>linksmart-karaf-archive.zip</destFileName>
+											<outputDirectory>target/linksmart-gc-resources</outputDirectory>
+											<destFileName>linksmart-gc-karaf-archive.zip</destFileName>
 										</artifactItem>
 									</artifactItems>
 					            </configuration>
@@ -105,8 +104,8 @@
 		                        <phase>process-resources</phase>
 		                        <configuration>
 		                            <tasks>
-		                                <echo message="unpack linksmart-karaf-archive" />
-		                                <unzip src="target/linksmart-resources/linksmart-karaf-archive.zip" dest="target/linksmart-resources/unpacked-resources" />
+		                                <echo message="unpack linksmart-gc-karaf-archive" />
+		                                <unzip src="target/linksmart-gc-resources/linksmart-gc-karaf-archive.zip" dest="target/linksmart-gc-resources/unpacked-resources" />
 		                            </tasks>
 		                        </configuration>
 		                        <goals>

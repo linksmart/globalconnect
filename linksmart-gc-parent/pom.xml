@@ -67,6 +67,10 @@
         <project-info-reports.version>2.7</project-info-reports.version>
         <site.plugin.version>3.4</site.plugin.version>
         <maven.javadoc.version>2.10</maven.javadoc.version>
+        <!-- distribution related plugins -->
+        <maven.assembly.version>2.4.1</maven.assembly.version>
+        <maven.antrun.version>1.7</maven.antrun.version>
+        <maven.dependency.version>2.9</maven.dependency.version>
         <!-- other -->
 		<org.json.version>1.0.0</org.json.version>
 		<org.zeromq.version>0.3.4</org.zeromq.version>
@@ -468,6 +472,22 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>${maven.javadoc.version}</version>
+				</plugin>
+				<!-- Distribution related plugins -->
+				<plugin>
+                	<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>${maven.assembly.version}</version>
+            	</plugin>
+            	<plugin>
+		            <groupId>org.apache.maven.plugins</groupId>
+		            <artifactId>maven-antrun-plugin</artifactId>
+		            <version>${maven.antrun.version}</version>
+		        </plugin>
+		        <plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>${maven.dependency.version}</version>
 				</plugin>
             </plugins>
         </pluginManagement>

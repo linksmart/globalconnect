@@ -1,4 +1,4 @@
-LinkSmart ${linksmart.version}
+LinkSmart ${linksmart.gc.version}
 ------------------------------------------------------------
 
 Requirements
@@ -7,7 +7,7 @@ Java 1.7
 JCE unlimited strength
 
 
-Starting and Stopping LinkSmart
+Starting and Stopping LinkSmart GC
 ------------------------------------------------------------
 
 To start the server, run the following command in Windows:
@@ -47,35 +47,35 @@ or simply
 
 shutdown -f
 
-LinkSmart Features
+LinkSmart GC Features
 ------------------------------------------------------------
 LinkSmart provides different deployment modes with the help of Karaf's feature concept. Following are the currently available features:
 
-- linksmart-core
-start all LinkSmart components without web service layer.
+- linksmart-gc
+start all LinkSmart GC components (Tunneling, Zmq & Http backbones, NetworkManager, NetworkManageer_Rest etc)
 
-- linksmart-ws-provider
-setup & start web services container (based on CXF)
+- gc-http-tunneling
+start jetty server, network manager & Tunneling servlet
 
-- linksmart
-start all LinkSmart components with web service layer and expose web services for relevant components.
+- gc-backbone-http
+start backbone router & Http implementation for Backbone interface
 
-- linksmart-light
-start LinkSmart without security components (crypto, trust, security-manager etc). Currently, JXTA backbone is also excluded.
+- gc-backbone-zmq
+start backone router & ZMQ based implementation of Backbone interface
 
-- linksmart-xacml-policy
-support for authorization of services/resources access inside LinkSmart by XACML based policy framework
+- gc-network-manager
+start netwokr manager and associated components like identity-manager and backbone-router
 
-- network-manager-rest
+- gc-network-manager-rest
 provide HTTP based (REST) interface for Network Manager for registration, de-registration, and service discovery etc
 
 
 The feature:install command installs a feature as follows: 
 
-karaf@root()> feature:install linksmart
+karaf@root()> feature:install linksmart-gc
 
 The feature:uninstall command uninstalls a feature as shown below: 
 
-karaf@root()> feature:uninstall linksmart
+karaf@root()> feature:uninstall linksmart-gc
 
 
