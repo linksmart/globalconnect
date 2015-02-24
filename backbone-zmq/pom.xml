@@ -5,15 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>eu.linksmart</groupId>
-        <artifactId>linksmart-osgi-component</artifactId>
-        <version>2.2.2-SNAPSHOT</version>
+        <groupId>eu.linksmart.gc</groupId>
+		<artifactId>eu.linksmart.gc.osgi.component</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
     </parent>
 
-	<groupId>eu.linksmart.gc</groupId>
 	<artifactId>eu.linksmart.gc.network.backbone.zmq</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-    
+	
     <packaging>bundle</packaging>
 
     <name>ZMQ backbone</name>
@@ -31,7 +29,6 @@
         <dependency>
       		<groupId>org.zeromq</groupId>
       		<artifactId>jeromq</artifactId>
-      		<version>0.3.4</version>
     	</dependency>
     </dependencies>
 

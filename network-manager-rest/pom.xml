@@ -5,15 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>eu.linksmart</groupId>
-        <artifactId>linksmart-osgi-component</artifactId>
-        <version>2.2.2-SNAPSHOT</version>
+        <groupId>eu.linksmart.gc</groupId>
+		<artifactId>eu.linksmart.gc.osgi.component</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>eu.linksmart.gc</groupId>
     <artifactId>eu.linksmart.gc.networkmanager.rest</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	
+
     <packaging>bundle</packaging>
 
     <name>LinkSmart NetworkManager REST API</name>
@@ -39,7 +37,6 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>com.springsource.org.json</artifactId>
-            <version>${org-json.version}</version>
         </dependency>
     </dependencies>
 

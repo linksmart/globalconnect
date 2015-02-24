@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<features name="${project.artifactId}" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
+
+	<feature name="gc-osgi-core" version="${linksmart.gc.version}">
+		<!--
+        core OSGi bundles are provisioned by Karaf, hence no need to deploy these bundles     
+      	-->
+        <bundle>mvn:org.apache.felix/org.apache.felix.scr/${felix.scr.version}</bundle>
+        <bundle>mvn:org.apache.felix/org.apache.felix.metatype/${felix.metatype.version}</bundle>
+        <!--
+        no need to deploy configAdmin, Karaf already provision this bundle   
+      	<bundle>mvn:org.apache.felix/org.apache.felix.configadmin/${felix.osgi.configadmin.version}</bundle>  
+      	-->
+    </feature>
+    
+    <feature name="gc-osgi-http" version="${linksmart.gc.version}">
+    	<feature version="${karaf.version}">http</feature>
+		<!--     	
+		<bundle>mvn:org.apache.felix/org.apache.felix.http.jetty/${felix.http.version}</bundle>	 
+		-->
+    </feature>
+    
+    <feature name="gc-boot" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">gc-osgi-core</feature>
+        <bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-lang/${servicemix.commons-lang.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.utils/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.network/${linksmart.version}</bundle>
+    </feature>
+    
+    <feature name="gc-identity-manager" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">gc-boot</feature>
+    	<bundle>mvn:eu.linksmart/eu.linksmart.api.identitymanager/${linksmart.version}</bundle>
+    	<bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager.core/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.security.communication/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.identitymanager/${linksmart.version}</bundle>
+    </feature>
+    
+    <feature name="gc-backbone-router" version="${linksmart.gc.version}">
+		<feature version="${linksmart.gc.version}">gc-boot</feature>		       
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.backbone/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.backbone.router/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.security.communication/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager.core/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager/${linksmart.version}</bundle>
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.backbone.router/${linksmart.version}</bundle>
+    </feature>
+    
+    <feature name="gc-network-manager" version="${linksmart.gc.version}">  
+    	<feature version="${linksmart.gc.version}">gc-boot</feature> 
+    	<feature version="${linksmart.gc.version}">gc-identity-manager</feature>
+        <feature version="${linksmart.gc.version}">gc-backbone-router</feature>
+        <bundle>mvn:eu.linksmart/eu.linksmart.network.networkmanager/${linksmart.version}</bundle>
+    </feature>
+    
+    <feature name="gc-backbone-zmq" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">gc-backbone-router</feature>
+        <bundle>mvn:org.zeromq/jeromq/${org.zeromq.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}</bundle>
+    </feature>
+    
+    <feature name="gc-backbone-http" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">gc-backbone-router</feature>
+    	<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-codec/${commons-codec.version}</bundle>
+    	<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-httpclient/${apache.httpclient.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.types/${linksmart.gc.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.protocol.http/${linksmart.gc.version}</bundle>
+    </feature>
+    
+    <feature name="gc-network-manager-rest" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">gc-osgi-http</feature>
+    	<feature version="${linksmart.gc.version}">gc-network-manager</feature>
+        <bundle>mvn:org.json/com.springsource.org.json/${org.json.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.networkmanager.rest/${linksmart.gc.version}</bundle>   
+    </feature>
+    
+    <feature name="gc-http-tunneling" version="${linksmart.gc.version}">
+		<feature version="${linksmart.gc.version}">gc-osgi-http</feature>
+    	<feature version="${linksmart.gc.version}">gc-network-manager</feature>
+    	<bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.types/${linksmart.gc.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.tunneling.http/${linksmart.gc.version}</bundle>
+        
+    </feature>
+    
+    <feature name="linksmart-gc" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">gc-osgi-http</feature>
+    	<feature version="${linksmart.gc.version}">gc-boot</feature>
+    	<feature version="${linksmart.gc.version}">gc-identity-manager</feature>
+    	<feature version="${linksmart.gc.version}">gc-backbone-router</feature>
+   		<feature version="${linksmart.gc.version}">gc-network-manager</feature>
+   		<feature version="${linksmart.gc.version}">gc-backbone-zmq</feature>
+   		<feature version="${linksmart.gc.version}">gc-backbone-http</feature>
+   		<feature version="${linksmart.gc.version}">gc-network-manager-rest</feature>
+   		<feature version="${linksmart.gc.version}">gc-http-tunneling</feature>
+    </feature>
+    
+</features>

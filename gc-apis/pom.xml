@@ -4,15 +4,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>eu.linksmart</groupId>
-		<artifactId>linksmart-parent</artifactId>
-		<version>2.2.2-SNAPSHOT</version>
+		<groupId>eu.linksmart.gc</groupId>
+		<artifactId>eu.linksmart.gc.parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>eu.linksmart.gc</groupId>
 	<artifactId>gc-apis</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-
+	
 	<packaging>pom</packaging>
 
 	<name>LinkSmart Global Connect APIs</name>
@@ -21,16 +19,6 @@
 	<modules>
         <module>gc-api-types</module>
     </modules>
-    
-    <dependencyManagement>
-        <dependencies>
-        	<dependency>
-        		<groupId>eu.linksmart.gc</groupId>
-        		<artifactId>eu.linksmart.gc.api.types</artifactId>
-        		<version>0.0.1-SNAPSHOT</version>
-      		</dependency>
-        </dependencies>
-    </dependencyManagement>
     
     <dependencies>
     	<!-- felix/osgi core dependencies -->
