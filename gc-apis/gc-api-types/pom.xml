@@ -19,7 +19,7 @@
 	
 	<dependencies>
 		<dependency>
-            <groupId>eu.linksmart</groupId>
+            <groupId>eu.linksmart.gc</groupId>
             <artifactId>eu.linksmart.api.gc.network</artifactId>
         </dependency>
 	</dependencies>
