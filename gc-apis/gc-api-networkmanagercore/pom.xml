@@ -10,7 +10,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-	<artifactId>eu.linksmart.api.gc.networkmanager.core</artifactId>
+	<artifactId>eu.linksmart.gc.api.networkmanager.core</artifactId>
 
 	<packaging>bundle</packaging>
 
@@ -20,15 +20,15 @@
 	<dependencies>
       	<dependency>
         	<groupId>eu.linksmart.gc</groupId>
-        	<artifactId>eu.linksmart.api.gc.network</artifactId>
+        	<artifactId>eu.linksmart.gc.api.network</artifactId>
       	</dependency>
       	<dependency>
         	<groupId>eu.linksmart.gc</groupId>
-        	<artifactId>eu.linksmart.api.gc.networkmanager</artifactId>
+        	<artifactId>eu.linksmart.gc.api.networkmanager</artifactId>
       	</dependency>
       	<dependency>
         	<groupId>eu.linksmart.gc</groupId>
-        	<artifactId>eu.linksmart.api.gc.security.communication</artifactId>
+        	<artifactId>eu.linksmart.gc.api.security.communication</artifactId>
       	</dependency>
 	</dependencies>
 

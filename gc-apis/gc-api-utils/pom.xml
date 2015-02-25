@@ -9,7 +9,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-	<artifactId>eu.linksmart.api.gc.utils</artifactId>
+	<artifactId>eu.linksmart.gc.api.utils</artifactId>
 
 	<packaging>bundle</packaging>
 

@@ -10,7 +10,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-	<artifactId>eu.linksmart.api.gc.identitymanager</artifactId>
+	<artifactId>eu.linksmart.gc.api.identitymanager</artifactId>
 
 	<packaging>bundle</packaging>
 
@@ -20,11 +20,11 @@
 	<dependencies>
       	<dependency>
         	<groupId>eu.linksmart.gc</groupId>
-        	<artifactId>eu.linksmart.api.gc.utils</artifactId>
+        	<artifactId>eu.linksmart.gc.api.utils</artifactId>
       	</dependency>
       	<dependency>
         	<groupId>eu.linksmart.gc</groupId>
-        	<artifactId>eu.linksmart.api.gc.network</artifactId>
+        	<artifactId>eu.linksmart.gc.api.network</artifactId>
       	</dependency>
 	</dependencies>
 

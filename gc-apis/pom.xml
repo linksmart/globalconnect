@@ -26,7 +26,8 @@
         <module>gc-api-securitymanager</module>
         <module>gc-api-utils</module>
     </modules>
-    
+
+
     <dependencies>
     	<!-- felix/osgi core dependencies -->
     	<dependency>
