@@ -1,13 +1,13 @@
-package eu.linksmart.network.networkmanager.core;
+package eu.linksmart.gc.api.network.networkmanager.core;
 
 import java.rmi.RemoteException;
 import java.util.List;
 
-import eu.linksmart.network.Message;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.networkmanager.NetworkManager;
-import eu.linksmart.security.communication.SecurityProperty;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
+import eu.linksmart.gc.api.security.communication.SecurityProperty;
 
 /**
  * Internal NetworkManager interface used by internal components such as the backbone router etc.

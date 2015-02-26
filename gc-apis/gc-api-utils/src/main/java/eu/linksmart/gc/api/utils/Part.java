@@ -36,7 +36,7 @@
  * by the Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT) WSDL2Java emitter.
  */
 
-package eu.linksmart.utils;
+package eu.linksmart.gc.api.utils;
 
 
 public class Part implements java.io.Serializable {

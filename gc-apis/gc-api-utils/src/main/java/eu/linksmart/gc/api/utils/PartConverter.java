@@ -1,4 +1,4 @@
-package eu.linksmart.utils;
+package eu.linksmart.gc.api.utils;
 
 import java.util.Properties;
 import java.util.Set;

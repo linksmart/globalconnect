@@ -31,7 +31,7 @@
  * License along with LinkSmart.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package eu.linksmart.utils;
+package eu.linksmart.gc.api.utils;
 
 import java.util.Dictionary;
 import java.util.Enumeration;

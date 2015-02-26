@@ -1,13 +1,13 @@
-package eu.linksmart.network.routing;
+package eu.linksmart.gc.api.network.routing;
 
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.backbone.Backbone;
-import eu.linksmart.security.communication.SecurityProperty;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.backbone.Backbone;
+import eu.linksmart.gc.api.security.communication.SecurityProperty;
 
 /**
  * The BackboneRouter is responsible for selecting the correct channel to send the message 

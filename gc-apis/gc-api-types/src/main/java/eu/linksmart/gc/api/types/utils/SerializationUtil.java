@@ -11,9 +11,9 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.Properties;
 
-import eu.linksmart.network.Message;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.utils.Base64;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.utils.Base64;
 
 public class SerializationUtil {
 	

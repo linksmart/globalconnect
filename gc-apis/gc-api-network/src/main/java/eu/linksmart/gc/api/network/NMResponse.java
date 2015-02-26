@@ -5,7 +5,7 @@
  * by the Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT) WSDL2Java emitter.
  */
 
-package eu.linksmart.network;
+package eu.linksmart.gc.api.network;
 
 public class NMResponse  implements java.io.Serializable {
 	public static final int STATUS_SUCCESS = 0;

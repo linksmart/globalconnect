@@ -1,4 +1,4 @@
-package eu.linksmart.network;
+package eu.linksmart.gc.api.network;
 
 /**
  * Holds references of {@link MessageProcessor} objects

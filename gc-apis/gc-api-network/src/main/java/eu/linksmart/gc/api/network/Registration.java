@@ -35,11 +35,11 @@
  * Registration class stores all the information about an LinkSmart ID
  */
 
-package eu.linksmart.network;
+package eu.linksmart.gc.api.network;
 
 import java.io.Serializable;
 
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.utils.Part;
 
 /**
  * Class to store information about services

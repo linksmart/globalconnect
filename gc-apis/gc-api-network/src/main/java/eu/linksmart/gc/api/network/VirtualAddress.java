@@ -31,7 +31,7 @@
  * License along with LinkSmart.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package eu.linksmart.network;
+package eu.linksmart.gc.api.network;
 
 import java.nio.ByteBuffer;
 import java.util.Random;

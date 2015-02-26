@@ -1,10 +1,10 @@
-package eu.linksmart.network.backbone;
+package eu.linksmart.gc.api.network.backbone;
 
 import java.util.List;
 
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.security.communication.SecurityProperty;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.security.communication.SecurityProperty;
 
 /**
  * A Backbone needs to be implemented if a new communication channel (e.g. P2P, JMS, ...) should be used by LinkSmart.

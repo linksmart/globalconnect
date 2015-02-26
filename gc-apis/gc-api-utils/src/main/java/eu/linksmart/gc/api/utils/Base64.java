@@ -12,7 +12,7 @@
  * This limitation of liability shall also apply if this license agreement shall be subject to law 
  * stipulating liability clauses corresponding to German law.
  */
-package eu.linksmart.utils;
+package eu.linksmart.gc.api.utils;
 
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p> <p>Homepage: <a

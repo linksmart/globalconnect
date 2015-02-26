@@ -1,4 +1,4 @@
-package eu.linksmart.security.communication;
+package eu.linksmart.gc.api.security.communication;
 
 //do not forget to add/change the appropriate lines in /resources/BBJXTA.properties 
 //when making changes to this enum

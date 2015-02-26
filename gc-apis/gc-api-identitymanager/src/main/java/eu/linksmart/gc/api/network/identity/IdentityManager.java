@@ -1,12 +1,12 @@
-package eu.linksmart.network.identity;
+package eu.linksmart.gc.api.network.identity;
 
 import java.util.Properties;
 import java.util.Set;
 
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.ServiceAttribute;
-import eu.linksmart.network.Registration;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.ServiceAttribute;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.utils.Part;
 
 /**
  * The IdentityManager is responsible for creating and storing {@link VirtualAddress}.

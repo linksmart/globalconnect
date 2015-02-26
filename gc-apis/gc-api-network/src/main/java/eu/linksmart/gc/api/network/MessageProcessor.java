@@ -1,4 +1,4 @@
-package eu.linksmart.network;
+package eu.linksmart.gc.api.network;
 
 /**
  * Receives and sends messages of specific topics

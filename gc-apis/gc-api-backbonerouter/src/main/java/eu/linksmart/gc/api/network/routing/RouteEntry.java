@@ -1,4 +1,4 @@
-package eu.linksmart.network.routing;
+package eu.linksmart.gc.api.network.routing;
 public class RouteEntry {
 		
 		private String backboneName;

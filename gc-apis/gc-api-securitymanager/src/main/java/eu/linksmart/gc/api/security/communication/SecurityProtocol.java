@@ -1,9 +1,9 @@
-package eu.linksmart.security.communication;
+package eu.linksmart.gc.api.security.communication;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-import eu.linksmart.network.Message;
+import eu.linksmart.gc.api.network.Message;
 
 /**
  * Represents a protocol which is used to protect

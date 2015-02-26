@@ -12,7 +12,7 @@
  * This limitation of liability shall also apply if this license agreement shall be subject to law 
  * stipulating liability clauses corresponding to German law.
  */
-package eu.linksmart.security.communication;
+package eu.linksmart.gc.api.security.communication;
 
 public class VerificationFailureException extends Exception {
 	private String message = "";

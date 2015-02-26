@@ -1,11 +1,11 @@
-package eu.linksmart.network.networkmanager;
+package eu.linksmart.gc.api.network.networkmanager;
 
 import java.rmi.RemoteException;
 
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.Registration;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.utils.Part;
 
 
 /**

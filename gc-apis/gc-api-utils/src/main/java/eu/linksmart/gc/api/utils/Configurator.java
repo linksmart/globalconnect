@@ -36,7 +36,7 @@
  * configuration data
  */
 
-package eu.linksmart.utils;
+package eu.linksmart.gc.api.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
