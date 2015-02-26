@@ -17,17 +17,17 @@ import org.apache.log4j.Logger;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 
-import eu.linksmart.network.Message;
-import eu.linksmart.network.MessageDistributor;
-import eu.linksmart.network.MessageProcessor;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.Registration;
-import eu.linksmart.network.ServiceAttribute;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
-import eu.linksmart.network.routing.BackboneRouter;
-import eu.linksmart.security.communication.SecurityProperty;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.MessageDistributor;
+import eu.linksmart.gc.api.network.MessageProcessor;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.ServiceAttribute;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.routing.BackboneRouter;
+import eu.linksmart.gc.api.security.communication.SecurityProperty;
+import eu.linksmart.gc.api.utils.Part;
 
 @Component(name="NetworkManagerCore", immediate=true)
 @Service({NetworkManagerCore.class})

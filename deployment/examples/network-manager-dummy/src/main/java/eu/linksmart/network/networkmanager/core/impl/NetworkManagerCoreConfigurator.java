@@ -44,7 +44,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 
 
 
-import eu.linksmart.utils.Configurator;
+import eu.linksmart.gc.api.utils.Configurator;
 
 public class NetworkManagerCoreConfigurator extends Configurator {
 

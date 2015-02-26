@@ -18,9 +18,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import eu.linksmart.gc.network.tunneling.http.HttpTunnelServlet;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 
 public class HttpTunnelServletTest {
 

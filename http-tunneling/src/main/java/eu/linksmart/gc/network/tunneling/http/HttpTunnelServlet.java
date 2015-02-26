@@ -44,8 +44,8 @@ import org.apache.log4j.Logger;
 
 import eu.linksmart.gc.api.types.TunnelRequest;
 import eu.linksmart.gc.api.types.TunnelResponse;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 
 /**
  * HTTP Tunnel servlet

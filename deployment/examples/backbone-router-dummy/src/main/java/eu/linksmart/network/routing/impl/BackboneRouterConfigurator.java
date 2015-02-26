@@ -5,8 +5,8 @@ import java.util.Hashtable;
 import org.apache.log4j.Logger;
 import org.osgi.framework.BundleContext;
 
-import eu.linksmart.network.routing.BackboneRouter;
-import eu.linksmart.utils.Configurator;
+import eu.linksmart.gc.api.network.routing.BackboneRouter;
+import eu.linksmart.gc.api.utils.Configurator;
 import org.osgi.service.cm.ConfigurationAdmin;
 
 public class BackboneRouterConfigurator extends Configurator {

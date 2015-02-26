@@ -12,12 +12,12 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import eu.linksmart.gc.api.types.TunnelRequest;
 import eu.linksmart.gc.api.types.TunnelResponse;
 import eu.linksmart.gc.api.types.utils.SerializationUtil;
-import eu.linksmart.network.Message;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.backbone.Backbone;
-import eu.linksmart.network.routing.BackboneRouter;
-import eu.linksmart.security.communication.SecurityProperty;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.backbone.Backbone;
+import eu.linksmart.gc.api.network.routing.BackboneRouter;
+import eu.linksmart.gc.api.security.communication.SecurityProperty;
 
 import org.apache.felix.scr.annotations.*;
 import org.apache.log4j.Logger;

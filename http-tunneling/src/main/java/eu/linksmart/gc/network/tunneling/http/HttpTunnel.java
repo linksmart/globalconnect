@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.http.HttpService;
 
-import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 
 @Component(name="HttpTunnel", immediate=true)
 public class HttpTunnel {

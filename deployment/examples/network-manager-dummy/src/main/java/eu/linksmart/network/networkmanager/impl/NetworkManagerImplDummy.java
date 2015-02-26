@@ -12,12 +12,12 @@ import org.apache.felix.scr.annotations.Service;
 import org.apache.log4j.Logger;
 import org.osgi.service.component.ComponentContext;
 
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.Registration;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.networkmanager.NetworkManager;
-import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.utils.Part;
 
 @Component(name="NetworkManager", immediate=true)
 @Service({NetworkManager.class})

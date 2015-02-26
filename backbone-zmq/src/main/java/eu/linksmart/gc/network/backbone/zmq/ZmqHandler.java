@@ -20,11 +20,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.log4j.Logger;
 
-import eu.linksmart.network.Message;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.Registration;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.utils.Base64;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.utils.Base64;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;

@@ -2,7 +2,7 @@ package eu.linksmart.gc.network.backbone.zmq;
 
 import org.junit.Test;
 
-import eu.linksmart.network.VirtualAddress;
+import eu.linksmart.gc.api.network.VirtualAddress;
 
 public class TestZmqHandler {
 	

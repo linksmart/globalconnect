@@ -12,13 +12,13 @@ import org.apache.log4j.Logger;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.backbone.Backbone;
-import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
-import eu.linksmart.network.routing.BackboneRouter;
-import eu.linksmart.network.routing.RouteEntry;
-import eu.linksmart.security.communication.SecurityProperty;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.backbone.Backbone;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.routing.BackboneRouter;
+import eu.linksmart.gc.api.network.routing.RouteEntry;
+import eu.linksmart.gc.api.security.communication.SecurityProperty;
 
 @Component(name="LinkSmartBackboneRouter", immediate=true)
 @Service

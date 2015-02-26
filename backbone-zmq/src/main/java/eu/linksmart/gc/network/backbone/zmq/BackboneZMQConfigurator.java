@@ -5,7 +5,7 @@ import java.util.Hashtable;
 import org.apache.log4j.Logger;
 import org.osgi.framework.BundleContext;
 
-import eu.linksmart.utils.Configurator;
+import eu.linksmart.gc.api.utils.Configurator;
 
 import org.osgi.service.cm.ConfigurationAdmin;
 

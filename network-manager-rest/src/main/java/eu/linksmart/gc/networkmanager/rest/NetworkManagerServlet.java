@@ -16,9 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-import eu.linksmart.network.Registration;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.utils.Part;
 
 public class NetworkManagerServlet extends HttpServlet {
 

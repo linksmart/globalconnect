@@ -9,10 +9,10 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import eu.linksmart.network.ErrorMessage;
-import eu.linksmart.network.Message;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.utils.Base64;
+import eu.linksmart.gc.api.network.ErrorMessage;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.utils.Base64;
 
 /**
  * Provides methods to serialize and unserialize messages

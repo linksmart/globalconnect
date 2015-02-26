@@ -17,14 +17,14 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.linksmart.network.Message;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.Registration;
-import eu.linksmart.network.ServiceAttribute;
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.identity.IdentityManager;
-import eu.linksmart.network.routing.BackboneRouter;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.ServiceAttribute;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.identity.IdentityManager;
+import eu.linksmart.gc.api.network.routing.BackboneRouter;
+import eu.linksmart.gc.api.utils.Part;
 
 /**
  * Test class for NetworkManagerCoreImpl 

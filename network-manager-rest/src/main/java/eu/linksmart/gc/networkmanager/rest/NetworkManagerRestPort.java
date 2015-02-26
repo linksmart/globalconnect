@@ -5,7 +5,7 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.http.HttpService;
 import org.apache.felix.scr.annotations.*;
 
-import eu.linksmart.network.networkmanager.NetworkManager;
+import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
 
 @Component(name="eu.linksmart.gc.networkmanager.rest", immediate=true)
 public class NetworkManagerRestPort {

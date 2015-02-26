@@ -10,10 +10,10 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.linksmart.network.VirtualAddress;
-import eu.linksmart.network.NMResponse;
-import eu.linksmart.network.backbone.Backbone;
-import eu.linksmart.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.backbone.Backbone;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 
 public class BackboneRouterImplTest {
 	
