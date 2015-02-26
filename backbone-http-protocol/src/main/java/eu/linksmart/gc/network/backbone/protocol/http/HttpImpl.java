@@ -101,10 +101,10 @@ public class HttpImpl implements Backbone {
 			//
 			TunnelRequest tunnel_request = (TunnelRequest) SerializationUtil.deserialize(tunnel_data);
 			
-			LOG.info("method: " + tunnel_request.getMethod());
-			LOG.info("path: " + tunnel_request.getPath());
-			LOG.info("headers: " + tunnel_request.getHeaders().length);
-			LOG.info("body: " + new String(tunnel_request.getBody()));
+			LOG.debug("method: " + tunnel_request.getMethod());
+			LOG.debug("path: " + tunnel_request.getPath());
+			LOG.debug("headers: " + tunnel_request.getHeaders().length);
+			LOG.debug("body: " + new String(tunnel_request.getBody()));
 				
 			//
 			// check if service endpoint is available
