@@ -14,7 +14,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LinkSmart NetworkManager API</name>
+	<name>LS GC API - NetworkManager</name>
 	<description>LinkSmart NetworkManager API</description>
 
 	<dependencies>

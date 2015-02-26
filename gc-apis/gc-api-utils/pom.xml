@@ -13,7 +13,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LinkSmart Utils API</name>
+	<name>LS GC API - Utils</name>
 	<description>LinkSmart API Utils</description>
 	
 	<dependencies>

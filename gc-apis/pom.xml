@@ -13,7 +13,7 @@
 	
 	<packaging>pom</packaging>
 
-	<name>LinkSmart Global Connect APIs</name>
+	<name>LS GC APIs</name>
 	<description>LinkSmart Global Connect APIs</description>
 
 	<modules>
@@ -21,6 +21,7 @@
         <module>gc-api-utils</module>
         <module>gc-api-network</module>
         <module>gc-api-securitymanager</module>
+        <module>gc-api-backbone</module>
         <module>gc-api-backbonerouter</module>
         <module>gc-api-identitymanager</module>
         <module>gc-api-networkmanager</module>
