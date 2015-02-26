@@ -12,7 +12,6 @@
 
     <groupId>eu.linksmart.gc.examples</groupId>
     <artifactId>eu.linksmart.gc.examples.weather.service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	
     <packaging>bundle</packaging>
 
@@ -21,16 +20,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.network</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.network</artifactId>
         </dependency>
         <dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.utils</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.networkmanager</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.networkmanager</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

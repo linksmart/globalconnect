@@ -27,8 +27,8 @@
         	<artifactId>eu.linksmart.gc.api.security.communication</artifactId>
       	</dependency>
       	<dependency>
-        	<groupId>eu.linksmart</groupId>
-        	<artifactId>eu.linksmart.api.backbone</artifactId>
+        	<groupId>eu.linksmart.gc</groupId>
+        	<artifactId>eu.linksmart.gc.api.backbone</artifactId>
       	</dependency>
 	</dependencies>
 
