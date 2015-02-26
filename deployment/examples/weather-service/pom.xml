@@ -39,6 +39,11 @@
             <groupId>org.json</groupId>
             <artifactId>com.springsource.org.json</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.bundles</groupId>
+            <artifactId>org.apache.servicemix.bundles.commons-httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

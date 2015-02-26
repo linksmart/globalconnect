@@ -14,7 +14,7 @@
 
     <packaging>bundle</packaging>
 
-    <name>LS GC - backbone router</name>
+    <name>LS GC - Backbone Router</name>
     <description>LinkSmart backbone router</description>
 
     <dependencies>
@@ -26,7 +26,6 @@
             <groupId>eu.linksmart.gc</groupId>
             <artifactId>eu.linksmart.gc.api.networkmanager.core</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -44,6 +43,5 @@
             </plugin>
         </plugins>
     </build>
-
-    
+  
 </project>

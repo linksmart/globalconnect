@@ -14,21 +14,21 @@
 
     <packaging>bundle</packaging>
 
-    <name>LinkSmart NetworkManager REST API</name>
-    <description>LinkSmart NetworkManager REST API</description>
+    <name>LS GC - NetworkManager REST</name>
+    <description>LinkSmart GC NetworkManager REST API</description>
 
     <dependencies>
         <dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.network</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.network</artifactId>
         </dependency>
         <dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.utils</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.networkmanager</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.networkmanager</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

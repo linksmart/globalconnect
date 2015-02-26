@@ -23,11 +23,11 @@
     <feature name="gc-http-tunneling-dummy-it" version="${linksmart.gc.version}">
     	<feature version="${linksmart.gc.version}">gc-osgi-http</feature>
     	<feature version="${linksmart.gc.version}">gc-boot</feature>
-    	<bundle>mvn:eu.linksmart/eu.linksmart.api.security.communication/${linksmart.version}</bundle>
-   		<bundle>mvn:eu.linksmart/eu.linksmart.api.backbone/${linksmart.version}</bundle>
-        <bundle>mvn:eu.linksmart/eu.linksmart.api.backbone.router/${linksmart.version}</bundle>
-        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager.core/${linksmart.version}</bundle>
-        <bundle>mvn:eu.linksmart/eu.linksmart.api.networkmanager/${linksmart.version}</bundle>
+    	<bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.security.communication/${linksmart.gc.version}</bundle>
+   		<bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.backbone/${linksmart.gc.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.backbone.router/${linksmart.gc.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.networkmanager.core/${linksmart.gc.version}</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.networkmanager/${linksmart.gc.version}</bundle>
         
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.network.backbone.router.dummy/${linksmart.gc.version}</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.network.networkmanager.dummy/${linksmart.gc.version}</bundle>

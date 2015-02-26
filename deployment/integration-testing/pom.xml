@@ -61,6 +61,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
             <scope>provided</scope>
 		</dependency>
+		<!-- GC Features -->
         <dependency>
             <groupId>eu.linksmart.gc.deployment</groupId>
             <artifactId>eu.linksmart.gc.deployment.features.core</artifactId>
