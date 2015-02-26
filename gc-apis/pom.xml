@@ -18,6 +18,7 @@
 
 	<modules>
         <module>gc-api-types</module>
+        <module>gc-api-backbone</module>
         <module>gc-api-backbonerouter</module>
         <module>gc-api-identitymanager</module>
         <module>gc-api-network</module>
