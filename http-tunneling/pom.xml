@@ -14,8 +14,8 @@
 	
 	<packaging>bundle</packaging>
 
-	<name>LinkSmart HTTP Tunneling</name>
-	<description>LinkSmart HTTP Tunneling</description>
+	<name>LS GC - HTTP Tunneling</name>
+	<description>LinkSmart GC HTTP Tunneling</description>
 
 	<dependencies>
 		<dependency>

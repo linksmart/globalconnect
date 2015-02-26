@@ -14,8 +14,8 @@
 	
     <packaging>bundle</packaging>
 
-    <name>HTTP Protocol backbone</name>
-    <description>HTTP Protocol backbone</description>
+    <name>LS GC - HTTP Backbone</name>
+    <description>LS GC HTTP Protocol Backbone</description>
     
     <dependencies>
         <dependency>

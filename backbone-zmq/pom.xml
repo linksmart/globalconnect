@@ -14,8 +14,8 @@
 	
     <packaging>bundle</packaging>
 
-    <name>ZMQ backbone</name>
-    <description>ZMQ backbone</description>
+    <name>LS GC - ZMQ backbone</name>
+    <description>LS GC ZMQ backbone</description>
     
     <dependencies>
         <dependency>
