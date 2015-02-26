@@ -18,12 +18,12 @@
 
 	<dependencies>
 		<dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.network</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.network</artifactId>
         </dependency>
         <dependency>
-            <groupId>eu.linksmart</groupId>
-            <artifactId>eu.linksmart.api.utils</artifactId>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.api.utils</artifactId>
         </dependency>
 		<dependency>
             <groupId>org.json</groupId>

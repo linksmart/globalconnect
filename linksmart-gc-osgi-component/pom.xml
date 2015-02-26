@@ -49,7 +49,6 @@
 				<artifactId>org.apache.felix.http.jetty</artifactId>
 				<version>${felix.http.version}</version>
 			</dependency>
-            <!-- other dependencies -->
         </dependencies>
     </dependencyManagement>
     

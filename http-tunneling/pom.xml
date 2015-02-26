@@ -23,8 +23,8 @@
         	<artifactId>eu.linksmart.gc.api.types</artifactId>
       	</dependency>
 		<dependency>
-			<groupId>eu.linksmart</groupId>
-			<artifactId>eu.linksmart.api.networkmanager.core</artifactId>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.api.networkmanager.core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
