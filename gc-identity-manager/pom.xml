@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>eu.linksmart.gc</groupId>
-        <artifactId>eu.linksmart.gc.parent</artifactId>
+        <artifactId>eu.linksmart.gc.osgi.component</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -25,10 +25,6 @@
     	<dependency>
 			<groupId>eu.linksmart.gc</groupId>
 			<artifactId>eu.linksmart.gc.api.networkmanager.core</artifactId>
-		</dependency>  	
-		<dependency>
-			<groupId>eu.linksmart</groupId>
-			<artifactId>eu.linksmart.api.policy</artifactId>
 		</dependency>
 	</dependencies>
 
