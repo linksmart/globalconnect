@@ -12,9 +12,9 @@ import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
-
+import eu.linksmart.gc.api.network.backbone.Backbone;
 import eu.linksmart.it.utils.ITConfiguration;
-import eu.linksmart.network.backbone.Backbone;
+
 
 @RunWith(PaxExam.class)
 public class BackboneZMQIT {

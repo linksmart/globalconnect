@@ -20,9 +20,12 @@ import org.ops4j.pax.exam.spi.reactors.PerClass;
 
 import static org.junit.Assert.*;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
+
+import eu.linksmart.gc.api.network.ServiceAttribute;
+import eu.linksmart.gc.api.utils.Part;
+
 import eu.linksmart.it.utils.ITConfiguration;
-import eu.linksmart.network.ServiceAttribute;
-import eu.linksmart.utils.Part;
+
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)

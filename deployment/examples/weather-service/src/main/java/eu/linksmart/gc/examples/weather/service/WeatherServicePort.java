@@ -5,10 +5,10 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.http.HttpService;
 import org.apache.felix.scr.annotations.*;
 
-import eu.linksmart.network.Registration;
-import eu.linksmart.network.ServiceAttribute;
-import eu.linksmart.network.networkmanager.NetworkManager;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.ServiceAttribute;
+import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
+import eu.linksmart.gc.api.utils.Part;
 
 @Component(name="WeatherService", immediate=true)
 public class WeatherServicePort {

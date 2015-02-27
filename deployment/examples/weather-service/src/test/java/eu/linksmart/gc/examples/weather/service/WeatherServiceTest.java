@@ -6,14 +6,13 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.linksmart.network.ServiceAttribute;
-import eu.linksmart.utils.Part;
+import eu.linksmart.gc.api.network.ServiceAttribute;
+import eu.linksmart.gc.api.utils.Part;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -28,7 +27,7 @@ public class WeatherServiceTest {
 	
 	private String endPoint = null;
 	
-    //@Before
+    @Before
     public void setUp() {
     	
     	try {
@@ -90,7 +89,7 @@ public class WeatherServiceTest {
 		}
     }
     
-    //@Test
+    @Test
     public void testHttpTunnel() {
     	
     	try {
