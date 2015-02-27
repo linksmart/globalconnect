@@ -27,7 +27,7 @@ public class WeatherServiceTest {
 	
 	private String endPoint = null;
 	
-    @Before
+    //@Before
     public void setUp() {
     	
     	try {
@@ -89,7 +89,7 @@ public class WeatherServiceTest {
 		}
     }
     
-    @Test
+    //@Test
     public void testHttpTunnel() {
     	
     	try {
