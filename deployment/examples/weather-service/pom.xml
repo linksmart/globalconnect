@@ -18,6 +18,10 @@
     <name>GlobalConnect Example Weather Service</name>
     <description>GlobalConnect Example Weather Service</description>
 
+	<properties>
+		<skipTests>true</skipTests>
+	</properties>
+    
     <dependencies>
         <dependency>
             <groupId>eu.linksmart.gc</groupId>
@@ -58,6 +62,13 @@
                     </instructions>
                 </configuration>
             </plugin>
+      		<plugin>
+        		<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-surefire-plugin</artifactId>
+        		<configuration>
+          			<skipTests>${skipTests}</skipTests>
+        		</configuration>
+      		</plugin>
         </plugins>
     </build>
 

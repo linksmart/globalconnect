@@ -1,10 +1,14 @@
 package eu.linksmart.gc.examples.weather.service;
 
+import java.io.IOException;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,7 +31,7 @@ public class WeatherServiceTest {
 	
 	private String endPoint = null;
 	
-    //@Before
+    @Before
     public void setUp() {
     	
     	try {
@@ -89,7 +93,7 @@ public class WeatherServiceTest {
 		}
     }
     
-    //@Test
+    @Test
     public void testHttpTunnel() {
     	
     	try {
@@ -98,14 +102,75 @@ public class WeatherServiceTest {
     		
     		HttpClient client = new HttpClient();
     		
-    		System.out.println("invoking service at endpoint: " + endPoint);
-			
-			HttpMethod  tunnel_get_request = new GetMethod(endPoint);
-			int statusCode = client.executeMethod(tunnel_get_request);
-			System.out.println("tunnel-service-response: " + new String(tunnel_get_request.getResponseBody()));
-        	tunnel_get_request.releaseConnection();
-			assertEquals(200, statusCode);
-        	
+    		//
+    		// GET method
+    		//
+            try {
+            	System.out.println("invoking GET at endpoint: " + endPoint);
+            	HttpMethod  getMethod = new GetMethod(endPoint);
+    			int getStatusCode = client.executeMethod(getMethod);
+    			System.out.println("get-response: " + new String(getMethod.getResponseBody()));
+    			getMethod.releaseConnection();
+    			assertEquals(200, getStatusCode);
+            } catch (IOException e) {
+                e.printStackTrace();
+                fail("Get-Exception: " + e.getMessage());
+            }
+            
+            //
+    		// POST method
+    		//
+            try {
+            	System.out.println("invoking POST at endpoint: " + endPoint);
+                PostMethod postMethod = new PostMethod(endPoint);
+            	JSONObject postJson = new JSONObject();
+            	postJson.put("Temperature", 28);
+            	StringRequestEntity requestEntity = new StringRequestEntity(postJson.toString(), "application/json", "UTF-8");
+                postMethod.setRequestEntity(requestEntity);
+                int postStatusCode = client.executeMethod(postMethod);
+                System.out.println("post-response: " + new String(postMethod.getResponseBody()));
+                postMethod.releaseConnection();
+                assertEquals(200, postStatusCode);
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Post-Exception: " + e.getMessage());
+            }
+            
+            //
+    		// PUT method
+    		//
+            try {
+            	System.out.println("invoking PUT at endpoint: " + endPoint);
+                PutMethod putMethod = new PutMethod(endPoint);
+                JSONObject updateJson = new JSONObject();
+            	updateJson.put("Temperature", 20);
+                StringRequestEntity requestEntity = new StringRequestEntity(updateJson.toString(), "application/json", "UTF-8");
+                putMethod.setRequestEntity(requestEntity);
+                int putStatusCode = client.executeMethod(putMethod);
+                System.out.println("put-response: " + new String(putMethod.getResponseBody()));
+                putMethod.releaseConnection();
+                assertEquals(200, putStatusCode);
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Exception: " + e.getMessage());
+            }
+            
+            //
+    		// DELETE method
+    		//
+            try {
+            	endPoint = endPoint + "/123";
+            	System.out.println("invoking DELETE at endpoint: " + endPoint);
+                DeleteMethod deleteMethod = new DeleteMethod(endPoint);
+                int deleteStatusCode = client.executeMethod(deleteMethod);
+                System.out.println("delete-response: " + new String(deleteMethod.getResponseBody()));
+                deleteMethod.releaseConnection();
+                assertEquals(200, deleteStatusCode);
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Exception: " + e.getMessage());
+            }
+            
 			System.out.println("HttpTunnel test successfully completed");
         	
 		} catch (Exception e) {
