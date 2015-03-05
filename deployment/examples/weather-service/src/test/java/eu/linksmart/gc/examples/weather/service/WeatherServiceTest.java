@@ -27,7 +27,7 @@ public class WeatherServiceTest {
 	private static final String KEY_ATTRIBUTES = "Attributes";
 	private static final String KEY_VIRTUAL_ADDRESS = "VirtualAddress";
 	
-	private String nm_base_url = "http://localhost:8082/NetworkManager";
+	private String nm_base_url = "http://localhost:8882/NetworkManager";
 	
 	private String endPoint = null;
 	
@@ -43,31 +43,31 @@ public class WeatherServiceTest {
     		//
         	// register service
         	//
-    		JSONObject registrationJson = new JSONObject();
-    		
-			registrationJson.put(KEY_ENDPOINT, "http://localhost:8082/WeatherService");
-			registrationJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
-			
-			Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "WeatherService"), 
-					new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.examples.weather.service") };
-			
-			JSONObject attributesJson = new JSONObject();
-			
-			for(Part p : attributes) {
-				attributesJson.put(p.getKey(), p.getValue());
-			}
-			
-			registrationJson.put(KEY_ATTRIBUTES, attributesJson);
-			
-			PostMethod post_request = new PostMethod(nm_base_url);
-			
-			StringRequestEntity requestEntity = new StringRequestEntity(registrationJson.toString(), "application/json", "UTF-8");
-			post_request.setRequestEntity(requestEntity);
-			int post_status_code = client.executeMethod(post_request);
-    		String registrationJsonString = new String(post_request.getResponseBody());
-    		System.out.println("register-service-response: " + registrationJsonString);
-        	post_request.releaseConnection();
-        	assertEquals(200, post_status_code);
+//    		JSONObject registrationJson = new JSONObject();
+//    		
+//			registrationJson.put(KEY_ENDPOINT, "http://localhost:8082/WeatherService");
+//			registrationJson.put(KEY_BACKBONE_NAME, "eu.linksmart.gc.network.backbone.protocol.http.HttpImpl");
+//			
+//			Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(), "WeatherService"), 
+//					new Part(ServiceAttribute.SID.name(), "eu.linksmart.gc.examples.weather.service") };
+//			
+//			JSONObject attributesJson = new JSONObject();
+//			
+//			for(Part p : attributes) {
+//				attributesJson.put(p.getKey(), p.getValue());
+//			}
+//			
+//			registrationJson.put(KEY_ATTRIBUTES, attributesJson);
+//			
+//			PostMethod post_request = new PostMethod(nm_base_url);
+//			
+//			StringRequestEntity requestEntity = new StringRequestEntity(registrationJson.toString(), "application/json", "UTF-8");
+//			post_request.setRequestEntity(requestEntity);
+//			int post_status_code = client.executeMethod(post_request);
+//    		String registrationJsonString = new String(post_request.getResponseBody());
+//    		System.out.println("register-service-response: " + registrationJsonString);
+//        	post_request.releaseConnection();
+//        	assertEquals(200, post_status_code);
         	
     		//
     		// get service registration from network-manager using its ResT interface with queryString  ?description=name
