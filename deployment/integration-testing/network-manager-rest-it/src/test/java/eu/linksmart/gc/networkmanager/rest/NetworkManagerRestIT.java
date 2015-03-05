@@ -74,55 +74,55 @@ public class NetworkManagerRestIT {
         	//
         	// with queryString  ?pid=eu.linksmart.network
         	//
-        	NameValuePair[] pid_qs = { new NameValuePair("pid", "eu.linksmart.network") };
-        	HttpMethod  pid_qs_get_request = new GetMethod(base_url);
-        	pid_qs_get_request.setQueryString(pid_qs);
-        	assertEquals(404, client.executeMethod(pid_qs_get_request));
-        	System.out.println("pid-response-string" + new String(pid_qs_get_request.getResponseBody()));
-        	pid_qs_get_request.releaseConnection();
-        	
-        	//
-        	// with queryString  ?query=querytoexecute
-        	//
-        	NameValuePair[] query_qs = { new NameValuePair("query", "NetworkManager:LinkSmartUser") };
-        	HttpMethod  query_qs_get_request = new GetMethod(base_url);
-        	query_qs_get_request.setQueryString(query_qs);
-        	assertEquals(404, client.executeMethod(query_qs_get_request));
-        	System.out.println("query-response-string" + new String(query_qs_get_request.getResponseBody()));
-        	query_qs_get_request.releaseConnection();
-        	
-        	//
-        	// with queryString  ?att-name=att-value
-        	//
-        	NameValuePair[] single_att_qs = { new NameValuePair("att-name", "att-value") };
-        	HttpMethod  single_att_qs_get_request = new GetMethod(base_url);
-        	single_att_qs_get_request.setQueryString(single_att_qs);
-        	assertEquals(404, client.executeMethod(single_att_qs_get_request));
-        	System.out.println("single_att-response-string" + new String(single_att_qs_get_request.getResponseBody()));
-        	single_att_qs_get_request.releaseConnection();
-        	
-        	//
-        	// with queryString  ?description=NetworkManager:LinkSmartUser&pid=eu.linksmart.network
-        	//
-        	NameValuePair[] multi_att_qs = { new NameValuePair("description", "NetworkManager:LinkSmartUser"), new NameValuePair("pid", "eu.linksmart.network") };
-        	HttpMethod  multi_att_qs_get_request = new GetMethod(base_url);
-        	multi_att_qs_get_request.setQueryString(multi_att_qs);
-        	assertEquals(404, client.executeMethod(multi_att_qs_get_request));
-        	System.out.println("multi_att-response-string" + new String(multi_att_qs_get_request.getResponseBody()));
-        	multi_att_qs_get_request.releaseConnection();
-        	
-        	//
-        	// with queryString  ?description=NetworkManager:LinkSmartUser&timeOut=12345678&returnFirst=false&isStrictRequest=false
-        	//
-        	NameValuePair[] multi_att_params_qs = { new NameValuePair("description", "NetworkManager:LinkSmartUser"),
-        			new NameValuePair("timeOut", "30000"),
-        			new NameValuePair("returnFirst", "true"),
-        			new NameValuePair("isStrictRequest", "false") };
-        	HttpMethod  multi_att_params_qs_get_request = new GetMethod(base_url);
-        	multi_att_params_qs_get_request.setQueryString(multi_att_params_qs);
-        	assertEquals(404, client.executeMethod(multi_att_params_qs_get_request));
-        	System.out.println("multi_att_params-response-string" + new String(multi_att_params_qs_get_request.getResponseBody()));
-        	multi_att_params_qs_get_request.releaseConnection();
+//        	NameValuePair[] pid_qs = { new NameValuePair("pid", "eu.linksmart.network") };
+//        	HttpMethod  pid_qs_get_request = new GetMethod(base_url);
+//        	pid_qs_get_request.setQueryString(pid_qs);
+//        	assertEquals(404, client.executeMethod(pid_qs_get_request));
+//        	System.out.println("pid-response-string" + new String(pid_qs_get_request.getResponseBody()));
+//        	pid_qs_get_request.releaseConnection();
+//        	
+//        	//
+//        	// with queryString  ?query=querytoexecute
+//        	//
+//        	NameValuePair[] query_qs = { new NameValuePair("query", "NetworkManager:LinkSmartUser") };
+//        	HttpMethod  query_qs_get_request = new GetMethod(base_url);
+//        	query_qs_get_request.setQueryString(query_qs);
+//        	assertEquals(404, client.executeMethod(query_qs_get_request));
+//        	System.out.println("query-response-string" + new String(query_qs_get_request.getResponseBody()));
+//        	query_qs_get_request.releaseConnection();
+//        	
+//        	//
+//        	// with queryString  ?att-name=att-value
+//        	//
+//        	NameValuePair[] single_att_qs = { new NameValuePair("att-name", "att-value") };
+//        	HttpMethod  single_att_qs_get_request = new GetMethod(base_url);
+//        	single_att_qs_get_request.setQueryString(single_att_qs);
+//        	assertEquals(404, client.executeMethod(single_att_qs_get_request));
+//        	System.out.println("single_att-response-string" + new String(single_att_qs_get_request.getResponseBody()));
+//        	single_att_qs_get_request.releaseConnection();
+//        	
+//        	//
+//        	// with queryString  ?description=NetworkManager:LinkSmartUser&pid=eu.linksmart.network
+//        	//
+//        	NameValuePair[] multi_att_qs = { new NameValuePair("description", "NetworkManager:LinkSmartUser"), new NameValuePair("pid", "eu.linksmart.network") };
+//        	HttpMethod  multi_att_qs_get_request = new GetMethod(base_url);
+//        	multi_att_qs_get_request.setQueryString(multi_att_qs);
+//        	assertEquals(404, client.executeMethod(multi_att_qs_get_request));
+//        	System.out.println("multi_att-response-string" + new String(multi_att_qs_get_request.getResponseBody()));
+//        	multi_att_qs_get_request.releaseConnection();
+//        	
+//        	//
+//        	// with queryString  ?description=NetworkManager:LinkSmartUser&timeOut=12345678&returnFirst=false&isStrictRequest=false
+//        	//
+//        	NameValuePair[] multi_att_params_qs = { new NameValuePair("description", "NetworkManager:LinkSmartUser"),
+//        			new NameValuePair("timeOut", "3000"),
+//        			new NameValuePair("returnFirst", "true"),
+//        			new NameValuePair("isStrictRequest", "false") };
+//        	HttpMethod  multi_att_params_qs_get_request = new GetMethod(base_url);
+//        	multi_att_params_qs_get_request.setQueryString(multi_att_params_qs);
+//        	assertEquals(404, client.executeMethod(multi_att_params_qs_get_request));
+//        	System.out.println("multi_att_params-response-string" + new String(multi_att_params_qs_get_request.getResponseBody()));
+//        	multi_att_params_qs_get_request.releaseConnection();
         	
         	LOG.info("testGetMethod successfully completed");
         	
