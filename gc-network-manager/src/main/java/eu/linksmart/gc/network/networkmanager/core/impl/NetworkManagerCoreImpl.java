@@ -1,45 +1,27 @@
 package eu.linksmart.gc.network.networkmanager.core.impl;
 
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.ServletException;
-
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.apache.felix.scr.annotations.ReferencePolicy;
-import org.apache.felix.scr.annotations.Service;
+import eu.linksmart.gc.api.network.*;
+import eu.linksmart.gc.api.network.identity.IdentityManager;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.routing.BackboneRouter;
+import eu.linksmart.gc.api.security.communication.CommunicationSecurityManager;
+import eu.linksmart.gc.api.security.communication.SecurityProperty;
+import eu.linksmart.gc.api.utils.Part;
+import eu.linksmart.gc.network.connection.Connection;
+import eu.linksmart.gc.network.connection.ConnectionManager;
+import eu.linksmart.gc.network.connection.MessageSerializerUtiliy;
+import eu.linksmart.gc.tools.GetNetworkManagerStatus;
+import org.apache.felix.scr.annotations.*;
 import org.apache.log4j.Logger;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
-import eu.linksmart.gc.api.network.ErrorMessage;
-import eu.linksmart.gc.api.network.Message;
-import eu.linksmart.gc.api.network.MessageDistributor;
-import eu.linksmart.gc.api.network.MessageProcessor;
-import eu.linksmart.gc.api.network.NMResponse;
-import eu.linksmart.gc.api.network.Registration;
-import eu.linksmart.gc.api.network.ServiceAttribute;
-import eu.linksmart.gc.api.network.VirtualAddress;
-import eu.linksmart.gc.network.connection.Connection;
-import eu.linksmart.gc.network.connection.ConnectionManager;
-import eu.linksmart.gc.network.connection.MessageSerializerUtiliy;
-import eu.linksmart.gc.api.network.identity.IdentityManager;
-import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
-import eu.linksmart.gc.api.network.routing.BackboneRouter;
-import eu.linksmart.gc.api.security.communication.CommunicationSecurityManager;
-import eu.linksmart.gc.api.security.communication.SecurityProperty;
-import eu.linksmart.gc.tools.GetNetworkManagerStatus;
-import eu.linksmart.gc.api.utils.Part;
+import javax.servlet.ServletException;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.Properties;
 
 /*
  * Core implementation of NetworkManagerCore Interface
@@ -202,7 +184,7 @@ public class NetworkManagerCoreImpl implements NetworkManagerCore, MessageDistri
 		// BackboneSOAPImpl.
 		try {
 			this.myVirtualAddress = registerService(attributes, NETWORK_MGR_ENDPOINT,
-					"eu.linksmart.network.backbone.impl.soap.BackboneSOAPImpl")
+					"eu.linksmart.gc.network.backbone.protocol.http.HttpImpl")
 					.getVirtualAddress();
 			LOG.info("network-manager-core VirtualAddress: " + this.myVirtualAddress.toString());
 		} catch (RemoteException e) {
