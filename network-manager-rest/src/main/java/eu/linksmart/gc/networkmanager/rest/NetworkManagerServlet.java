@@ -236,6 +236,9 @@ public class NetworkManagerServlet extends HttpServlet {
 					attributesJson.put(p.getKey(), p.getValue());
 				}
 				registrationJson.put(KEY_ATTRIBUTES, attributesJson);
+			} else{
+				LOG.error("The registration was not successful, try again");
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"The registration was not successful, try again");
 			}
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
