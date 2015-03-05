@@ -12,7 +12,7 @@
 
 
     <groupId>eu.linksmart.gc.zmqsupernode</groupId>
-    <artifactId>ZMQ-Supernode-Distribution</artifactId>
+    <artifactId>ZMQSupernodeDistribution</artifactId>
     <version>0.1.1-SNAPSHOT</version>
     <name>Linksmart Globalconnect ZMQ backbone - Main distribution</name>
 
@@ -20,8 +20,8 @@
 
     <dependencies>
         <dependency>
-            <artifactId>Proxy-Impl</artifactId>
-            <groupId>eu.linksmart.globalconnect</groupId>
+            <artifactId>ProxyImpl</artifactId>
+            <groupId>eu.linksmart.gc.zmqsupernode</groupId>
             <version>0.1.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
