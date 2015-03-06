@@ -13,7 +13,7 @@
 	
 	<packaging>pom</packaging>
 
-	<name>LS GC APIs</name>
+	<name>LS GC suite - all APIs</name>
 	<description>LinkSmart Global Connect APIs</description>
 
 	<modules>

@@ -14,7 +14,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LS GC API - Types</name>
+	<name>LS GC - API - Types</name>
 	<description>LinkSmart Types API</description>
 	
 	<dependencies>

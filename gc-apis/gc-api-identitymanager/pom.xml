@@ -14,7 +14,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LS GC API - Identity Manager</name>
+	<name>LS GC - API - Identity Manager</name>
 	<description>LinkSmart Identity Manager API</description>
 
 	<dependencies>

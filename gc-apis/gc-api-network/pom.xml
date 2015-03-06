@@ -14,7 +14,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LS GC API - Network</name>
+	<name>LS GC - API - Network</name>
 	<description>LinkSmart Network API</description>
 
 	<dependencies>

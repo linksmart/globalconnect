@@ -14,7 +14,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LS GC API - Security Manager</name>
+	<name>LS GC - API - Security Manager</name>
 	<description>LinkSmart Security Manager API</description>
 
 	<dependencies>

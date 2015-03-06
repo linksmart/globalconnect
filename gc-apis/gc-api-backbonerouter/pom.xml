@@ -14,7 +14,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LS GC API - Backbone Router</name>
+	<name>LS GC - API - Backbone Router</name>
 	<description>LinkSmart Backbone Router API</description>
 
 	<dependencies>
