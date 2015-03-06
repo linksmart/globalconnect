@@ -10,7 +10,8 @@
     </parent>
 
     <artifactId>eu.linksmart.gc.archetypes.component</artifactId>
-    
+
+    <name>LS GC - archetype - component</name>
     <description>Maven template for creation LinkSmart GC OSGi Component/Service</description>
 
     <packaging>maven-archetype</packaging>

@@ -12,7 +12,7 @@
     <groupId>eu.linksmart.gc.archetypes</groupId>
     <artifactId>eu.linksmart.gc.archetypes</artifactId>
     
-    <name>LinkSmart GC Archetypes Suite</name>
+    <name>LS GC suite - all archetypes</name>
 
     <packaging>pom</packaging>
 
