@@ -13,7 +13,7 @@
 	<groupId>eu.linksmart.gc.deployment</groupId>
 	<artifactId>eu.linksmart.gc.deployment.features</artifactId>
 	
-	<name>LS GC - Features</name>
+	<name>LS GC suite - all features</name>
     
     <packaging>pom</packaging>
      
