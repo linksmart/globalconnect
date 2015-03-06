@@ -12,7 +12,7 @@
 
     <artifactId>eu.linksmart.gc.testing.http.tunneling</artifactId>
     
-    <name>HTTP Tunneling Integration Test</name>
+    <name>LS GC - IT - HTTP Tunneling</name>
 
 	<packaging>jar</packaging>
 

@@ -12,7 +12,7 @@
 
     <artifactId>eu.linksmart.gc.testing.network.manager.rest</artifactId>
     
-    <name>NetworkManager-Rest Integration Testing</name>
+    <name>LS GC - IT - NetworkManager-REST</name>
 
 	<packaging>jar</packaging>
 

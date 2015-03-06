@@ -12,7 +12,7 @@
 
     <artifactId>eu.linksmart.gc.testing.backbone.zmq</artifactId>
     
-    <name>Backbone-ZMQ Integration Testing</name>
+    <name>LS GC - IT - Backbone-ZMQ</name>
 
 	<packaging>jar</packaging>
 
