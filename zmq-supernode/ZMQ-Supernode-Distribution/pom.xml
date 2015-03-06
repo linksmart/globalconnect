@@ -14,7 +14,7 @@
     <groupId>eu.linksmart.gc.zmqsupernode</groupId>
     <artifactId>ZMQSupernodeDistribution</artifactId>
     <version>0.1.1-SNAPSHOT</version>
-    <name>Linksmart Globalconnect ZMQ backbone - Main distribution</name>
+    <name>LS GC - ZMQ-Supernode - Main distribution</name>
 
 
 

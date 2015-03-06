@@ -16,7 +16,7 @@
 
 
     <packaging>pom</packaging>
-    <name>Linksmart Globalconnect ZMQ backbone - Parent</name>
+    <name>LS GC - ZMQ-Supernode - Parent</name>
 
     <modules>
         <module>Proxy-Impl</module>
