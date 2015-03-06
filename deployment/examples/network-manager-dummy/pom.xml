@@ -14,7 +14,7 @@
 	
 	<packaging>bundle</packaging>
 
-	<name>LinkSmart Network Manager Dummy</name>
+	<name>LS GC - Network Manager Dummy</name>
 	<description>LinkSmart Network Manager Dummy</description>
 
 	<dependencies>
