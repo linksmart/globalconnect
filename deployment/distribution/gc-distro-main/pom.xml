@@ -9,7 +9,7 @@
      
     <artifactId>eu.linksmart.gc.distribution.main</artifactId>
     
-    <name>LS GC Main zip archive</name>
+    <name>LS GC - main zip archive</name>
     <description>Delivers a LinkSmart GC distribution as ZIP and GZIP</description>
     
     <packaging>pom</packaging>

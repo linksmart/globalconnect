@@ -12,7 +12,7 @@
     
     <artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
 
-    <name>LSGC Karaf KAR</name>
+    <name>LS GC - main Karaf archive (KAR)</name>
     <description>Triggers assembly of Karaf archive of GC main distribution</description>
 
 	<packaging>kar</packaging>

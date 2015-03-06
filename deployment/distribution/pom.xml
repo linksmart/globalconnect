@@ -13,7 +13,7 @@
     <groupId>eu.linksmart.gc.distribution</groupId>    
     <artifactId>eu.linksmart.gc.distribution.parent</artifactId>
     
-    <name>LS suite - GC Distribution</name>
+    <name>LS GC suite - GC Distribution</name>
     <description>Triggers KAR build and final assembly of GC based LS</description>
 
 	<packaging>pom</packaging>
