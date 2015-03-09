@@ -3,64 +3,23 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>eu.linksmart.gc</groupId>
-		<artifactId>eu.linksmart.gc.parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+        <artifactId>eu.linksmart.gc.parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>eu.linksmart.gc.distribution</groupId>    
-    <artifactId>eu.linksmart.gc.distribution.parent</artifactId>
+    <groupId>eu.linksmart.gc.distribution</groupId>
+    <artifactId>linksmart-distribution-suite</artifactId>
     
-    <name>LS GC suite - GC Distribution</name>
-    <description>Triggers KAR build and final assembly of GC based LS</description>
-
-	<packaging>pom</packaging>
-	
+    <packaging>pom</packaging>
+    
+    <name>LS GC suite - all distributions</name>
+    <description>Triggers full distribution building process for all subprojects (LS main, other)</description>
+    
     <modules>
-        <module>gc-karaf-kar</module>
-        <module>gc-distro-main</module>
+        <module>main-distribution</module>
     </modules>
     
-    <properties>
-        <gc.features.repository.url>mvn:eu.linksmart.gc.deployment/eu.linksmart.gc.deployment.features.core/${linksmart.gc.version}/xml/features</gc.features.repository.url>
-    </properties>
-    
-    <dependencyManagement>
-    	<dependencies>
-    		<dependency>
-            	<groupId>eu.linksmart.gc.distribution</groupId>
-            	<artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
-            	<version>${linksmart.gc.version}</version>
-            	<type>kar</type>
-        	</dependency>
-        	<dependency>
-            	<groupId>org.apache.karaf</groupId>
-            	<artifactId>apache-karaf</artifactId>
-            	<version>${karaf.version}</version>
-            	<type>tar.gz</type>
-        	</dependency>
-    	</dependencies>
-    </dependencyManagement>
-    
-    <build>
-        <pluginManagement>
-            <plugins>
-            	<plugin>
-                	<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-assembly-plugin</artifactId>
-            	</plugin>
-            	<plugin>
-		            <groupId>org.apache.maven.plugins</groupId>
-		            <artifactId>maven-antrun-plugin</artifactId>
-		        </plugin>
-		        <plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-dependency-plugin</artifactId>
-				</plugin>        
-            </plugins>
-        </pluginManagement>
-    </build>
-
 </project>
