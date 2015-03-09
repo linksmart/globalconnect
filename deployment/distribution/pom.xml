@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>eu.linksmart.gc.distribution</groupId>
-    <artifactId>linksmart-distribution-suite</artifactId>
+    <artifactId>eu.linksmart.gc.distribution.all</artifactId>
     
     <packaging>pom</packaging>
     
