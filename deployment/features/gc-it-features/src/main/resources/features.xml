@@ -5,6 +5,7 @@
 	
 	<feature name="gc-network-manager-rest-it" version="${linksmart.gc.version}">
     	<feature version="${linksmart.gc.version}">gc-network-manager-rest</feature>
+    	<bundle>mvn:eu.linksmart.gc.examples/eu.linksmart.gc.examples.weather.service/${linksmart.gc.version}</bundle>
     	<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-codec/${commons-codec.version}</bundle>
     	<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-httpclient/${apache.httpclient.version}</bundle>
     </feature>
