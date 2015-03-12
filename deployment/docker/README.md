@@ -5,7 +5,7 @@
 
 # Building
 ```
-docker build --rm -t lsgc/base base
+docker build --rm -t lsgc/base lsgc-base
 
 docker build --rm -t lsgc/zmq-supernode zmq-supernode
 ```
