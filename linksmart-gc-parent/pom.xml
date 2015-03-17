@@ -22,9 +22,9 @@
         <felix.osgi.core.version>1.4.0</felix.osgi.core.version>
         <felix.osgi.configadmin.version>1.8.0</felix.osgi.configadmin.version>
         <felix.scr.version>1.8.2</felix.scr.version>
-        <felix.scr.annotations.version>1.9.6</felix.scr.annotations.version>
-        <felix.maven.bundle.version>2.4.0</felix.maven.bundle.version>
-        <felix.maven.scr.version>1.15.0</felix.maven.scr.version>
+        <felix.scr.annotations.version>1.9.10</felix.scr.annotations.version>
+        <felix.maven.bundle.version>2.5.3</felix.maven.bundle.version>
+        <felix.maven.scr.version>1.20.0</felix.maven.scr.version>
         <felix.metatype.version>1.0.10</felix.metatype.version>
         <felix.http.version>2.2.2</felix.http.version>
         <!-- versions for maven and java compiler plugins -->
