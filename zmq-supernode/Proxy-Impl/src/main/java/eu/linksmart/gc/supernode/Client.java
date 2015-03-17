@@ -50,7 +50,9 @@ public class Client extends Observable{
     }
 
     // close thread and resources
-    public void finalize() {
+    public void finalize() throws Throwable {
+
+        super.finalize();
 
         // stop heartbeat
         heartbeatThread.interrupt();
@@ -64,11 +66,8 @@ public class Client extends Observable{
 
         // clean up the IO
         pubSocket.close();
-        LOG.trace("PUB trafficSocket closed.");
         subSocket.close();
-        LOG.trace("SUB trafficSocket closed.");
         ctx.term();
-        LOG.trace("ZMQ context terminated.");
     }
     public String getPeerID(){
         return this.peerID;

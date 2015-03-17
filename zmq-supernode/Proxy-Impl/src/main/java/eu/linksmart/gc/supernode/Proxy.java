@@ -12,18 +12,18 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Proxy {
 
-    private static Logger LOG = Logger.getLogger(Proxy.class.getName());
+    private final static Logger LOG = Logger.getLogger(Proxy.class.getName());
 
 
     private TrafficWatch trafficWatch;
     private HeartbeatWatch heartbeatWatch;
     private ProxyThread proxyThread;
 
-    private String mXSubAddress;
-    private String mXPubAddress;
+    private final String mXSubAddress;
+    private final String mXPubAddress;
 
 
-    ConcurrentHashMap<UUID, Long> heartbeatTimestamps;
+    private final ConcurrentHashMap<UUID, Long> heartbeatTimestamps;
 
     public Proxy() {
 
@@ -151,15 +151,15 @@ public class Proxy {
     // analyzes traffic of the proxy
     private class TrafficWatch extends Thread {
 
-        ZMQ.Context ctx;
-        ZMQ.Socket trafficSocket;
+        final ZMQ.Context ctx;
+        final ZMQ.Socket trafficSocket;
 
         // thread safe hash map of heartbeat timers
-        ConcurrentHashMap<UUID, Long> hartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
+//        ConcurrentHashMap<UUID, Long> hartbeatTimestamps = new ConcurrentHashMap<UUID, Long>();
 
-        private Message aMessage;
+        private final Message aMessage;
 
-        ConcurrentHashMap<UUID, Long> mPeers;
+        final ConcurrentHashMap<UUID, Long> mPeers;
 
 
         public TrafficWatch(ConcurrentHashMap<UUID, Long> peers) {
@@ -193,7 +193,7 @@ public class Proxy {
                 }
             }
         }
-        private void receiveMessage(Message someMessage){
+        private void receiveMessage(){
             aMessage.version = trafficSocket.recv()[0];
             aMessage.type = trafficSocket.recv()[0];
             aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
@@ -213,15 +213,15 @@ public class Proxy {
                     LOG.trace("topic received : "+aMessage.topic);
 
                     if (aMessage.topic.equals(Constants.HEARTBEAT_TOPIC)) {
-                        receiveMessage(aMessage);
+                        receiveMessage();
                         mPeers.put(java.util.UUID.fromString(aMessage.sender), System.currentTimeMillis());
                         LOG.debug("no of peers : " + mPeers.size());
                     } else if (aMessage.topic.equals(Constants.BROADCAST_TOPIC)) {
-                        receiveMessage(aMessage);
+                        receiveMessage();
                     } else if (Message.isUUID(aMessage.topic)) {
                         // TODO in case the client sends a valid UUID as topic but no proper message, the routine will fail
                         // TODO better handling or format specification required
-                        receiveMessage(aMessage);
+                        receiveMessage();
                     } else {
                         LOG.warn("unknown topic detected.");
                         // receive crap from unknown topic
@@ -250,7 +250,7 @@ public class Proxy {
 
         ZMQ.Context ctx;
         ZMQ.Socket heartbeatSocket;
-        ConcurrentHashMap<UUID, Long> mPeers;
+        final ConcurrentHashMap<UUID, Long> mPeers;
 
         public HeartbeatWatch(ConcurrentHashMap<UUID, Long> peers) {
 
