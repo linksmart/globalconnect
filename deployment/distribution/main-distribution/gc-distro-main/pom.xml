@@ -17,7 +17,8 @@
     <dependencies>
     	<dependency>
             <groupId>eu.linksmart.gc.distribution</groupId>
-            <artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
+            <artifactId>eu.linksmart.gc.distribution.main.kar</artifactId>
+            <version>${linksmart.gc.version}</version>
             <type>kar</type>
         </dependency>
         <dependency>
@@ -85,7 +86,7 @@
 					            	<artifactItems>
 										<artifactItem>
 											<groupId>eu.linksmart.gc.distribution</groupId>
-            								<artifactId>eu.linksmart.gc.distribution.karaf.kar</artifactId>
+            								<artifactId>eu.linksmart.gc.distribution.main.kar</artifactId>
 											<type>kar</type>
 											<outputDirectory>target/linksmart-gc-resources</outputDirectory>
 											<destFileName>linksmart-gc-karaf-archive.zip</destFileName>
