@@ -120,7 +120,7 @@ public class Proxy {
 
             LOG.debug("starting blocking ZMQ proxy...");
             try {
-                boolean result = ZMQ.proxy(xsubSocket, xpubSocket, null);
+                ZMQ.proxy(xsubSocket, xpubSocket, null);
             }catch(Exception ex){
                 LOG.warn("ZMQ proxy interrupted",ex);
             }
@@ -281,7 +281,7 @@ public class Proxy {
                             LOG.debug("no. of peers : " + mPeers.size());
                         }
                     }
-                    this.sleep(Constants.HEARTBEAT_INTERVAL/2);
+                    Thread.sleep(Constants.HEARTBEAT_INTERVAL/2);
                 }
             } catch (InterruptedException ex) {
                 LOG.info("heartbeat thread : interrupt signal received.");

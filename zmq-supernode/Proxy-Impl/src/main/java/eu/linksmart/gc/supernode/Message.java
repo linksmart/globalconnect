@@ -22,8 +22,7 @@ public class Message {
 
     public static long deserializeTimestamp(byte[] raw){
 
-        byte[] unixTimeSerialized = raw;
-        ByteBuffer unixTime = ByteBuffer.wrap(unixTimeSerialized);
+        ByteBuffer unixTime = ByteBuffer.wrap(raw);
         return unixTime.getLong();
 
     }

@@ -78,9 +78,13 @@ public class Client extends Observable{
 
         // unsubscribe topics
         LOG.trace("iteration over subscribtion list of : "+subscriptions.size());
-        for(int i=0; i < subscriptions.size() ; i++){
-            unsubscribe(subscriptions.get(i));
+        // unsubscribe topics
+        for(String aTopic : subscriptions){
+            unsubscribe(aTopic);
         }
+        /*for(int i=0; i < subscriptions.size() ; i++){
+            unsubscribe(subscriptions.get(i));
+        }*/
 //        for(String aTopic : subscriptions){
 //
 //        }

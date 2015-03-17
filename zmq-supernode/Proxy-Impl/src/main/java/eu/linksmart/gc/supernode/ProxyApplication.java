@@ -99,10 +99,7 @@ public class ProxyApplication {
                     return false;
                 }
             }
-            if(ip.endsWith(".")) {
-                return false;
-            }
-            return true;
+            return !ip.endsWith(".");
         } catch (NumberFormatException nfe) {
             return false;
         }
