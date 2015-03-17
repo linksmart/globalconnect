@@ -52,8 +52,6 @@ public class Client extends Observable{
     // close thread and resources
     public void finalize() throws Throwable {
 
-        super.finalize();
-
         // stop heartbeat
         heartbeatThread.interrupt();
 
@@ -68,6 +66,7 @@ public class Client extends Observable{
         pubSocket.close();
         subSocket.close();
         ctx.term();
+        super.finalize();
     }
     public String getPeerID(){
         return this.peerID;
