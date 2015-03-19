@@ -25,13 +25,6 @@ import eu.linksmart.gc.api.network.NMResponse;
 import eu.linksmart.gc.api.network.Registration;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.utils.Base64;
-import org.apache.log4j.Logger;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.util.*;
 
 public class ZmqHandler {
 	
@@ -57,8 +50,8 @@ public class ZmqHandler {
 	
 	private int MAX_RESPONSE_TIME = 60000;
 	
-	//private ExecutorService executor = Executors.newCachedThreadPool();
-	//private ReadWriteLock lock = new ReentrantReadWriteLock();
+	private ExecutorService executor = Executors.newCachedThreadPool();
+	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	
 	public ZmqHandler(BackboneZMQImpl zmqBackbone) {
 		this.zmqBackbone = zmqBackbone;
@@ -98,27 +91,32 @@ public class ZmqHandler {
 		heartBeat.setIsRunning(false);
 		receiver.stopReceiver();
 		publisher.stopPublisher();
+		LOG.info("ZmqPeer [" + this.peerID + "] is stopping");
+		shutdownExecutor();
 		LOG.info("ZmqPeer [" + this.peerID + "] is stopped");
-//		try {
-//			executor.shutdown();
-//			// Wait a while for existing tasks to terminate
-//		    if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-//		    	executor.shutdownNow(); // Cancel currently executing tasks
-//		      // Wait a while for tasks to respond to being cancelled
-//		      if (!executor.awaitTermination(10, TimeUnit.SECONDS))
-//		    	  LOG.error("Executor did not terminate");
-//		   }
-//		} catch (InterruptedException ie) {
-//			// (Re-)Cancel if current thread also interrupted
-//			executor.shutdownNow();
-//		    // Preserve interrupt status
-//		    Thread.currentThread().interrupt();
-//		}
+	}
+	
+	private void shutdownExecutor() {
+		try {
+			executor.shutdown();
+			// Wait a while for existing tasks to terminate
+		    if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+		    	executor.shutdownNow(); // Cancel currently executing tasks
+		      // Wait a while for tasks to respond to being cancelled
+		      if (!executor.awaitTermination(10, TimeUnit.SECONDS))
+		    	  LOG.error("Zmq-Executor did not terminate");
+		   }
+		} catch (InterruptedException ie) {
+			// (Re-)Cancel if current thread also interrupted
+			executor.shutdownNow();
+		    // Preserve interrupt status
+		    Thread.currentThread().interrupt();
+		}
 	}
 	
 	public void notify(ZmqMessage zmqMessage) {
-		new MessageProcessor(zmqMessage).start();
-		//executor.execute(new MessageProcessor(zmqMessage));
+		//new MessageProcessor(zmqMessage).start();
+		executor.execute(new MessageProcessor(zmqMessage));
 	}
 	
 	public NMResponse broadcast(BackboneMessage bbMessage) {
@@ -201,40 +199,70 @@ public class ZmqHandler {
 	}
 
 	public void addServiceIfMissing(VirtualAddress addr, String peerID) {
-		synchronized (this.remoteServices) {
-			if (!(this.remoteServices.containsKey(addr))) {
-				this.remoteServices.put(addr, peerID);
-				LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "]");
-			}
-//			try {
-//                lock.writeLock().lock();
-//                this.remoteServices.put(addr, peerID);
-//            } finally {
-//                lock.writeLock().unlock();
-//            }
+		try {
+			lock.writeLock().lock();
+			this.remoteServices.put(addr, peerID);
+			LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "]");
+		} finally {
+			lock.writeLock().unlock();
 		}
+//		synchronized (this.remoteServices) {
+//			if (!(this.remoteServices.containsKey(addr))) {
+//				this.remoteServices.put(addr, peerID);
+//				LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "]");		
+//			}
+//		}
 	}
 
 	public void removePeerServices(String peerID) {
-		synchronized (this.remoteServices) {
-			LOG.info("removing zmqPeer [" + peerID + "] and associated remote services");
-			Iterator<String> services = this.remoteServices.values().iterator();
-			while(services.hasNext()) {
-				String value = services.next();
-				if(value.equals(peerID)) {
+		LOG.info("removing zmqPeer [" + peerID + "] and associated remote services");
+		Iterator<String> services = null;
+		try {
+			lock.readLock().lock();
+			services = this.remoteServices.values().iterator();
+			LOG.info("removing remote service for peer [" + peerID + "] from list");
+		} finally {
+			lock.readLock().unlock();
+		}
+		while(services.hasNext()) {
+			String value = services.next();
+			if(value.equals(peerID)) {
+				try {
+					lock.writeLock().lock();
 					services.remove();
 					LOG.info("removing remote service for peer [" + peerID + "] from list");
+				} finally {
+					lock.writeLock().unlock();
 				}
 			}
 		}
+//		synchronized (this.remoteServices) {
+//			LOG.info("removing zmqPeer [" + peerID + "] and associated remote services");
+//			Iterator<String> services = this.remoteServices.values().iterator();
+//			while(services.hasNext()) {
+//				String value = services.next();
+//				if(value.equals(peerID)) {
+//					services.remove();
+//					LOG.info("removing remote service for peer [" + peerID + "] from list");
+//				}
+//			}
+//		}
 	}
 	
 	public void removePeerService(VirtualAddress removeVirtualAddress) {
-		synchronized (this.remoteServices) {
+		try {
+			lock.writeLock().lock();
 			if(this.remoteServices.remove(removeVirtualAddress) != null) {
 				LOG.info("removing remoteService [" + removeVirtualAddress + "] from catalog");
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
+//		synchronized (this.remoteServices) {
+//			if(this.remoteServices.remove(removeVirtualAddress) != null) {
+//				LOG.info("removing remoteService [" + removeVirtualAddress + "] from catalog");
+//			}
+//		}
 	}
 	
 	////////////////////////////////////////////////////////
