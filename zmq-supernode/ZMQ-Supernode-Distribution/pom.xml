@@ -11,10 +11,10 @@
     </parent>
 
 
-    <groupId>eu.linksmart.gc.zmqsupernode</groupId>
-    <artifactId>ZMQSupernodeDistribution</artifactId>
+    <groupId>eu.linksmart.gc.distribution</groupId>
+    <artifactId>eu.linksmart.gc.distribution.supernode.deployable</artifactId>
     <version>0.1.1-SNAPSHOT</version>
-    <name>LS GC - ZMQ-Supernode - Main distribution</name>
+    <name>LS GC - ZMQ-Supernode - distribution</name>
 
 
 
