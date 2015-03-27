@@ -1,25 +1,23 @@
 package eu.linksmart.gc.network.tunneling.http;
 
-import java.io.BufferedReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import eu.linksmart.gc.api.types.TunnelRequest;
-import eu.linksmart.gc.api.types.TunnelResponse;
-import eu.linksmart.gc.api.types.utils.SerializationUtil;
 import eu.linksmart.gc.api.network.NMResponse;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.types.TunnelRequest;
+import eu.linksmart.gc.api.types.TunnelResponse;
+import eu.linksmart.gc.api.types.utils.SerializationUtil;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TunnelProcessor {
+
+    private static final Logger LOG = Logger.getLogger(TunnelProcessor.class.getName());
 	
 	public static StringTokenizer getPathTokens(String pathInfo) throws TunnelException, Exception {
 		
@@ -137,8 +135,14 @@ public class TunnelProcessor {
 	}
 	
 	public static TunnelResponse sendTunnelRequest(TunnelRequest tunnel_request, NetworkManagerCore nmCore, VirtualAddress senderVAD, VirtualAddress receiverVAD) throws TunnelException, Exception {
+
+        byte[] serializedRequest = SerializationUtil.serialize(tunnel_request);
+
+        LOG.trace("Serialized tunnel request: \n"+serializedRequest);
 		
-		NMResponse nm_response = nmCore.sendData(senderVAD, receiverVAD,  SerializationUtil.serialize(tunnel_request), true);
+		NMResponse nm_response = nmCore.sendData(senderVAD, receiverVAD,  serializedRequest, true);
+
+
 		
 		TunnelResponse tunnel_response = (TunnelResponse) SerializationUtil.deserialize(nm_response.getMessageBytes());
 		

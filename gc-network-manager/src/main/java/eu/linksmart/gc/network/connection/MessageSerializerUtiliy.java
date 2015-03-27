@@ -1,18 +1,17 @@
 package eu.linksmart.gc.network.connection;
 
+import eu.linksmart.gc.api.network.ErrorMessage;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.utils.Base64;
+import org.apache.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.Properties;
-
-import org.apache.log4j.Logger;
-
-import eu.linksmart.gc.api.network.ErrorMessage;
-import eu.linksmart.gc.api.network.Message;
-import eu.linksmart.gc.api.network.VirtualAddress;
-import eu.linksmart.gc.api.utils.Base64;
 
 /**
  * Provides methods to serialize and unserialize messages
@@ -92,6 +91,9 @@ public class MessageSerializerUtiliy {
 					senderVirtualAddress, receiverVirtualAddress, e.getMessage().getBytes());
 		}
 
+        // print connection topic from a previously parsed html/xml from the payload
+        //
+        logger.trace(properties.getProperty(Connection.TOPIC));
 		// create real message
 		Message message = new Message((String) properties.remove(Connection.TOPIC),
 				senderVirtualAddress, receiverVirtualAddress, (Base64.decode((String) properties
