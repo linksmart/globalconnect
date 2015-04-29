@@ -6,5 +6,6 @@ if [[ $OK_LOG == "4" ]]; then
 	exit 0
 else
 	echo "[ERROR] wrong log from container found"
+	exit 1
 fi
 
