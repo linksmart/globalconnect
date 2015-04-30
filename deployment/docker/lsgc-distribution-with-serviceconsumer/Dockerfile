@@ -7,6 +7,10 @@ ADD getTemperature.sh ${LSGC_HOME}/bin/
 RUN chmod a+x ${LSGC_HOME}/bin/getTemperature.sh
 ADD startup.sh ${LSGC_HOME}/bin/
 RUN chmod a+x ${LSGC_HOME}/bin/startup.sh
+ADD isServiceUp.sh ${LSGC_HOME}/bin/
+RUN chmod a+x ${LSGC_HOME}/bin/isServiceUp.sh
+ADD printLogs.sh ${LSGC_HOME}/bin/
+RUN chmod a+x ${LSGC_HOME}/bin/printLogs.sh
 #
 # start karaf and call service over tunnel
 #
