@@ -3,17 +3,18 @@
 # 1. it starts LSGC
 # 2. waits
 # 3. calls the remote REST weather service
-TIMER=90
+TIMER=300
+## lower valus may not work due the ineffictient discovery mechanism
 while :
 do
 	echo "(re)starting LSGC instance..."
 	./bin/start
 	echo "sleeping $TIMER sec..."
 	sleep $TIMER
-	echo "remote service check..."
+	echo "checking remote service availability..."
 	./bin/isServiceUp.sh
 	if [ $? -eq 0 ]; then
-		echo "service is running. exiting loop."
+		echo "remote service is running. leaving the loop."
 		./bin/printLogs.sh
 		break
 	fi
