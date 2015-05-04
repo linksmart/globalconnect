@@ -9,10 +9,8 @@ TEMPERATURE=$(echo $RAW_RESPONSE | jq .Temperature)
 echo "parsed temperature: $TEMPERATURE"
 if [[ "$TEMPERATURE" == "25" ]]; then
 	echo "[OK] valid temperature found"
-	./bin/stop
 	exit 0
 else
 	echo "[ERROR] wrong temperature"
-	./bin/stop
 	exit 1
 fi
