@@ -15,7 +15,9 @@ export LSGC_DIST_FILE=$ARTIFACT_NAME-$LSGC_BUILD-bin.tar.gz
 # construct a docker file from template
 envsubst '$LSGC_DIST_FILE' < Dockerfile.template > Dockerfile
 # create docker image
-sudo docker build -rm -t lsgc/distribution .
+# USE sudo if your user doesn't have sufficient rights
+# for permanent right follow https://docs.docker.com/installation/debian/#debian-wheezystable-7x-64-bit
+docker build -rm -t lsgc/distribution .
 # clean up temporary files
 rm Dockerfile
 rm $MAVEN_METADATA
