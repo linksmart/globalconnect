@@ -3,11 +3,11 @@
 # 1. it starts LSGC
 # 2. waits
 # 3. calls the remote REST weather service
-TIMER=45
+TIMER=30
 ## lower valus may not work due the ineffictient discovery mechanism
 echo "---> starting LSGC instance with consumer..."
 ./bin/start
-echo "---> main startup script sleeps $TIMER sec..."
+echo "---> script sleeps $TIMER sec before consuming service ..."
 sleep $TIMER
 echo "---> calling remote REST service..."
 ./bin/getTemperature.sh
