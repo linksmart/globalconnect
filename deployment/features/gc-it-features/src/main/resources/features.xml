@@ -21,6 +21,10 @@
         <bundle>mvn:eu.linksmart.gc.examples/eu.linksmart.gc.examples.weather.service/${linksmart.gc.version}</bundle>
     </feature>
     
+    <feature name="gc-lc-bridge-it" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">gc-lc-bridge</feature>   
+    </feature>
+    
     <feature name="gc-http-tunneling-dummy-it" version="${linksmart.gc.version}">
     	<feature version="${linksmart.gc.version}">gc-osgi-http</feature>
     	<feature version="${linksmart.gc.version}">gc-boot</feature>

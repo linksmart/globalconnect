@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import eu.linksmart.gc.api.network.Message;
 import eu.linksmart.gc.api.network.NMResponse;
 import eu.linksmart.gc.api.network.Registration;
+import eu.linksmart.gc.api.network.ServiceUpdate;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.utils.Base64;
 
@@ -201,8 +202,13 @@ public class ZmqHandler {
 	public void addServiceIfMissing(VirtualAddress addr, String peerID) {
 		try {
 			lock.writeLock().lock();
-			this.remoteServices.put(addr, peerID);
-			LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "]");
+			//
+			// check if VAD is already in catalog
+			//
+			if(this.remoteServices.get(addr) == null) {
+				this.remoteServices.put(addr, peerID);
+				LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "] - size: " + this.remoteServices.size());
+			}
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -352,26 +358,37 @@ public class ZmqHandler {
 						}
 					}
 				} catch (Exception e) {
-					LOG.error("processBroadcast: error in decoding payload's registration[] object: " + e.getMessage());
+					LOG.error("processBroadcast [NMAdvertisement]: error in decoding payload's registration[] object: " + e.getMessage());
 				}		
-			} else if(message.getTopic().equals("IDManagerServiceListUpdate")) {
-				String updates = new String(message.getData()); 
-				for (String oneUpdate : updates.split(" ")) {
-					String[] updateData = oneUpdate.split(";");
-					// at this point updateData 0 is operation type A/D, [1] is	Service, [2] is description (only if operation=A)
-					if (updateData[0].equals("A")) {
-						VirtualAddress newVirtualAddress = new VirtualAddress(updateData[1]);
-						Registration newServiceInfo = new Registration(newVirtualAddress, updateData[2]);
-						addServiceIfMissing(newServiceInfo.getVirtualAddress(), zmqMessage.getSender());
-					} else if (updateData[0].equals("D")) {
-						VirtualAddress removeVirtualAddress = new VirtualAddress(updateData[1]);
-						removePeerService(removeVirtualAddress);
-					} else {
-						throw new IllegalArgumentException("Unexpected update type for IDManager updates: " + updateData[0]);
+			} else if(message.getTopic().equals("IDManagerServiceListUpdate")) { 
+				try {
+					ByteArrayInputStream bis = new ByteArrayInputStream(message.getData());
+					ObjectInput in = new ObjectInputStream(bis);
+					Object payloadObject = in.readObject();
+					bis.close();
+					in.close();
+					Set<ServiceUpdate> serviceInfos = null;
+					serviceInfos = (Set<ServiceUpdate>) payloadObject;
+					if (serviceInfos != null) {
+						Iterator<ServiceUpdate> i = serviceInfos.iterator();
+						while (i.hasNext()) {
+							ServiceUpdate oneServiceInfo = i.next();
+							if(oneServiceInfo.getOperation().equals("A")) {
+								addServiceIfMissing(oneServiceInfo.getRegistration().getVirtualAddress(), zmqMessage.getSender());
+							} else if(oneServiceInfo.getOperation().equals("D")) {
+								removePeerService(oneServiceInfo.getRegistration().getVirtualAddress());				
+							} else {
+								LOG.warn("unsupported updateservice operation: " + oneServiceInfo.getOperation());
+							}
+							
+						}
 					}
+				} catch (Exception e) {
+					LOG.error("processBroadcast [IDManagerServiceListUpdate]: error in decoding payload's serviceupdate[] object: " + e.getMessage());
 				}
+					
 			} else {
-				LOG.warn("processBroadcast: unable to parse topic: " + message.getTopic());
+				LOG.warn("ignoring processBroadcast: unable to parse topic: " + message.getTopic());
 			}
 		}
 

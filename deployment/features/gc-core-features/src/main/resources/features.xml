@@ -34,6 +34,8 @@
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.networkmanager.core/${linksmart.gc.version}</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.security.communication/${linksmart.gc.version}</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.identitymanager/${linksmart.gc.version}</bundle>
+        <!-- ls-gc bridge -->
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.sc.client/${linksmart.gc.version}</bundle>
     </feature>
     
     <feature name="gc-backbone-router" version="${linksmart.gc.version}">
@@ -91,6 +93,15 @@
    		<feature version="${linksmart.gc.version}">gc-backbone-http</feature>
    		<feature version="${linksmart.gc.version}">gc-network-manager-rest</feature>
    		<feature version="${linksmart.gc.version}">gc-http-tunneling</feature>
+    </feature>
+    
+    <feature name="gc-lc-bridge" version="${linksmart.gc.version}">
+    	<feature version="${linksmart.gc.version}">linksmart-gc</feature>
+    	<bundle>mvn:com.google.code.gson/gson/2.3</bundle>
+    	<bundle>mvn:com.sun.jersey/jersey-client/1.18.1</bundle>
+    	<bundle>mvn:com.sun.jersey/jersey-core/1.18.1</bundle>
+    	<bundle>mvn:eu.linksmart.lc/service-catalog-client/0.0.2-SNAPSHOT</bundle>
+    	<bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.sc.client/${linksmart.gc.version}</bundle>
     </feature>
     
 </features>

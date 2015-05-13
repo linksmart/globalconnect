@@ -6,31 +6,22 @@
 
     <parent>
         <groupId>eu.linksmart.gc</groupId>
-        <artifactId>eu.linksmart.gc.osgi.component</artifactId>
+        <artifactId>gc-apis</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-	<artifactId>eu.linksmart.gc.network.identitymanager</artifactId>
+	<artifactId>eu.linksmart.gc.api.sc.client</artifactId>
 
 	<packaging>bundle</packaging>
 
-	<name>LS GC - Identity Manager</name>
-	<description>LinkSmart Identity Manager</description>
+	<name>LCGC - Service Catalog Client API</name>
+	<description>LinkSmart Global Connect Service Catalog Client API</description>
 
 	<dependencies>
-		<dependency>
-			<groupId>eu.linksmart.gc</groupId>
-			<artifactId>eu.linksmart.gc.api.identitymanager</artifactId>
-		</dependency>
-    	<dependency>
-			<groupId>eu.linksmart.gc</groupId>
-			<artifactId>eu.linksmart.gc.api.networkmanager.core</artifactId>
-		</dependency>
-		<dependency>
-            <groupId>eu.linksmart.gc</groupId>
-            <artifactId>eu.linksmart.gc.api.sc.client</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
+      	<dependency>
+        	<groupId>eu.linksmart.gc</groupId>
+        	<artifactId>eu.linksmart.gc.api.network</artifactId>
+      	</dependency>
 	</dependencies>
 
 	<build>
@@ -42,7 +33,6 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-						<Export-Package>!*</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>

@@ -32,7 +32,7 @@ public class IdentityManagerImplTest {
 	public void setUp() throws RemoteException {
 		//create IdMgr and store entities 
 		this.identityMgr = new IdentityManagerImpl();
-		this.identityMgr.init();
+		this.identityMgr.initMaps();
 		MY_VIRTUAL_ADDRESS = this.identityMgr.createServiceByAttributes(new Part[]{ATTR_1});
 		
 		//create NMCore mock object

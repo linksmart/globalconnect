@@ -39,6 +39,8 @@ import eu.linksmart.gc.api.network.MessageProcessor;
 import eu.linksmart.gc.api.network.Registration;
 import eu.linksmart.gc.api.network.ServiceAttribute;
 import eu.linksmart.gc.api.network.VirtualAddress;
+import eu.linksmart.gc.api.network.ServiceUpdate;
+
 import eu.linksmart.gc.api.network.identity.IdentityManager;
 import eu.linksmart.gc.network.identity.util.AttributeQueryParser;
 import eu.linksmart.gc.network.identity.util.AttributeResolveFilter;
@@ -46,6 +48,7 @@ import eu.linksmart.gc.network.identity.util.AttributeResolveResponse;
 import eu.linksmart.gc.network.identity.util.BloomFilterFactory;
 import eu.linksmart.gc.network.identity.util.ByteArrayCodec;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
 import eu.linksmart.gc.api.utils.Part;
 import eu.linksmart.gc.api.utils.PartConverter;
 
@@ -53,130 +56,179 @@ import eu.linksmart.gc.api.utils.PartConverter;
 @Component(name="IdentityManager", immediate=true)
 @Service({IdentityManager.class})
 public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
+	
+	protected static String IDENTITY_MGR = IdentityManagerImpl.class.getSimpleName();
+	protected static Logger LOG = Logger.getLogger(IDENTITY_MGR);
+	
+	/*
+	 * attrbitues 
+	 */
 	public final static String IDMANAGER_UPDATE_SERVICE_LIST_TOPIC = "IDManagerServiceListUpdate";
 	public final static String IDMANAGER_NMADVERTISMENT_TOPIC = "NMAdvertisement";
+	
 	public final static String IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_REQ = "NMServiceAttributeResolveRequest";
 	public final static String IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_RESP = "NMServiceAttributeResolveResponse";
+	
 	public final static String SERVICE_ATTR_RESOLVE_KEYS = "AttributeKeys";
 	public final static String SERVICE_ATTR_RESOLVE_FILTER = "BloomFilter";
 	public final static String SERVICE_ATTR_RESOLVE_RANDOM = "Random";
 	public final static String SERVICE_ATTR_RESOLVE_ID = "RequestIdentifier";
 
-	protected static String IDENTITY_MGR = IdentityManagerImpl.class.getSimpleName();
-
-	protected static Logger LOG = Logger.getLogger(IDENTITY_MGR);
-
+	/*
+	 * data structures 
+	 */
 	protected ConcurrentHashMap<VirtualAddress, Registration> localServices;
 	protected ConcurrentHashMap<VirtualAddress, Registration> remoteServices;
 
 	protected ConcurrentHashMap<VirtualAddress, Long> serviceLastUpdate;
-	protected ConcurrentLinkedQueue<String> queue;
+	protected ConcurrentLinkedQueue<ServiceUpdate> queue;
+	
 	protected ConcurrentHashMap<String, List<Message>> resolveResponses;
 	protected ConcurrentHashMap<String, Object> locks;
 
-	/**Thread to delete not updated Services.*/
-	protected Thread serviceClearerThread;
-
-	/** Thread that checks for updated in ServiceList and sends respective broadcasts. */
-	protected Thread serviceUpdaterThread;
-	/** Time in milliseconds to wait between broadcasts. */
-	protected int broadcastSleepMillis = 1000;
-
-	/** Thread that sends network manager advertisement broadcasts. */
+	/*
+	 * Thread that sends network manager advertisement broadcasts
+	 * Flag controlling advertising thread
+	 * Time in milliseconds to wait between advertisements
+	 * old valua was 6000, now changed to 60000 milliseconds (60 seconds)
+	 */
 	protected Thread advertisingThread;
-	/** Time in milliseconds to wait between advertisements. */
-	/** old valua was 6000, now changed to 300000 */
-	protected int advertisementSleepMillis = 300000;  
-	/** Time in milliseconds before node is deleted if not updated.*/
-	protected static long SERVICE_KEEP_ALIVE_MS = (long)(2 * 300000);
-
-	/** Flag controlling advertising thread.*/
 	private boolean advertisingThreadRunning;
-	/** Flag controlling update broadcaster thread.*/
-	private boolean serviceUpdaterThreadRunning;
-	/** Flag controlling Service clearer thread.*/
-	private boolean serviceClearerThreadRunning;
+	protected int advertisementSleepMillis = 60000;  
 	
+	/*
+	 * Thread that check for updates in ServiceList and sends respective broadcasts
+	 * Flag controlling update broadcaster thread
+	 * Time in milliseconds to wait between broadcasts for updated services
+	 * old valua was 1000, now changed to 10000 milliseconds (10 seconds) 
+	 */
+	protected Thread serviceUpdaterThread;
+	private boolean serviceUpdaterThreadRunning;
+	protected int broadcastSleepMillis = 10000;
+
+	/*
+	 * Thread to delete the Services those haven't been updated
+	 * Flag controlling Service clearer thread
+	 * Time in milliseconds before node is deleted if not updated (15 minutes)
+	 */
+	protected Thread serviceClearerThread;
+	private boolean serviceClearerThreadRunning;
+	protected static long SERVICE_KEEP_ALIVE_MS = (long)(15 * 60000);
+
+	/*
+	 * OSGi service references 
+	 */
 	@Reference(name="NetworkManagerCore",
 			cardinality = ReferenceCardinality.OPTIONAL_UNARY,
 			bind="bindNetworkManagerCore", 
 			unbind="unbindNetworkManagerCore",
 			policy=ReferencePolicy.DYNAMIC)
 	protected NetworkManagerCore networkManagerCore;
+	
+	@Reference(name="ServiceCatalogClient",
+			cardinality = ReferenceCardinality.OPTIONAL_UNARY,
+			bind="bindServiceCatalogClient", 
+			unbind="unbindServiceCatalogClient",
+			policy=ReferencePolicy.DYNAMIC)
+	protected ServiceCatalogClient scClient;
 		
 	protected void bindNetworkManagerCore(NetworkManagerCore networkManagerCore) {
-		LOG.debug("IdentityManager::binding networkmanager-core");
 		this.networkManagerCore = networkManagerCore;
 		startThreads();
 	}
 
 	protected void unbindNetworkManagerCore(NetworkManagerCore networkManagerCore) {
-		LOG.debug("IdentityManager::un-binding networkmanager-core");
-		this.networkManagerCore = null;
 		stopThreads();
+		this.networkManagerCore = null;
+	}
+	
+	protected void bindServiceCatalogClient(ServiceCatalogClient scClient) {
+		this.scClient = scClient;
+	}
+
+	protected void unbindServiceCatalogClient(ServiceCatalogClient scClient) {
+		this.scClient = null;
 	}
 
 	@Activate
 	protected void activate(ComponentContext context) {
-		LOG.info("[activating IdentityManager]");
+		initMaps();
 		LOG.info(IDENTITY_MGR + " started");
 	}
 
 	@Deactivate
 	protected void deactivate(ComponentContext context) {
+		clearMaps();
 		LOG.info(IDENTITY_MGR + "stopped");
-		//TODO clear all data structures
 	}
 	
 	private void startThreads() {
+		//
 		// Start the threads once NetworkManagerCore is available
-		this.serviceClearerThread = new Thread(new ServiceClearer());
-		serviceClearerThread.start();
-		serviceClearerThreadRunning = true;
-
+		//
+		advertisingThread = new Thread(new AdvertisingThread());
+		advertisingThread.start();
+		advertisingThreadRunning = true;
+		
 		serviceUpdaterThread = new Thread(new ServiceUpdaterThread());
 		serviceUpdaterThread.start();
 		serviceUpdaterThreadRunning = true;
 
-		advertisingThread = new Thread(new AdvertisingThread());
-		advertisingThread.start();
-		advertisingThreadRunning = true;
-
+		serviceClearerThread = new Thread(new ServiceClearer());
+		serviceClearerThread.start();
+		serviceClearerThreadRunning = true;
+		
+		//
 		// subscribe to messages sent by other identity managers
-		((MessageDistributor) this.networkManagerCore).subscribe(
-				IDMANAGER_NMADVERTISMENT_TOPIC, this);
-		((MessageDistributor) this.networkManagerCore).subscribe(
-				IDMANAGER_UPDATE_SERVICE_LIST_TOPIC, this);
-		((MessageDistributor) this.networkManagerCore).subscribe(
-				IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_REQ, this);
-		((MessageDistributor) this.networkManagerCore).subscribe(
-				IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_RESP, this);
+		//
+		((MessageDistributor) this.networkManagerCore).subscribe(IDMANAGER_NMADVERTISMENT_TOPIC, this);
+		((MessageDistributor) this.networkManagerCore).subscribe(IDMANAGER_UPDATE_SERVICE_LIST_TOPIC, this);
+		((MessageDistributor) this.networkManagerCore).subscribe(IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_REQ, this);
+		((MessageDistributor) this.networkManagerCore).subscribe(IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_RESP, this);
 	}
 	
 	private void stopThreads() {
+		//
+		// Stop the threads when NetworkManagerCore service is unavailable 
+		//
 		advertisingThreadRunning = false;
 		serviceUpdaterThreadRunning = false;
 		serviceClearerThreadRunning = false;
-		//TODO fix null reference for below code
-		//unsubscribe to messages sent by other identity managers
-		if(this.networkManagerCore != null) {
-			((MessageDistributor) this.networkManagerCore).unsubscribe(IDMANAGER_NMADVERTISMENT_TOPIC, this);
-			((MessageDistributor) this.networkManagerCore).unsubscribe(IDMANAGER_UPDATE_SERVICE_LIST_TOPIC, this);
-		}
 		
+		// TODO check if it really have effect on the execution
+		advertisingThread.interrupt();
+		serviceUpdaterThread.interrupt();
+		serviceClearerThread.interrupt();
+		
+		//
+		// unsubscribe to messages sent by other identity managers
+		//
+		((MessageDistributor) this.networkManagerCore).unsubscribe(IDMANAGER_NMADVERTISMENT_TOPIC, this);
+		((MessageDistributor) this.networkManagerCore).unsubscribe(IDMANAGER_UPDATE_SERVICE_LIST_TOPIC, this);
+		((MessageDistributor) this.networkManagerCore).unsubscribe(IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_REQ, this);
+		((MessageDistributor) this.networkManagerCore).unsubscribe(IDMANAGER_SERVICE_ATTRIBUTE_RESOLVE_RESP, this);
 	}
 	
-	public IdentityManagerImpl() {
-		init();
-	}
-	
-	protected void init() {
+	protected void initMaps() {
 		this.localServices = new ConcurrentHashMap<VirtualAddress, Registration>();
 		this.remoteServices = new ConcurrentHashMap<VirtualAddress, Registration>();
-		this.queue = new ConcurrentLinkedQueue<String>();
+		this.queue = new ConcurrentLinkedQueue<ServiceUpdate>();
 		this.serviceLastUpdate = new ConcurrentHashMap<VirtualAddress, Long>();
 		this.resolveResponses = new ConcurrentHashMap<String, List<Message>>();
 		this.locks = new ConcurrentHashMap<String, Object>();
+	}
+	
+	protected void clearMaps() {
+		this.localServices.clear();
+		this.remoteServices.clear();
+		this.queue.clear();
+		this.serviceLastUpdate.clear();
+		this.resolveResponses.clear();
+		this.locks.clear();
+	}
+	
+	public IdentityManagerImpl() {
+		//init();
 	}
 
 	@Override
@@ -247,22 +299,26 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	public Registration[] getServiceByAttributes(
 			Part[] attributes, long timeOut,
 			boolean returnFirst, boolean isStrict) {
-		//if only descriptions are searched use other method
+		//
+		// if only descriptions are searched use other method
+		//
 		if(attributes.length == 1 
 				&& attributes[0].getKey().equals(
 						ServiceAttribute.DESCRIPTION.name())) {
 			Set<Registration> serviceInfos = getServicesByDescription(attributes[0].getValue());
-			//create array from set
 			Registration[] serviceInfoRet = new Registration[serviceInfos.size()];
 			serviceInfos.toArray(serviceInfoRet);
 			return serviceInfoRet;
 		}
 
 		Set<Registration> matchingServices = new HashSet<Registration>();
-		//first collect local Services that match
+		//
+		// first collect local Services that match
+		//
 		matchingServices.addAll(checkAttributes(getLocalServices(), attributes, isStrict));
-
-		//only search remotely if required
+		//
+		// only search remotely if required
+		//
 		if(matchingServices.size() == 0 || !returnFirst) {
 			//check if attributes have already been retrieved
 			matchingServices.addAll(checkAttributes(getRemoteServices(), attributes, isStrict));
@@ -282,7 +338,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		return serviceInfos;
 	}
 
-	HashSet<Registration> checkAttributes(Set<Registration> listOfServices, Part[] searchedAttributes, boolean isStrict) {
+	private HashSet<Registration> checkAttributes(Set<Registration> listOfServices, Part[] searchedAttributes, boolean isStrict) {
 		HashSet<Registration> matchingServices = new HashSet<Registration>();
 		for(Registration serviceInfo : listOfServices) {
 			//check if all searched keys are available
@@ -421,7 +477,6 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		/* Parse the query. */
 		HashSet<Registration> results = new HashSet<Registration>();
 
-
 		HashSet<Map.Entry<VirtualAddress, Registration>> allVirtualAddresses = new HashSet<Map.Entry<VirtualAddress,Registration>>();
 		//search in local and remote Services
 		allVirtualAddresses.addAll(localServices.entrySet());
@@ -447,17 +502,17 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	public boolean updateServiceInfo(VirtualAddress virtualAddress, Properties attr) {
 		Registration toUpdate = localServices.get(virtualAddress);
 		if (toUpdate != null) {
-			synchronized (queue) { // because we need to be sure that both
-				// deletion of old and insertion of new
-				// attributes are in the queue at the same
-				// time
+			synchronized (queue) { 
+				//
+				// because we need to be sure that both deletion of old and insertion of new
+				// attributes are in the queue at the same time
+				//
 				toUpdate.setAttributes(PartConverter.fromProperties(attr));
 				localServices.replace(virtualAddress, toUpdate);
 				//careful, D always before A, because the NMs that listen to this will 
 				//execute the actions in order, hence if A is after D, they will first update and then delete the just-entered VirtualAddress.
-				queue.add("D;" + virtualAddress.toString());
-				queue.add("A;" + virtualAddress.toString() + ";"
-						+ toUpdate.getDescription());
+				//queue.add("A;" + virtualAddress.toString() + ";" + toUpdate.getDescription());
+				queue.add(new ServiceUpdate(toUpdate, "U"));
 			}
 			return true;
 		} else {
@@ -474,20 +529,25 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	 * @return the update
 	 */
 	protected synchronized BroadcastMessage getServiceListUpdate() {
-		String update = "";
+		Set<ServiceUpdate> servicesToSend = new HashSet<ServiceUpdate>();
 		while (queue.peek() != null) {
-			update = update + queue.poll() + " ";
+			servicesToSend.add(queue.poll());
 		}
-		if (update.equals("")) {
-			update = " ";
+		
+		byte[] servicesBytes = null;
+		try {
+			servicesBytes = ByteArrayCodec.encodeObjectToBytes(servicesToSend);
+		} catch (IOException e) {
+			e.printStackTrace();
+			LOG.error("cannot serialize services updates for topic : " + IDMANAGER_UPDATE_SERVICE_LIST_TOPIC, e);
+
 		}
+		
 		BroadcastMessage updateMsg = null;
 		try {
-			updateMsg = new BroadcastMessage(
-					IDMANAGER_UPDATE_SERVICE_LIST_TOPIC, networkManagerCore.getService(),
-					update.getBytes());
+			updateMsg = new BroadcastMessage(IDMANAGER_UPDATE_SERVICE_LIST_TOPIC, networkManagerCore.getService(), servicesBytes);
 		} catch (RemoteException e) {
-			// local invocation
+			LOG.error(e);
 		}
 		return updateMsg;
 	}
@@ -514,6 +574,203 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 			return null; //local call and does not occur
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	protected Message processNMAdvertisement(Message msg) {
+		try {
+			if (!msg.getSenderVirtualAddress().equals(networkManagerCore.getService())) {
+				Set<Registration> serviceInfos = (Set<Registration>) ByteArrayCodec.decodeByteArrayToObject(msg.getData());
+				if (serviceInfos != null) {
+					Iterator<Registration> i = serviceInfos.iterator();
+					while (i.hasNext()) {
+						Registration oneServiceInfo = i.next();
+						addRemoteService(oneServiceInfo.getVirtualAddress(), oneServiceInfo, msg.getSenderVirtualAddress());
+					}
+				}
+			}
+		} catch (RemoteException e) {
+			LOG.debug("Remote Exception " + e);
+		} catch (IOException e) {
+			LOG.debug("IO Exception in communication, message maybe damaged? " + e);
+		} catch (ClassNotFoundException e) {
+			LOG.error("Class not found in reconstructing message. Why? " + e);
+		}
+		//message is processed
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected Message processNMUpdate(Message msg) {
+		try {
+			if (!msg.getSenderVirtualAddress().equals(networkManagerCore.getService())) {
+				//
+				// this is not an echo of our own broadcast otherwise we do not need to do anything with it
+				// else it is a genuine update
+				//
+				Set<ServiceUpdate> serviceInfos = (Set<ServiceUpdate>) ByteArrayCodec.decodeByteArrayToObject(msg.getData());
+				if (serviceInfos != null) {
+					Iterator<ServiceUpdate> i = serviceInfos.iterator();
+					while (i.hasNext()) {
+						ServiceUpdate oneServiceInfo = i.next();
+						if(oneServiceInfo.getOperation().equals("A")) {
+							System.out.println("nm-update-A");
+							addRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration(), msg.getSenderVirtualAddress());
+						} else if(oneServiceInfo.getOperation().equals("D")) {
+							System.out.println("nm-update-D");
+							removeRemoteService(oneServiceInfo.getRegistration().getVirtualAddress());
+						} else if(oneServiceInfo.getOperation().equals("U")) {
+							System.out.println("nm-update-U");
+							updateRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration());
+						} else {
+							throw new IllegalArgumentException("Unexpected update service type: " + oneServiceInfo.getOperation());
+						}
+						
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		//message is processed
+		return null;
+	}
+	
+	/**
+	 * Adds a remote VirtualAddress to the IdTable and updates 
+	 * the time stamp of last update
+	 * 
+	 * @param virtualAddress The VirtualAddress to be added
+	 * 
+	 * @param info the Registration
+	 * 
+	 * @return The previous value associated with that VirtualAddress, null otherwise
+	 */
+	protected Registration addRemoteService(VirtualAddress virtualAddress, Registration info, VirtualAddress owner) {
+		//
+		// timestamp always has to be updated
+		//
+		serviceLastUpdate.put(virtualAddress, Calendar.getInstance().getTimeInMillis());
+		
+		//
+		// only update information if it is not equal to last value
+		//
+		Registration prev = null;
+		Registration heldRegistration = remoteServices.get(virtualAddress);
+		if (shouldUpdate(heldRegistration, info)) {
+			prev = remoteServices.put(virtualAddress, info);
+			if(owner != null) {
+				//
+				// add the backbone route for this remote VirtualAddress
+				//
+				networkManagerCore.addRemoteVirtualAddress(owner, virtualAddress);
+			}
+			//
+			// add this remote registration info into service catalog
+			//
+			scClient.add(info);
+		} 
+		return prev;
+	}
+
+	/**
+	 * Checks whether two Registrations represent the same entity and whether the
+	 * current Registration holds more information
+	 * @return true if services are absolutely different or current holds more information
+	 * e.g. more attributes
+	 */
+	protected boolean shouldUpdate(Registration previous, Registration current) {
+		if(previous == null) 
+			return true;
+		if(previous.equals(current)) 
+			return false;
+		for (Part currentAttr : current.getAttributes()) {
+			//
+			// get matching attribute from previous Registration
+			//
+			boolean missing = true;
+			for (Part prevAttr : previous.getAttributes()) {
+				if(prevAttr.getKey().equals(currentAttr.getKey())) {
+					if(!prevAttr.getValue().equals(currentAttr.getValue())) {
+						//
+						// an attribute has changed so update
+						//
+						return true;
+					} else {
+						// 
+						// this attribute matches so move on to next attribute
+						//
+						missing = false;
+						break;
+					}
+				}
+			}
+			if(missing) {
+				//
+				// there is an attribute in current which was not there in previous
+				//
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/*
+	 * Removes a remote VirtualAddress from the IdTable
+	 * 
+	 * @param virtualAddress The VirtualAddress to be removed
+	 * 
+	 * @return the result, null if
+	 */
+	protected Registration removeRemoteService(VirtualAddress virtualAddress) {
+		serviceLastUpdate.remove(virtualAddress);
+		Registration removal = remoteServices.remove(virtualAddress);
+		//
+		// if this check were not here this would result an infinite loop
+		//
+		if(removal != null) {
+			try {
+				networkManagerCore.removeService(removal.getVirtualAddress());
+			} catch (RemoteException e) {
+				//local invocation
+			}
+			//
+			// remove this remote registration info from service catalog
+			//
+			scClient.delete(removal);
+		}
+		return removal;
+	}
+	
+	/*
+	 * Updates a remote VirtualAddress in the IdTable
+	 * 
+	 * @param virtualAddress The VirtualAddress to be added
+	 * 
+	 * @param info the Registration
+	 * 
+	 * @return The previous value associated with that VirtualAddress, null otherwise
+	 */
+	protected Registration updateRemoteService(VirtualAddress virtualAddress, Registration info) {
+		//
+		// timestamp always has to be updated
+		//
+		serviceLastUpdate.put(virtualAddress, Calendar.getInstance().getTimeInMillis());
+		
+		Registration toUpdate = remoteServices.get(virtualAddress);
+		if (toUpdate != null) {
+			//
+			// because we need to be sure that both deletion of old and insertion of new
+			// attributes are in the queue at the same time
+			//
+			toUpdate.setAttributes(info.getAttributes());
+			remoteServices.replace(virtualAddress, toUpdate);
+		}
+		//
+		// remove this remote registration info from service catalog
+		//
+		scClient.update(toUpdate);	
+		return toUpdate;
+	}
 
 	@Override
 	public boolean removeService(VirtualAddress virtualAddress) {
@@ -522,6 +779,37 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 			return true;
 		}
 		return false;
+	}
+	
+	/*
+	 * Adds a local VirtualAddress to the IdTable
+	 * 
+	 * @param virtualAddress The VirtualAddress to be added
+	 * 
+	 * @param info the Registration
+	 * 
+	 * @return The previous value associated with that VirtualAddress, null otherwise
+	 */
+	protected Registration addLocalService(VirtualAddress virtualAddress, Registration info) {
+		if (!localServices.containsKey(virtualAddress)) {
+			localServices.put(virtualAddress, info);
+			//queue.add("A;" + virtualAddress.toString() + ";" + info.getDescription());
+			queue.add(new ServiceUpdate(info, "A"));
+		}
+		return localServices.get(virtualAddress);
+	}
+
+	/*
+	 * Removes a local VirtualAddress from the IdTable
+	 * 
+	 * @param virtualAddress The virtual address of the relevant service to be removed
+	 */
+	protected Registration removeLocalService(VirtualAddress virtualAddress) {
+		if (localServices.containsKey(virtualAddress)) {
+			//queue.add("D;" + virtualAddress.toString());
+			queue.add(new ServiceUpdate(localServices.get(virtualAddress), "D"));
+		}
+		return localServices.remove(virtualAddress);
 	}
 
 	protected Message processServiceAttributeResolveResp(Message msg) {
@@ -859,171 +1147,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		return msg;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected Message processNMAdvertisement(Message msg) {
-		try {
-			if (!msg.getSenderVirtualAddress().equals(networkManagerCore.getService())) {
-				Set<Registration> serviceInfos = (Set<Registration>) ByteArrayCodec.decodeByteArrayToObject(msg.getData());
-
-				if (serviceInfos != null) {
-					Iterator<Registration> i = serviceInfos.iterator();
-					while (i.hasNext()) {
-						Registration oneServiceInfo = i.next();
-						addRemoteService(oneServiceInfo.getVirtualAddress(), oneServiceInfo, msg.getSenderVirtualAddress());
-					}
-				}
-			}
-		} catch (RemoteException e) {
-			LOG.debug("Remote Exception " + e);
-		} catch (IOException e) {
-			LOG.debug("IO Exception in communication, message maybe damaged? " + e);
-		} catch (ClassNotFoundException e) {
-			LOG.error("Class not found in reconstructing message. Why? " + e);
-		}
-		//message is processed
-		return null;
-	}
-
-	protected Message processNMUpdate(Message msg) {
-		try {
-			if (!msg.getSenderVirtualAddress().equals(networkManagerCore.getService())) {
-				// this is not an echo of our own broadcast
-				// otherwise we do not need to do anything with it
-				// else it is a genuine update
-				String updates = new String(msg.getData()); 
-				for (String oneUpdate : updates.split(" ")) {
-					String[] updateData = oneUpdate.split(";");
-					// at this point updateData 0 is operation type A/D, [1] is
-					// Service, [2] is description (only if operation=A)
-					if (updateData[0].equals("A")) {
-						VirtualAddress newVirtualAddress = new VirtualAddress(updateData[1]);
-						Registration newInfo = new Registration(newVirtualAddress, updateData[2]);
-						// Add the remoteService to the internal map of remote Services
-						addRemoteService(newVirtualAddress, newInfo, msg.getSenderVirtualAddress());
-					} else if (updateData[0].equals("D")) {
-						VirtualAddress toRemoveVirtualAddress = new VirtualAddress(updateData[1]);
-						removeRemoteService(toRemoveVirtualAddress);
-					} else {
-						throw new IllegalArgumentException(
-								"Unexpected update type for IDManager updates: " + updateData[0]);
-					}
-				}
-			}
-		} catch (RemoteException e) {
-			// local invocation
-		}
-		//message is processed
-		return null;
-	}
-
-	/*
-	 * Adds a local VirtualAddress to the IdTable
-	 * 
-	 * @param virtualAddress The VirtualAddress to be added
-	 * 
-	 * @param info the Registration
-	 * 
-	 * @return The previous value associated with that VirtualAddress, null otherwise
-	 */
-	protected Registration addLocalService(VirtualAddress virtualAddress, Registration info) {
-		if (!localServices.containsKey(virtualAddress)) {
-			localServices.put(virtualAddress, info);
-			queue.add("A;" + virtualAddress.toString() + ";" + info.getDescription());
-		}
-		return localServices.get(virtualAddress);
-	}
-
-	/**
-	 * Adds a remote VirtualAddress to the IdTable and updates 
-	 * the time stamp of last update
-	 * 
-	 * @param virtualAddress The VirtualAddress to be added
-	 * 
-	 * @param info the Registration
-	 * 
-	 * @return The previous value associated with that VirtualAddress, null otherwise
-	 */
-	protected Registration addRemoteService(VirtualAddress virtualAddress, Registration info, VirtualAddress owner) {
-		//timestamp always has to be updated
-		serviceLastUpdate.put(virtualAddress, Calendar.getInstance().getTimeInMillis());
-		//only update information if it is not equal to last value
-		Registration prev = null;
-		Registration heldRegistration = remoteServices.get(virtualAddress);
-		if (shouldUpdate(heldRegistration, info)) {
-			prev = remoteServices.put(virtualAddress, info);
-			if(owner != null) {
-				// Add the backbone route for this remote VirtualAddress
-				networkManagerCore.addRemoteVirtualAddress(owner, virtualAddress);
-			}
-		}
-		return prev;
-	}
-
-	/**
-	 * Checks whether two Registrations represent the same entity and whether the
-	 * current Registration holds more information
-	 * @return true if services are absolutely different or current holds more information
-	 * e.g. more attributes
-	 */
-	protected boolean shouldUpdate(Registration previous, Registration current) {
-		if(previous == null) return true;
-		if(previous.equals(current)) return false;
-		for (Part currentAttr : current.getAttributes()) {
-			//get matching attribute from previous Registration
-			boolean missing = true;
-			for (Part prevAttr : previous.getAttributes()) {
-				if(prevAttr.getKey().equals(currentAttr.getKey())) {
-					if(!prevAttr.getValue().equals(currentAttr.getValue())) {
-						//an attribute has changed so update
-						return true;
-					} else {
-						//this attribute matches so move on to next attribute
-						missing = false;
-						break;
-					}
-				}
-			}
-			if(missing) {
-				//there is an attribute in current which was not there in previous
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/*
-	 * Removes a local VirtualAddress from the IdTable
-	 * 
-	 * @param virtualAddress The virtual address of the relevant service to be removed
-	 */
-	protected Registration removeLocalService(VirtualAddress virtualAddress) {
-		if (localServices.containsKey(virtualAddress)) {
-			queue.add("D;" + virtualAddress.toString());
-		}
-		return localServices.remove(virtualAddress);
-	}
-
-	/*
-	 * Removes a remote VirtualAddress from the IdTable
-	 * 
-	 * @param virtualAddress The VirtualAddress to be removed
-	 * 
-	 * @return the result, null if
-	 */
-	protected Registration removeRemoteService(VirtualAddress virtualAddress) {
-		serviceLastUpdate.remove(virtualAddress);
-		Registration removal = remoteServices.remove(virtualAddress);
-
-		//if this check were not here this would result an infinite loop 
-		if(removal != null) {
-			try {
-				networkManagerCore.removeService(removal.getVirtualAddress());
-			} catch (RemoteException e) {
-				//local invocation
-			}
-		}
-		return removal;
-	}
+	
 
 	/*
 	 * Checks inside the idTable if the deviceID has already been assigned
@@ -1047,11 +1171,34 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		return is;
 	}
 
+	public String getIdentifier() {
+		return IDENTITY_MGR;
+	}
+	
+	private Registration createAdvertRegistration(Registration serviceInfo) {
+		String serviceCatalogDoc = null;
+		Part[] attributes = serviceInfo.getAttributes();
+		for(Part attribute : attributes) {
+			if(attribute.getKey().equals("SC")) {
+				serviceCatalogDoc = attribute.getValue();
+				break;
+			}	
+		}
+		Part[] parts = null;
+		if(serviceCatalogDoc != null) {
+			parts = new Part[]{ new Part(ServiceAttribute.DESCRIPTION.name(), serviceInfo.getDescription()), new Part("SC", serviceCatalogDoc) };
+		} else {
+			parts = new Part[]{new Part(ServiceAttribute.DESCRIPTION.name(), serviceInfo.getDescription())};
+		}
+		return new Registration(serviceInfo.getVirtualAddress(), parts);
+	}
+	
+/////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	/*
-	 * Thread sends broadcast message if there is an update in ServiceList
+	 * Thread sending broadcast message if there is an update in ServiceList
 	 */
 	protected class ServiceUpdaterThread implements Runnable {
-
 		@Override
 		public void run() {
 			while (serviceUpdaterThreadRunning) {
@@ -1069,7 +1216,6 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 				}
 			}
 		}
-
 	}
 
 	/*
@@ -1087,12 +1233,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 					Set<Registration> servicesToSend = new HashSet<Registration>();
 					for(Registration serviceInfo : localServices) {
 						if(serviceInfo.getDescription() != null) {
-							servicesToSend.add(
-									new Registration(
-											serviceInfo.getVirtualAddress(),
-											new Part[]{new Part(
-													ServiceAttribute.DESCRIPTION.name(),
-													serviceInfo.getDescription())}));
+							servicesToSend.add(createAdvertRegistration(serviceInfo));
 						}
 					}
 					byte[] localServiceBytes = null;
@@ -1127,10 +1268,9 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 
 	}
 
-	public String getIdentifier() {
-		return IDENTITY_MGR;
-	}
-
+	/*
+	 * Thread that delete the services those haven't been updated 
+	 */
 	protected class ServiceClearer implements Runnable {
 		public void run() {
 			try {
@@ -1164,4 +1304,6 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 			}
 		}
 	}
+	
+/////////////////////////////////////////////////////////////////////////////////////////////////
 }

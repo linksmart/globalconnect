@@ -5,13 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-	<groupId>eu.linksmart.gc.distribution</groupId>
-        <artifactId>linksmart-distribution-suite</artifactId>
+		<groupId>eu.linksmart.gc.distribution</groupId>
+        <artifactId>eu.linksmart.gc.distribution.all</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-
     </parent>    
-
-    <groupId>eu.linksmart.gc.distribution</groupId>    
+    
     <artifactId>eu.linksmart.gc.distribution.main</artifactId>
     
     <name>LS GC - distribution - main parent</name>
