@@ -15,7 +15,7 @@ import eu.linksmart.lc.sc.types.Registration;
 
 public class ClientImplTest {
 	
-	@Test
+	//@Test
 	public void testClient() {
 		
 		//
