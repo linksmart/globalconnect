@@ -18,3 +18,4 @@ COPY m2-settings.xml /root/.m2/settings.xml
 # set env
 ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
 ENV LSGC_HOME /opt/lsgc
+ENV LSLC_HOME /opt/lslc
