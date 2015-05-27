@@ -194,13 +194,24 @@ public class Proxy {
             }
         }
         private void receiveMessage(){
-            aMessage.version = trafficSocket.recv()[0];
-            aMessage.type = trafficSocket.recv()[0];
-            aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
-            aMessage.sender = new String(trafficSocket.recv());
-            aMessage.requestID = new String(trafficSocket.recv());
-            aMessage.payload = trafficSocket.recv();
-            if(LOG.isTraceEnabled())Message.printMessage(aMessage);
+            try {
+                aMessage.version = trafficSocket.recv()[0];
+                LOG.trace("message version parsed");
+                aMessage.type = trafficSocket.recv()[0];
+                LOG.trace("message type parsed");
+                aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
+                LOG.trace("message timestamp parsed");
+                aMessage.sender = new String(trafficSocket.recv());
+                LOG.trace("message sender parsed");
+                aMessage.requestID = new String(trafficSocket.recv());
+                LOG.trace("message requestID parsed");
+                aMessage.payload = trafficSocket.recv();
+                LOG.trace("message payload parsed");
+                if(LOG.isTraceEnabled())Message.printMessage(aMessage);
+            }catch (java.lang.ArrayIndexOutOfBoundsException ex){
+                LOG.error("cannot retrieve parse the message",ex);
+            }
+
         }
 
         @Override
