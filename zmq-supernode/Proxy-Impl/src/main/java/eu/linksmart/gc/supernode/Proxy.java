@@ -197,6 +197,9 @@ public class Proxy {
             try {
                 aMessage.version = trafficSocket.recv()[0];
                 LOG.trace("message version parsed");
+                if(aMessage.version!=Constants.VERSION){
+                    LOG.error("Wrong protocol version found: "+aMessage.version+" Expecting: "+Constants.VERSION);
+                }
                 aMessage.type = trafficSocket.recv()[0];
                 LOG.trace("message type parsed");
                 aMessage.timestamp = Message.deserializeTimestamp(trafficSocket.recv());
