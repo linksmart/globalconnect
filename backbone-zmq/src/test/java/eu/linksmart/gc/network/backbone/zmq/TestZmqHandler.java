@@ -1,7 +1,5 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
-import org.junit.Test;
-
 import eu.linksmart.gc.api.network.VirtualAddress;
 
 public class TestZmqHandler {
@@ -16,10 +14,10 @@ public class TestZmqHandler {
 
 			BackboneZMQImpl zmqBackbone = new BackboneZMQImpl();
 
-			ZmqHandler ph1 = new ZmqHandler(zmqBackbone, "tcp://gando.fit.fraunhofer.de:7001", "tcp://gando.fit.fraunhofer.de:7000");
+			ZmqHandler ph1 = new ZmqHandler(zmqBackbone, "tcp://zmq-supernode.fit.fraunhofer.de:7001", "tcp://zmq-supernode.fit.fraunhofer.de:7000");
 			ph1.start();
 
-			ZmqHandler ph2 = new ZmqHandler(zmqBackbone, "tcp://gando.fit.fraunhofer.de:7001", "tcp://gando.fit.fraunhofer.de:7000");
+			ZmqHandler ph2 = new ZmqHandler(zmqBackbone, "tcp://zmq-supernode.fit.fraunhofer.de:7001", "tcp://zmq-supernode.fit.fraunhofer.de:7000");
 			ph2.start();
 
 			Thread.sleep(1000);
