@@ -158,6 +158,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 
 	@Deactivate
 	protected void deactivate(ComponentContext context) {
+		removeCatalogServices();
 		clearMaps();
 		LOG.info(IDENTITY_MGR + "stopped");
 	}
@@ -225,6 +226,17 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		this.serviceLastUpdate.clear();
 		this.resolveResponses.clear();
 		this.locks.clear();
+	}
+	
+	protected void removeCatalogServices() {
+		//
+		// remove remote registrations from service catalog
+		//
+		Set<Registration> services = new HashSet<Registration>(this.remoteServices.values());
+		LOG.info("removing service catalog registrations: " + services.size());
+		for(Registration service : services) {
+			scClient.delete(service);
+		}	
 	}
 	
 	public IdentityManagerImpl() {
@@ -613,13 +625,10 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 					while (i.hasNext()) {
 						ServiceUpdate oneServiceInfo = i.next();
 						if(oneServiceInfo.getOperation().equals("A")) {
-							System.out.println("nm-update-A");
 							addRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration(), msg.getSenderVirtualAddress());
 						} else if(oneServiceInfo.getOperation().equals("D")) {
-							System.out.println("nm-update-D");
 							removeRemoteService(oneServiceInfo.getRegistration().getVirtualAddress());
 						} else if(oneServiceInfo.getOperation().equals("U")) {
-							System.out.println("nm-update-U");
 							updateRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration());
 						} else {
 							throw new IllegalArgumentException("Unexpected update service type: " + oneServiceInfo.getOperation());
