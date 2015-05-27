@@ -22,8 +22,15 @@ public class Message {
 
     public static long deserializeTimestamp(byte[] raw){
 
-        ByteBuffer unixTime = ByteBuffer.wrap(raw);
-        return unixTime.getLong();
+        try {
+            ByteBuffer unixTime = ByteBuffer.wrap(raw);
+            return unixTime.getLong();
+        }catch(java.nio.BufferUnderflowException ex){
+            LOG.error(ex);
+            LOG.warn("No timestamp retrieved");
+            return -1;
+        }
+
 
     }
     public static byte[] serializeTimestamp(){
