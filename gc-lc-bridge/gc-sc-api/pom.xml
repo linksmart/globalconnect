@@ -14,7 +14,7 @@
 
 	<packaging>bundle</packaging>
 
-	<name>LCGC - Service Catalog Client API</name>
+	<name>LSGC - Service Catalog Client API</name>
 	<description>LinkSmart Global Connect Service Catalog Client API</description>
 
 	<dependencies>

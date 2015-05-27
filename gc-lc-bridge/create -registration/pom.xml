@@ -12,7 +12,7 @@
 
     <artifactId>eu.linksmart.gc.testing.bridge.rest</artifactId>
     
-    <name>LS GC - IT - NetworkManager-REST</name>
+    <name>LS GC - IT - Bridge-REST</name>
 
 	<packaging>jar</packaging>
 

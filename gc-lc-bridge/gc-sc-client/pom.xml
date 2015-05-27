@@ -14,7 +14,7 @@
 	
     <packaging>bundle</packaging>
 
-    <name>LC GC Bridge - Service Catalog Client</name>
+    <name>LSGC Bridge - Service Catalog Client</name>
     <description>LC GC Bridge - Service Catalog Client</description>
     
     <dependencies>
