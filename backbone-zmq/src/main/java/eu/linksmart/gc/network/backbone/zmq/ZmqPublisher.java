@@ -1,9 +1,9 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
-import java.nio.ByteBuffer;
-
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
+
+import java.nio.ByteBuffer;
 
 public class ZmqPublisher {
 	
@@ -43,12 +43,19 @@ private static Logger LOG = Logger.getLogger(ZmqPublisher.class.getName());
 	
 	public boolean publish(ZmqMessage zmqMessage) {
 		try {
+			LOG.info("publishing topic: "+zmqMessage.getTopic());
 			publisher.sendMore(zmqMessage.getTopic());
+			LOG.info("publishing protocol version: " + zmqMessage.getProtocolVersion());
 			publisher.sendMore(new byte[]{zmqMessage.getProtocolVersion()});
+			LOG.info("publishing type: " + zmqMessage.getType());
 			publisher.sendMore(new byte[]{zmqMessage.getType()});
+			LOG.info("publishing timestamp: " + zmqMessage.getTimeStamp());
 			publisher.sendMore(ByteBuffer.allocate(8).putLong(zmqMessage.getTimeStamp()).array());
+			LOG.info("publishing sender: " + zmqMessage.getSender());
 			publisher.sendMore(zmqMessage.getSender());
+			LOG.info("publishing requestID: " + zmqMessage.getRequestID());
 			publisher.sendMore(zmqMessage.getRequestID());
+			LOG.info("publishing payload: "+zmqMessage.getPayload().toString());
 			publisher.send(zmqMessage.getPayload(), 0);
 			return true;
 		} catch (Exception e) {
