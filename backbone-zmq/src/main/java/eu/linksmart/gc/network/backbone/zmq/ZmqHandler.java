@@ -1,31 +1,19 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import eu.linksmart.gc.api.network.*;
+import eu.linksmart.gc.api.utils.Base64;
+import org.apache.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.apache.log4j.Logger;
-
-import eu.linksmart.gc.api.network.Message;
-import eu.linksmart.gc.api.network.NMResponse;
-import eu.linksmart.gc.api.network.Registration;
-import eu.linksmart.gc.api.network.ServiceUpdate;
-import eu.linksmart.gc.api.network.VirtualAddress;
-import eu.linksmart.gc.api.utils.Base64;
 
 public class ZmqHandler {
 	
@@ -81,6 +69,12 @@ public class ZmqHandler {
 	public void start() {
 		heartBeat = new HeartBeat(this);
 		heartBeat.start();
+		// heart beats should arrive at the supernode before brodcasts.
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		receiver = new ZmqReceiver(this);
 		receiver.start();
 		publisher = new ZmqPublisher(this);
