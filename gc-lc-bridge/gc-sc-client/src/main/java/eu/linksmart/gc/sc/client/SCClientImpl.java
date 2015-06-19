@@ -14,9 +14,9 @@ import com.google.gson.Gson;
 import eu.linksmart.gc.api.network.ServiceAttribute;
 import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
 import eu.linksmart.gc.api.utils.Part;
-
 import eu.linksmart.lc.sc.client.ServiceCatalog;
 import eu.linksmart.lc.sc.types.Endpoint;
+import eu.linksmart.lc.sc.types.Meta;
 import eu.linksmart.lc.sc.types.Protocol;
 import eu.linksmart.lc.sc.types.Registration;
 
@@ -27,6 +27,8 @@ public class SCClientImpl implements ServiceCatalogClient {
 	private Logger LOG = Logger.getLogger(SCClientImpl.class.getName());
 	
 	private final String SERVICE_REGISTRATION = "SC";
+	
+	private final String GC_TUNNELED_SERVICE = "GC_TUNNELED_SERVICE";
 	
 	private String CATALOG_URL = "http://gando.fit.fraunhofer.de:8090/sc";
 	
@@ -73,6 +75,7 @@ public class SCClientImpl implements ServiceCatalogClient {
 		if(cregistration == null)
 			return false;
 		updateEndPoint(cregistration, getTunnelEndPoint(registration));
+		addTunneledFlag(cregistration);
 		return ServiceCatalog.add(cregistration);
 	}
 
@@ -82,6 +85,7 @@ public class SCClientImpl implements ServiceCatalogClient {
 		if(cregistration == null)
 			return false;
 		updateEndPoint(cregistration, getTunnelEndPoint(registration));
+		addTunneledFlag(cregistration);
 		return ServiceCatalog.update(getServiceID(cregistration), cregistration);
 	}
 
@@ -113,6 +117,13 @@ public class SCClientImpl implements ServiceCatalogClient {
 				protocol.setEndpoint(endPoint);
 			}
 		}
+	}
+	
+	private void addTunneledFlag(Registration cregistration) {
+		if(cregistration.getMeta() == null) {
+			cregistration.setMeta(new Meta());
+		}
+		cregistration.getMeta().put("GC_TUNNELED_SERVICE", "true");
 	}
 	
 	private String getServiceID(Registration registration) {
