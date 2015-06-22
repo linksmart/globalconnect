@@ -26,9 +26,9 @@ public class SCClientImpl implements ServiceCatalogClient {
 
 	private Logger LOG = Logger.getLogger(SCClientImpl.class.getName());
 	
-	private final String SERVICE_REGISTRATION = "SC";
+	private final String CATALOG_REGISTRATION = "SC";
 	
-	private final String GC_TUNNELED_SERVICE = "GC_TUNNELED_SERVICE";
+	private final String GC_TUNNELED = "gc_tunnelled";
 	
 	private String CATALOG_URL = "http://gando.fit.fraunhofer.de:8090/sc";
 	
@@ -100,7 +100,7 @@ public class SCClientImpl implements ServiceCatalogClient {
 	private Registration getCatalogRegistration(eu.linksmart.gc.api.network.Registration registration) {
 		Part[] attributes = registration.getAttributes();
 		for(Part attribute : attributes) {
-			if(attribute.getKey().equals(SERVICE_REGISTRATION)) {
+			if(attribute.getKey().equals(CATALOG_REGISTRATION)) {
 				return new Gson().fromJson(attribute.getValue(), Registration.class);
 			}	
 		}
@@ -123,7 +123,7 @@ public class SCClientImpl implements ServiceCatalogClient {
 		if(cregistration.getMeta() == null) {
 			cregistration.setMeta(new Meta());
 		}
-		cregistration.getMeta().put("GC_TUNNELED_SERVICE", "true");
+		cregistration.getMeta().put(GC_TUNNELED, "true");
 	}
 	
 	private String getServiceID(Registration registration) {
