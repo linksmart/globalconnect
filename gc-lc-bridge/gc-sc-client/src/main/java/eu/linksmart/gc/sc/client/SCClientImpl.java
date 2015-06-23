@@ -94,7 +94,10 @@ public class SCClientImpl implements ServiceCatalogClient {
 		Registration cregistration = getCatalogRegistration(registration);
 		if(cregistration == null)
 			return false;
-		return ServiceCatalog.delete(getServiceID(cregistration));
+		String serviceID = getServiceID(cregistration);
+		boolean status = ServiceCatalog.delete(getServiceID(cregistration));
+		LOG.info("SC_Client: deleting service with ID: " + serviceID + " - status: " + status);
+		return status;
 	}
 	
 	private Registration getCatalogRegistration(eu.linksmart.gc.api.network.Registration registration) {

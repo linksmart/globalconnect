@@ -233,8 +233,9 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		// remove remote registrations from service catalog
 		//
 		Set<Registration> services = new HashSet<Registration>(this.remoteServices.values());
-		LOG.info("removing service catalog registrations: " + services.size());
+		LOG.info("deleting service catalog registrations: " + services.size());
 		for(Registration service : services) {
+			LOG.info("deleting service catalog registration: " + service.getVirtualAddressAsString());
 			scClient.delete(service);
 		}	
 	}
@@ -627,6 +628,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 						if(oneServiceInfo.getOperation().equals("A")) {
 							addRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration(), msg.getSenderVirtualAddress());
 						} else if(oneServiceInfo.getOperation().equals("D")) {
+							LOG.info("recieved remove service message: " + oneServiceInfo.getRegistration().getDescription());
 							removeRemoteService(oneServiceInfo.getRegistration().getVirtualAddress());
 						} else if(oneServiceInfo.getOperation().equals("U")) {
 							updateRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration());
@@ -745,8 +747,10 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 			//
 			// remove this remote registration info from service catalog
 			//
+			LOG.info("calling SC_Cleint for removing service: " + removal.getVirtualAddressAsString());
 			scClient.delete(removal);
-		}
+		} else
+			LOG.info("no service to remove with VAD: " + virtualAddress);
 		return removal;
 	}
 	
