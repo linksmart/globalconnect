@@ -193,16 +193,16 @@ public class ZmqHandler {
 		return this.remoteServices;
 	}
 
-	public void addServiceIfMissing(VirtualAddress addr, String peerID) {
+	public void addServiceIfMissing(VirtualAddress address, String peerID) {
 		try {
 			lock.writeLock().lock();
 			//
 			// check if VAD is already in catalog
 			//
-			if(this.remoteServices.get(addr) == null) {
-				this.remoteServices.put(addr, peerID);
-				LOG.info("added remote service VAD: " + addr + " to peer [" + peerID + "] - size: " + this.remoteServices.size());
-			}
+			if(!(this.remoteServices.containsKey(address))) {
+				this.remoteServices.put(address, peerID);
+				LOG.info("added remote service VAD: " + address + " to peer [" + peerID + "] - size: " + this.remoteServices.size());
+			} 
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -216,20 +216,19 @@ public class ZmqHandler {
 
 	public void removePeerServices(String peerID) {
 		LOG.info("removing zmqPeer [" + peerID + "] and associated remote services");
-		Iterator<String> services = null;
+		Iterator<String> peers = null;
 		try {
 			lock.readLock().lock();
-			services = this.remoteServices.values().iterator();
-			LOG.info("removing remote service for peer [" + peerID + "] from list");
+			peers = this.remoteServices.values().iterator();
 		} finally {
 			lock.readLock().unlock();
 		}
-		while(services.hasNext()) {
-			String value = services.next();
-			if(value.equals(peerID)) {
+		while(peers.hasNext()) {
+			String currentPeer = peers.next();
+			if(currentPeer.equals(peerID)) {
 				try {
 					lock.writeLock().lock();
-					services.remove();
+					peers.remove();
 					LOG.info("removing remote service for peer [" + peerID + "] from list");
 				} finally {
 					lock.writeLock().unlock();
@@ -297,7 +296,7 @@ public class ZmqHandler {
 			VirtualAddress senderVirtualAddress = ZmqUtil.getSenderVAD(zmqMessage.getPayload());
 			LOG.info("received service broadcast from zmqPeer [" + zmqMessage.getSender() + "] - virtual address: " + senderVirtualAddress.toString());
 
-			addServiceIfMissing(senderVirtualAddress, zmqMessage.getSender());
+			//addServiceIfMissing(senderVirtualAddress, zmqMessage.getSender());
 			// TODO check if new virtual address is received for already added peer <- ???
 			// TODO currently we never remove a Virtual Address until a peer goes down (then we remove all of them)
 			byte[] payload = ZmqUtil.removeSenderVAD(zmqMessage.getPayload());

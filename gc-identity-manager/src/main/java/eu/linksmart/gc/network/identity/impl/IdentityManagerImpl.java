@@ -109,11 +109,11 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	/*
 	 * Thread to delete the Services those haven't been updated
 	 * Flag controlling Service clearer thread
-	 * Time in milliseconds before node is deleted if not updated (15 minutes)
+	 * Time in milliseconds before node is deleted if not updated (2 minutes)
 	 */
 	protected Thread serviceClearerThread;
 	private boolean serviceClearerThreadRunning;
-	protected static long SERVICE_KEEP_ALIVE_MS = (long)(15 * 60000);
+	protected static long SERVICE_KEEP_ALIVE_MS = (long)(2 * 60000);
 
 	/*
 	 * OSGi service references 
@@ -126,7 +126,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	protected NetworkManagerCore networkManagerCore;
 	
 	@Reference(name="ServiceCatalogClient",
-			cardinality = ReferenceCardinality.OPTIONAL_UNARY,
+			cardinality = ReferenceCardinality.MANDATORY_UNARY,
 			bind="bindServiceCatalogClient", 
 			unbind="unbindServiceCatalogClient",
 			policy=ReferencePolicy.DYNAMIC)
@@ -197,9 +197,9 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		serviceClearerThreadRunning = false;
 		
 		// TODO check if it really have effect on the execution
-		advertisingThread.interrupt();
-		serviceUpdaterThread.interrupt();
-		serviceClearerThread.interrupt();
+		//advertisingThread.interrupt();
+		//serviceUpdaterThread.interrupt();
+		//serviceClearerThread.interrupt();
 		
 		//
 		// unsubscribe to messages sent by other identity managers
@@ -235,8 +235,8 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		Set<Registration> services = new HashSet<Registration>(this.remoteServices.values());
 		LOG.info("deleting service catalog registrations: " + services.size());
 		for(Registration service : services) {
-			LOG.info("deleting service catalog registration: " + service.getVirtualAddressAsString());
-			scClient.delete(service);
+			boolean status = scClient.delete(service);
+			LOG.info("deleting service catalog registration: " + service.getVirtualAddressAsString() + " - status: " + status);
 		}	
 	}
 	
@@ -628,7 +628,6 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 						if(oneServiceInfo.getOperation().equals("A")) {
 							addRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration(), msg.getSenderVirtualAddress());
 						} else if(oneServiceInfo.getOperation().equals("D")) {
-							LOG.info("recieved remove service message: " + oneServiceInfo.getRegistration().getDescription());
 							removeRemoteService(oneServiceInfo.getRegistration().getVirtualAddress());
 						} else if(oneServiceInfo.getOperation().equals("U")) {
 							updateRemoteService(oneServiceInfo.getRegistration().getVirtualAddress(), oneServiceInfo.getRegistration());
@@ -661,14 +660,14 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		// timestamp always has to be updated
 		//
 		serviceLastUpdate.put(virtualAddress, Calendar.getInstance().getTimeInMillis());
-		
+		System.out.println("timestamp updated for VAD: " + virtualAddress + " - remoteServices: " + getRemoteServices().size() + " - serviceLastUpdate: " + serviceLastUpdate.size());			
 		//
 		// only update information if it is not equal to last value
 		//
-		Registration prev = null;
 		Registration heldRegistration = remoteServices.get(virtualAddress);
-		if (shouldUpdate(heldRegistration, info)) {
-			prev = remoteServices.put(virtualAddress, info);
+		boolean notSame = shouldUpdate(heldRegistration, info);
+		if (notSame) {
+			remoteServices.put(virtualAddress, info);
 			if(owner != null) {
 				//
 				// add the backbone route for this remote VirtualAddress
@@ -678,9 +677,10 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 			//
 			// add this remote registration info into service catalog
 			//
-			scClient.add(info);
+			boolean status = scClient.add(info);
+			LOG.info("adding catalog service: " + info.getVirtualAddressAsString() + " status: " + status);
 		} 
-		return prev;
+		return info;
 	}
 
 	/**
@@ -742,15 +742,14 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 			try {
 				networkManagerCore.removeService(removal.getVirtualAddress());
 			} catch (RemoteException e) {
-				//local invocation
+				LOG.debug("RemoteException: " + e);
 			}
 			//
 			// remove this remote registration info from service catalog
 			//
-			LOG.info("calling SC_Cleint for removing service: " + removal.getVirtualAddressAsString());
-			scClient.delete(removal);
-		} else
-			LOG.info("no service to remove with VAD: " + virtualAddress);
+			boolean status = scClient.delete(removal);
+			LOG.info("removing catalog service: " + removal.getVirtualAddressAsString() + " status: " + status);
+		} 
 		return removal;
 	}
 	
@@ -777,11 +776,13 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 			//
 			toUpdate.setAttributes(info.getAttributes());
 			remoteServices.replace(virtualAddress, toUpdate);
+			
+			//
+			// update this remote registration in service catalog
+			//
+			boolean status = scClient.update(toUpdate);
+			LOG.info("updating catalog service: " + toUpdate.getVirtualAddressAsString() + " status: " + status);
 		}
-		//
-		// remove this remote registration info from service catalog
-		//
-		scClient.update(toUpdate);	
 		return toUpdate;
 	}
 
@@ -1160,8 +1161,6 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		return msg;
 	}
 
-	
-
 	/*
 	 * Checks inside the idTable if the deviceID has already been assigned
 	 * 
@@ -1214,19 +1213,18 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	protected class ServiceUpdaterThread implements Runnable {
 		@Override
 		public void run() {
-			while (serviceUpdaterThreadRunning) {
-				if (!queue.isEmpty()) {
-					BroadcastMessage m = getServiceListUpdate();
-					LOG.debug("Broadcasting Message: " + m);
-					networkManagerCore.broadcastMessage(m);
+			try {
+				while (serviceUpdaterThreadRunning) {
+					if (!queue.isEmpty()) {
+						BroadcastMessage m = getServiceListUpdate();
+						LOG.debug("Broadcasting Message: " + m);
+						networkManagerCore.broadcastMessage(m);
+					}
 				}
-				try {
-					Thread.sleep(broadcastSleepMillis);
-				} catch (InterruptedException e) {
-					LOG.info("Thread broadcasting updates stopped!", e);
-					serviceUpdaterThreadRunning = false;
-					break;
-				}
+				Thread.sleep(broadcastSleepMillis);
+			} catch (InterruptedException e) {
+				LOG.info("Thread broadcasting updates stopped!", e);
+				serviceUpdaterThreadRunning = false;
 			}
 		}
 	}
@@ -1264,7 +1262,6 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 								IDMANAGER_NMADVERTISMENT_TOPIC, 
 								networkManagerCore.getService(), localServiceBytes);
 					} catch (RemoteException e) {
-						// local invocation
 						LOG.debug("RemoteException: " + e);
 					}
 					networkManagerCore.broadcastMessage(m);
@@ -1272,8 +1269,8 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 				try {
 					Thread.sleep(advertisementSleepMillis);
 				} catch (InterruptedException e) {
-					advertisingThreadRunning = false;
 					LOG.error("Thread advertising NetworkManager stopped!",e);
+					advertisingThreadRunning = false;
 					break;
 				}
 			}
@@ -1288,27 +1285,27 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		public void run() {
 			try {
 				while(serviceClearerThreadRunning) {
+					
 					Thread.sleep(advertisementSleepMillis);
 
 					List<VirtualAddress> toDelete = new ArrayList<VirtualAddress>();
-					//check the Services to be deleted
+					
+					//
+					// check the Services to be deleted for which service_keep_alive time period has been expired
+					//
 					for(VirtualAddress virtualAddress : serviceLastUpdate.keySet()) {
-						if(serviceLastUpdate.get(virtualAddress) + SERVICE_KEEP_ALIVE_MS <
-								Calendar.getInstance().getTimeInMillis()) {
+						if(serviceLastUpdate.get(virtualAddress) + SERVICE_KEEP_ALIVE_MS < Calendar.getInstance().getTimeInMillis()) {
 							toDelete.add(virtualAddress);
-						}
+							LOG.info("service-to-delete- VAD: " + virtualAddress);
+						} else
+							LOG.info("service-alive- VAD: " + virtualAddress);
 					}
-					//delete the Services from the local id table and last update
+					
+					//
+					// delete the Services from the local id table and last update
+					//
 					for(VirtualAddress virtualAddress : toDelete) {
-						if(networkManagerCore != null) {
-							try {
-								LOG.debug("Removing VirtualAddress " + virtualAddress.toString() + 
-										"as it was not updated recently.");
-								networkManagerCore.removeService(virtualAddress);
-							} catch(RemoteException e) {
-								//local access
-							}
-						}
+						removeRemoteService(virtualAddress);
 					}
 				}
 			} catch(InterruptedException e) {

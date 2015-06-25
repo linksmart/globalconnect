@@ -20,5 +20,5 @@
           }
     ],
     "representation": { },
-    "ttl": 60
+    "ttl": 6000
 }

@@ -88,24 +88,24 @@ public class RegistrationTest {
         	description_get_request.releaseConnection();
         	
         	
-        	//
-        	// sleep for some time
-        	//
-        	Thread.sleep(10000);
-        	//
-        	// removing service
-        	//
-    		LOG.info("testing DELETE method: " + base_url + " for VAD: " + virtualAddress);
-    		
-        	DeleteMethod delete_request = new DeleteMethod(base_url + "/" + virtualAddress);
-        	
-        	int statusCode3 = this.httpClient.executeMethod(delete_request);
-    		System.out.println("delete-status-code: " + statusCode3);
-    		
-    		System.out.println("delete-response: " + new String(delete_request.getResponseBody()));
-        	
-    		delete_request.releaseConnection();
-    		assertEquals(200, statusCode);
+//        	//
+//        	// sleep for some time
+//        	//
+//        	Thread.sleep(10000);
+//        	//
+//        	// removing service
+//        	//
+//    		LOG.info("testing DELETE method: " + base_url + " for VAD: " + virtualAddress);
+//    		
+//        	DeleteMethod delete_request = new DeleteMethod(base_url + "/" + virtualAddress);
+//        	
+//        	int statusCode3 = this.httpClient.executeMethod(delete_request);
+//    		System.out.println("delete-status-code: " + statusCode3);
+//    		
+//    		System.out.println("delete-response: " + new String(delete_request.getResponseBody()));
+//        	
+//    		delete_request.releaseConnection();
+//    		assertEquals(200, statusCode);
         	
         	LOG.info("testPOST successfully completed");
         	

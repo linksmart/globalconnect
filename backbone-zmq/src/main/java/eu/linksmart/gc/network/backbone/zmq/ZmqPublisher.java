@@ -43,19 +43,12 @@ private static Logger LOG = Logger.getLogger(ZmqPublisher.class.getName());
 	
 	public boolean publish(ZmqMessage zmqMessage) {
 		try {
-			LOG.debug("publishing topic: "+zmqMessage.getTopic());
 			publisher.sendMore(zmqMessage.getTopic());
-			LOG.debug("publishing protocol version: " + zmqMessage.getProtocolVersion());
 			publisher.sendMore(new byte[]{zmqMessage.getProtocolVersion()});
-			LOG.debug("publishing type: " + zmqMessage.getType());
 			publisher.sendMore(new byte[]{zmqMessage.getType()});
-			LOG.debug("publishing timestamp: " + zmqMessage.getTimeStamp());
 			publisher.sendMore(ByteBuffer.allocate(8).putLong(zmqMessage.getTimeStamp()).array());
-			LOG.debug("publishing sender: " + zmqMessage.getSender());
 			publisher.sendMore(zmqMessage.getSender());
-			LOG.debug("publishing requestID: " + zmqMessage.getRequestID());
 			publisher.sendMore(zmqMessage.getRequestID());
-			LOG.debug("publishing payload: "+zmqMessage.getPayload().toString());
 			publisher.send(zmqMessage.getPayload(), 0);
 			return true;
 		} catch (Exception e) {
