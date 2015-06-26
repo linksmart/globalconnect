@@ -660,7 +660,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		// timestamp always has to be updated
 		//
 		serviceLastUpdate.put(virtualAddress, Calendar.getInstance().getTimeInMillis());
-		System.out.println("timestamp updated for VAD: " + virtualAddress + " - remoteServices: " + getRemoteServices().size() + " - serviceLastUpdate: " + serviceLastUpdate.size());			
+		LOG.info("timestamp updated for VAD: " + virtualAddress + " - remoteServices: " + getRemoteServices().size() + " - serviceLastUpdate: " + serviceLastUpdate.size());			
 		//
 		// only update information if it is not equal to last value
 		//
@@ -1297,8 +1297,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 						if(serviceLastUpdate.get(virtualAddress) + SERVICE_KEEP_ALIVE_MS < Calendar.getInstance().getTimeInMillis()) {
 							toDelete.add(virtualAddress);
 							LOG.info("service-to-delete- VAD: " + virtualAddress);
-						} else
-							LOG.info("service-alive- VAD: " + virtualAddress);
+						} 
 					}
 					
 					//
