@@ -6,7 +6,7 @@
     <parent>
         <groupId>eu.linksmart.gc.archetypes</groupId>
         <artifactId>eu.linksmart.gc.archetypes</artifactId>
-        <version>0.2.0-SNAPSHOT-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>eu.linksmart.gc.archetypes.component</artifactId>
