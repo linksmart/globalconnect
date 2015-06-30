@@ -7,7 +7,7 @@
     <parent>
         <groupId>eu.linksmart.gc</groupId>
 		<artifactId>eu.linksmart.gc.osgi.component</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.1</version>
     </parent>
 
 	<artifactId>eu.linksmart.gc.sc.client</artifactId>
@@ -25,12 +25,12 @@
         <dependency>
             <groupId>eu.linksmart.gc</groupId>
             <artifactId>eu.linksmart.gc.api.sc.client</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>eu.linksmart.lc</groupId>
             <artifactId>service-catalog-client</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 

@@ -62,7 +62,7 @@ public class NetworkManagerRestIT {
     	try {
     		
     		LOG.info("testing NetworkManager REST");
-
+    		
             // GET
             testGetByDesc("WeatherService", HttpStatus.SC_OK);
             testGetByDesc("NoService", HttpStatus.SC_NOT_FOUND);

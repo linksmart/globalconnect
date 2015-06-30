@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>eu.linksmart.gc.testing</groupId>
 		<artifactId>eu.linksmart.gc.testing.parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.1</version>
     </parent>
 
     <artifactId>eu.linksmart.gc.testing.backbone.zmq</artifactId>

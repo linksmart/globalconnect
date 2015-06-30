@@ -7,7 +7,7 @@
     <parent>
 		<groupId>eu.linksmart.gc.distribution</groupId>
         <artifactId>eu.linksmart.gc.distribution.all</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>    
     
     <artifactId>eu.linksmart.gc.distribution.main</artifactId>

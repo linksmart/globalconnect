@@ -22,7 +22,7 @@
     </feature>
     
     <feature name="gc-lc-bridge-it" version="${linksmart.gc.version}">
-    	<feature version="${linksmart.gc.version}">gc-lc-bridge</feature>   
+    	<feature version="${linksmart.gc.version}">linksmart-gc</feature>   
     </feature>
     
     <feature name="gc-http-tunneling-dummy-it" version="${linksmart.gc.version}">

@@ -660,7 +660,7 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		// timestamp always has to be updated
 		//
 		serviceLastUpdate.put(virtualAddress, Calendar.getInstance().getTimeInMillis());
-		LOG.info("timestamp updated for VAD: " + virtualAddress + " - remoteServices: " + getRemoteServices().size() + " - serviceLastUpdate: " + serviceLastUpdate.size());			
+		//LOG.debug("timestamp updated for VAD: " + virtualAddress + " - remoteServices: " + getRemoteServices().size() + " - serviceLastUpdate: " + serviceLastUpdate.size());			
 		//
 		// only update information if it is not equal to last value
 		//
