@@ -1,7 +1,7 @@
 #!/bin/sh
 MAVEN_METADATA=maven-metadata.xml
 ARTIFACT_NAME="eu.linksmart.gc.distribution.main.deployable"
-REPO_URL="https://linksmart.eu/repo/content/repositories/public/eu/linksmart/gc/distribution/eu.linksmart.gc.distribution.main.deployable/0.0.1-SNAPSHOT/"
+REPO_URL="https://linksmart.eu/repo/content/repositories/public/eu/linksmart/gc/distribution/eu.linksmart.gc.distribution.main.deployable/0.2.0-SNAPSHOT/"
 echo "maven metadata file : $MAVEN_METADATA"
 echo "repo url : $REPO_URL"
 # retrieve maven metadata to get latest distribution artifact
