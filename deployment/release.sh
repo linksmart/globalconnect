@@ -1,62 +1,69 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR=$DIR/..
+
 # 1: parent
 echo "releasing linksmart-gc-parent..."
-cd linksmart-gc-parent && mvn clean deploy
+cd ${ROOT_DIR}/linksmart-gc-parent && mvn clean deploy
 
 # 2: component
-cd linksmart-gc-osgi-component && mvn clean deploy
 echo "releasing linksmart-gc-osgi-component..."
+cd ${ROOT_DIR}/linksmart-gc-osgi-component && mvn clean deploy
 
 # 3: apis
-cd gc-apis && mvn clean deploy
 echo "releasing gc-apis..."
+cd ${ROOT_DIR}/gc-apis && mvn clean deploy
 
 # 4: it-utils
-cd deployment/it-utils/ && mvn clean deploy
 echo "releasing deployment/it-utils..."
+cd ${ROOT_DIR}/deployment/it-utils/ && mvn clean deploy
 
 # 5: features
-cd deployment/gc-features/ && mvn clean deploy
-echo "releasing deployment/gc-features..."
+echo "releasing deployment/features..."
+cd ${ROOT_DIR}/deployment/features/ && mvn clean deploy
 
 # 6: sc-client-api
-cd gc-lc-bridge/gc-sc-api/ && mvn clean deploy
 echo "releasing gc-lc-bridge/gc-sc-api..."
+cd ${ROOT_DIR}/gc-lc-bridge/gc-sc-api/ && mvn clean deploy
 
 # 7: gc-sc-client
-cd gc-lc-bridge/gc-sc-client/ && mvn clean deploy
 echo "releasing gc-lc-bridge/gc-sc-client..."
+cd ${ROOT_DIR}/gc-lc-bridge/gc-sc-client/ && mvn clean deploy
 
 ## the rest
 # 8: backbone-http-protocol
-cd backbone-http-protocol && mvn clean deploy
 echo "releasing backbone-http-protocol..."
+cd ${ROOT_DIR}/backbone-http-protocol && mvn clean deploy
 
 # 8: backbone-zmq
-cd backbone-zmq && mvn clean deploy
 echo "releasing backbone-zmq..."
+cd ${ROOT_DIR}/backbone-zmq && mvn clean deploy
 
 # 9: gc-backbone-router
-cd gc-backbone-router && mvn clean deploy
 echo "releasing gc-backbone-router..."
+cd ${ROOT_DIR}/gc-backbone-router && mvn clean deploy
 
 # 10: gc-identity-manager
-cd gc-identity-manager && mvn clean deploy
 echo "releasing gc-identity-manager..."
+cd ${ROOT_DIR}/gc-identity-manager && mvn clean deploy
 
 # 11: gc-lc-bridge
-cd gc-lc-bridge && mvn clean deploy
 echo "releasing gc-lc-bridge..."
+cd ${ROOT_DIR}/gc-lc-bridge && mvn clean deploy
 
 # 12: gc-network-manager
-cd gc-network-manager && mvn clean deploy
 echo "releasing gc-network-manager..."
+cd ${ROOT_DIR}/gc-network-manager && mvn clean deploy
 
 # 13: http-tunneling
-cd http-tunneling && mvn clean deploy
 echo "releasing http-tunneling..."
+cd ${ROOT_DIR}/http-tunneling && mvn clean deploy
 
 # 14: network-manager-rest
-cd network-manager-rest && mvn clean deploy
 echo "releasing network-manager-rest..."
+cd ${ROOT_DIR}/network-manager-rest && mvn clean deploy
+
+# finally, deployment/distribution
+echo "releasing network-manager-rest..."
+cd ${ROOT_DIR}/deployment/distribution && mvn clean deploy
