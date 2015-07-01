@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# before running the script, change the version, e.g:
+# find . -name pom.xml -type f -print0 | xargs -0 sed -i '' 's|0.2.0-SNAPSHOT|0.1.0|g'
+# and check manually with git diff 
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=$DIR/..
 
