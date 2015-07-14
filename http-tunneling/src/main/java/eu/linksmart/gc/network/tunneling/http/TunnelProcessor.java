@@ -135,8 +135,8 @@ public class TunnelProcessor {
 	}
 	
 	public static TunnelResponse sendTunnelRequest(TunnelRequest tunnel_request, NetworkManagerCore nmCore, VirtualAddress senderVAD, VirtualAddress receiverVAD) throws TunnelException, Exception {
-
-        byte[] serializedRequest = SerializationUtil.serialize(tunnel_request);
+        // FixMe this should use serialize and not gSerialize
+        byte[] serializedRequest = SerializationUtil.gSerialize(tunnel_request);
 
         LOG.trace("Serialized tunnel request: \n"+serializedRequest);
 		

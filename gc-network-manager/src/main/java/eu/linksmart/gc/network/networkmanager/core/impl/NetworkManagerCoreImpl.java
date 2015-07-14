@@ -184,7 +184,7 @@ public class NetworkManagerCoreImpl implements NetworkManagerCore, MessageDistri
 		// BackboneSOAPImpl.
 		try {
 			this.myVirtualAddress = registerService(attributes, NETWORK_MGR_ENDPOINT,
-					"eu.linksmart.gc.network.backbone.protocol.http.HttpImpl")
+					"eu.linksmart.gc.network.backbone.protocol.fixme.FixMeBackboneProtocolImpl")
 					.getVirtualAddress();
 			LOG.info("network-manager-core VirtualAddress: " + this.myVirtualAddress.toString());
 		} catch (RemoteException e) {
