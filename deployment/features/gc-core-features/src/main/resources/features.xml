@@ -105,7 +105,6 @@
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.types/${linksmart.gc.version}</bundle>
     </feature>
     <feature name="gc-backbone-fixme" version="${linksmart.gc.version}">
-        <feature version="${linksmart.gc.version}">gc-backbone-mqtt</feature>
         <feature version="${linksmart.gc.version}">gc-backbone-http</feature>
         <bundle>mvn:eu.linksmart.gc/network.backbone.protocol.fixme/${linksmart.gc.version}</bundle>
     </feature>
@@ -119,7 +118,6 @@
    		<feature version="${linksmart.gc.version}">gc-backbone-http</feature>
    		<feature version="${linksmart.gc.version}">gc-network-manager-rest</feature>
    		<feature version="${linksmart.gc.version}">gc-http-tunneling</feature>
-        <feature version="${linksmart.gc.version}">gc-backbone-mqtt</feature>
         <feature version="${linksmart.gc.version}">gc-backbone-fixme</feature>
     </feature>
     
