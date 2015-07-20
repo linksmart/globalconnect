@@ -90,6 +90,7 @@
     	<bundle>mvn:com.sun.jersey/jersey-core/1.18.1</bundle>
     	<bundle>mvn:eu.linksmart.lc/service-catalog-client/0.1.0</bundle>
     	<bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.sc.client/${linksmart.gc.version}</bundle>
+
     </feature>
     
     <feature name="linksmart-gc" version="${linksmart.gc.version}">
