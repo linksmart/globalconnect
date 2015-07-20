@@ -79,7 +79,7 @@
     <feature name="gc-http-tunneling" version="${linksmart.gc.version}">
 		<feature version="${linksmart.gc.version}">gc-osgi-http</feature>
     	<feature version="${linksmart.gc.version}">gc-network-manager</feature>
-    	<bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.types/${linksmart.gc.version}</bundle>
+        <feature version="${linksmart.gc.version}">gc-type-tunnelled</feature>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.tunneling.http/${linksmart.gc.version}</bundle>
     </feature>
     
@@ -92,7 +92,24 @@
     	<bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.sc.client/${linksmart.gc.version}</bundle>
 
     </feature>
-    
+    <feature name="gc-backbone-mqtt" version="${linksmart.gc.version}">
+        <feature version="${linksmart.gc.version}">gc-backbone-router</feature>
+        <bundle>mvn:org.eclipse.paho/org.eclipse.paho.client.mqttv3/1.0.0</bundle>
+        <feature version="${linksmart.gc.version}">gc-type-tunnelled</feature>
+        <bundle>mvn:commons-collections/commons-collections/3.2.1</bundle>
+        <configfile finalname="/etc/MQTTBackboneProtocol.cfg">mvn:eu.linksmart.gc/network.backbone.protocol.mqtt.impl/${linksmart.gc.version}/cfg/configuration</configfile>
+
+        <bundle>mvn:eu.linksmart.gc/network.backbone.protocol.mqtt.impl/${linksmart.gc.version}</bundle>
+    </feature>
+    <feature name="gc-type-tunnelled" version="${linksmart.gc.version}">
+        <bundle>mvn:com.google.code.gson/gson/2.3</bundle>
+        <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.api.types/${linksmart.gc.version}</bundle>
+    </feature>
+    <feature name="gc-backbone-fixme" version="${linksmart.gc.version}">
+        <feature version="${linksmart.gc.version}">gc-backbone-mqtt</feature>
+        <feature version="${linksmart.gc.version}">gc-backbone-http</feature>
+        <bundle>mvn:eu.linksmart.gc/network.backbone.protocol.fixme/${linksmart.gc.version}</bundle>
+    </feature>
     <feature name="linksmart-gc" version="${linksmart.gc.version}">
     	<feature version="${linksmart.gc.version}">gc-osgi-http</feature>
     	<feature version="${linksmart.gc.version}">gc-boot</feature>
@@ -103,6 +120,8 @@
    		<feature version="${linksmart.gc.version}">gc-backbone-http</feature>
    		<feature version="${linksmart.gc.version}">gc-network-manager-rest</feature>
    		<feature version="${linksmart.gc.version}">gc-http-tunneling</feature>
+        <feature version="${linksmart.gc.version}">gc-backbone-mqtt</feature>
+        <feature version="${linksmart.gc.version}">gc-backbone-fixme</feature>
     </feature>
     
 </features>

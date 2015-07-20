@@ -98,8 +98,8 @@ public class HttpImpl implements Backbone {
 			
 			//
 			// deserialize tunnel request
-			//
-			TunnelRequest tunnel_request = (TunnelRequest) SerializationUtil.deserialize(tunnel_data);
+			// FixMe This is a hack to CannotCastException
+			TunnelRequest tunnel_request = (TunnelRequest) SerializationUtil.deserialize(tunnel_data, TunnelRequest.class);
 			
 			LOG.debug("method: " + tunnel_request.getMethod());
 			LOG.debug("path: " + tunnel_request.getPath());

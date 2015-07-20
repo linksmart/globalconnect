@@ -15,27 +15,39 @@ public class ZmqUtil {
 		System.arraycopy(origData, 0, ret, 0, VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH - 0);
 		return new VirtualAddress(ret);
 	}
-	
+    // Injected code by @Angel
+    public static boolean isSync(byte[] origData) {
+        if(origData[VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH *2] == 1)
+            return true;
+        else if(origData[VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH *2] == 0)
+            return false;
+        else {
+            System.out.println("Unexpected value in the recovering of the message");
+            return true;
+        }
+    }
 	public static byte[] removeSenderVAD(byte[] origData) {
 		int lengthWithoutVirtualAddress = origData.length - VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH;
 		byte[] ret = new byte[lengthWithoutVirtualAddress];
 		System.arraycopy(origData, VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH, ret, 0, origData.length - VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH);
 		return ret;
 	}
-	
-	public static byte[] addVADsToPayload(BackboneMessage bbMessage) {
-		byte[] payloadWithReceiverVAD = ArrayUtils.addAll(bbMessage.getReceiverVirtualAddress().getBytes(),bbMessage.getPayload());
-		byte[] payloadWithVADs = ArrayUtils.addAll(bbMessage.getSenderVirtualAddress().getBytes(),payloadWithReceiverVAD);
-		return payloadWithVADs;
-	}
-	
-	public static byte[] removeVADsFromPayload(byte[] payload) {
-		int virtualAddressesLength = VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH * 2;
-		int lengthWithoutVirtualAddress = payload.length - virtualAddressesLength;
-		byte[] ret = new byte[lengthWithoutVirtualAddress];
-		System.arraycopy(payload, virtualAddressesLength, ret, 0, payload.length - virtualAddressesLength);
-		return ret;
-	}
+    // Changed code by @Angel
+    public static byte[] addVADsToPayload(BackboneMessage bbMessage) {
+        byte[] aux = new byte[]{bbMessage.isSync()?(byte)1:(byte)0};
+        byte[] payloadSync = ArrayUtils.addAll(aux,bbMessage.getPayload());
+        byte[] payloadWithReceiverVAD = ArrayUtils.addAll(bbMessage.getReceiverVirtualAddress().getBytes(),payloadSync);
+        byte[] payloadWithVADSync = ArrayUtils.addAll(bbMessage.getSenderVirtualAddress().getBytes(),payloadWithReceiverVAD);
+        return payloadWithVADSync;
+    }
+
+    public static byte[] removeVADsFromPayload(byte[] payload) {
+        int virtualAddressesLength = VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH * 2 + 1;
+        int lengthWithoutVirtualAddress = payload.length - virtualAddressesLength;
+        byte[] ret = new byte[lengthWithoutVirtualAddress];
+        System.arraycopy(payload, virtualAddressesLength, ret, 0, payload.length - virtualAddressesLength);
+        return ret;
+    }
 	
 	public static VirtualAddress getReceiverVAD(byte[] origData) {
 		//

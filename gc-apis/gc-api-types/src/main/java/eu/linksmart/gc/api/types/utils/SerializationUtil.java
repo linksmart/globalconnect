@@ -7,16 +7,17 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Type;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.Properties;
 
+import com.google.gson.Gson;
 import eu.linksmart.gc.api.network.Message;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.utils.Base64;
 
 public class SerializationUtil {
-	
 	public static byte[] serialize(Object o) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutput out = new ObjectOutputStream(bos);   
@@ -26,7 +27,18 @@ public class SerializationUtil {
 		bos.close();
 		return encoded;
 	}
-	
+    // FixMe this is a hack
+    public static byte[] gSerialize(Object o) throws IOException {
+
+        return  new Gson().toJson(o).getBytes("utf-8");
+
+    }
+    // FixMe this is a hack
+    public static Object deserialize(byte[] bytes,Type type) throws IOException, ClassNotFoundException {
+
+        String serializedObject = new String(bytes,"utf-8");
+        return new Gson().fromJson(serializedObject,type);
+    }
 	public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
 		ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
 		ObjectInput in = new ObjectInputStream(bis);
