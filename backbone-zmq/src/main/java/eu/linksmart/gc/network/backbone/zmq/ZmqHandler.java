@@ -71,7 +71,7 @@ public class ZmqHandler {
 		heartBeat.start();
 		// heart beats should arrive at the supernode before brodcasts.
 		try {
-			Thread.sleep(500);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
