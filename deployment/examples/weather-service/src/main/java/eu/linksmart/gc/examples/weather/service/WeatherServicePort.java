@@ -10,23 +10,26 @@ import eu.linksmart.gc.api.network.ServiceAttribute;
 import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
 import eu.linksmart.gc.api.utils.Part;
 
+import static org.apache.felix.scr.annotations.ReferenceCardinality.*;
+import static org.apache.felix.scr.annotations.ReferencePolicy.*;
+
 @Component(name="WeatherService", immediate=true)
 public class WeatherServicePort {
 
 	private static Logger LOG = Logger.getLogger(WeatherServicePort.class.getName());
 
     @Reference(name="HttpService",
-            cardinality = ReferenceCardinality.MANDATORY_UNARY,
+            cardinality = MANDATORY_UNARY,
             bind="bindHttpServlet",
             unbind="unbindHttpServlet",
-            policy=ReferencePolicy.STATIC)
+            policy= STATIC)
     private HttpService http;
     
     @Reference(name="NetworkManager",
-            cardinality = ReferenceCardinality.MANDATORY_UNARY,
+            cardinality = MANDATORY_UNARY,
             bind="bindNetworkManager",
             unbind="unbindNetworkManager",
-            policy= ReferencePolicy.DYNAMIC)
+            policy= DYNAMIC)
 	protected NetworkManager networkManager;
     
     private Registration registration = null;
@@ -52,6 +55,7 @@ public class WeatherServicePort {
     	LOG.info("activating WeatherService Servlet");
         try {
 			this.http.registerServlet("/WeatherService", new WeatherServiceServlet(), null, null);
+			Thread.sleep(1000);
 			registerService();
 		} catch (Exception e) {
 			LOG.error("error registering WeatherService Servlet", e);
