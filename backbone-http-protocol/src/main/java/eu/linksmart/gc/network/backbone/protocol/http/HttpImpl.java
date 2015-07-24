@@ -319,6 +319,7 @@ public class HttpImpl implements Backbone {
     
     @Override
 	public NMResponse broadcastData(VirtualAddress senderVirtualAddress, byte[] data) {
+		LOG.warn("HTTP protocol does not support broadcast.");
     	return null;
 	}
 
