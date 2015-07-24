@@ -116,11 +116,22 @@ public class FixMeBackboneProtocolImpl implements Backbone {
 
     @Override
     public NMResponse broadcastData(VirtualAddress senderVirtualAddress, byte[] data) {
+        NMResponse asyncReturn = null;
         if(AsyncBackbone != null)
-            return AsyncBackbone.broadcastData(senderVirtualAddress,data);
+            asyncReturn= AsyncBackbone.broadcastData(senderVirtualAddress,data);
 
-        LOG.error("There is no Async backbone to send the data");
-        return null;
+        NMResponse syncReturn = null;
+        if(SyncBackbone != null)
+            syncReturn = SyncBackbone.broadcastData(senderVirtualAddress,data);
+        //LOG.warn("There is no Async backbone to send the data");
+        if(asyncReturn==syncReturn && asyncReturn==null){
+            LOG.warn("Broadcast of data not possible.");
+            return null;
+        }else if(asyncReturn!=null){
+            return asyncReturn;
+        }else {
+            return syncReturn;
+        }
     }
 
     @Override
