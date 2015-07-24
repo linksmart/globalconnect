@@ -3,9 +3,8 @@ MAINTAINER Karl Catewicz "catewicz@fit.fraunhofer.de"
 #
 # Grabs the weatherservice servlet and puts it into deploy folder of karaf 
 #
-# older jar
-#ADD https://linksmart.eu/repo/content/repositories/public/eu/linksmart/gc/examples/eu.linksmart.gc.examples.weather.service/0.0.1-SNAPSHOT/eu.linksmart.gc.examples.weather.service-0.0.1-20150319.103958-17.jar ${LSGC_HOME}/deploy/
-ADD https://linksmart.eu/repo/content/repositories/releases/eu/linksmart/gc/examples/eu.linksmart.gc.examples.weather.service/0.1.0/eu.linksmart.gc.examples.weather.service-0.1.0.jar ${LSGC_HOME}/deploy/
+ADD https://linksmart.eu/repo/content/repositories/snapshots/eu/linksmart/gc/examples/eu.linksmart.gc.examples.weather.service/0.2.0-SNAPSHOT/eu.linksmart.gc.examples.weather.service-0.2.0-20150723.141114-14.jar ${LSGC_HOME}/deploy/
+#ADD https://linksmart.eu/repo/content/repositories/releases/eu/linksmart/gc/examples/eu.linksmart.gc.examples.weather.service/0.1.0/eu.linksmart.gc.examples.weather.service-0.1.0.jar ${LSGC_HOME}/deploy/
 ADD jetty.xml ${LSGC_HOME}/etc/
 #
 # add start scripts into karaf's bin folder
