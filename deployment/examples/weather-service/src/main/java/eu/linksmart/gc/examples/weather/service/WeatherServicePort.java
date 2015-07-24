@@ -55,7 +55,7 @@ public class WeatherServicePort {
     	LOG.info("activating WeatherService Servlet");
         try {
 			this.http.registerServlet("/WeatherService", new WeatherServiceServlet(), null, null);
-			Thread.sleep(1000);
+			Thread.sleep(5000);
 			registerService();
 		} catch (Exception e) {
 			LOG.error("error registering WeatherService Servlet", e);
