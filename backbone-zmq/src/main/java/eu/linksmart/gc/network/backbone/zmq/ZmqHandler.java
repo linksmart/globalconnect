@@ -69,14 +69,18 @@ public class ZmqHandler {
 	public void start() {
 		heartBeat = new HeartBeat(this);
 		heartBeat.start();
+
+		LOG.info("heart beat thread started for peer :" + this.getPeerID());
 		// heart beats should arrive at the supernode before brodcasts.
 		try {
+
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		receiver = new ZmqReceiver(this);
 		receiver.start();
+		LOG.info("receiver thread started for peer :"+this.getPeerID());
 		publisher = new ZmqPublisher(this);
 		publisher.startPublisher();
 		LOG.info("ZmqPeer [" + this.peerID + "] is started");
