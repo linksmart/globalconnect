@@ -38,6 +38,8 @@
 
 package eu.linksmart.gc.api.utils;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Dictionary;
@@ -384,8 +386,18 @@ public abstract class Configurator implements ManagedService {
 		logger.info("Loading default configuration for PID [" + pid + "] from " + configurationFilePath);
 		f = this.getClass().getResourceAsStream(configurationFilePath);
 
+        // if null try to load the properties from a system file
+        if(f==null){
+            try {
+                f =  new FileInputStream(configurationFilePath);
+            } catch (FileNotFoundException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
 		try {
-			properties.load(f);
+
+			    properties.load(f);
+
 		} catch(IOException e) {
 			logger.error(e.getMessage(), e);
 		}	

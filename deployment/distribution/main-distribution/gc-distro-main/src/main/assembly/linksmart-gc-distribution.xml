@@ -22,6 +22,7 @@
 			<directory>target/linksmart-gc-resources/unpacked-resources/repository</directory>
 			<outputDirectory>system</outputDirectory>
 		</fileSet>
+
 		<fileSet>
             <directory>src/main/resources/config</directory>
             <outputDirectory>/etc</outputDirectory>
@@ -30,6 +31,17 @@
     </fileSets>
 
     <files>
+
+        <file>
+            <source>target/linksmart-gc-resources/unpacked-resources/repository/eu/linksmart/gc/network.backbone.protocol.mqtt.impl/${linksmart.gc.version}/network.backbone.protocol.mqtt.impl-${linksmart.gc.version}-configuration.cfg</source>
+            <destName>MQTTBackboneProtocol.cfg</destName>
+            <outputDirectory>etc/linksmart</outputDirectory>
+        </file>
+        <file>
+            <source>target/linksmart-gc-resources/unpacked-resources/repository/eu/linksmart/gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}/eu.linksmart.gc.network.backbone.zmq-${linksmart.gc.version}-configuration.cfg</source>
+            <destName>ZMQBackbone.cfg</destName>
+            <outputDirectory>etc/linksmart</outputDirectory>
+        </file>
         <file>
             <source>src/main/resources/doc/README</source>
             <outputDirectory>/</outputDirectory>

@@ -59,6 +59,7 @@
     	<feature version="${linksmart.gc.version}">gc-backbone-router</feature>
         <bundle>mvn:org.zeromq/jeromq/${org.zeromq.version}</bundle>
         <bundle>mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}</bundle>
+        <configfile finalname="/etc/linksmart/ZMQBackbone.cfg" override="false">mvn:eu.linksmart.gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}/cfg/configuration</configfile>
     </feature>
     
     <feature name="gc-backbone-http" version="${linksmart.gc.version}">
@@ -97,8 +98,7 @@
         <bundle>mvn:org.eclipse.paho/org.eclipse.paho.client.mqttv3/1.0.0</bundle>
         <feature version="${linksmart.gc.version}">gc-type-tunnelled</feature>
         <bundle>mvn:commons-collections/commons-collections/3.2.1</bundle>
-        <configfile finalname="/etc/MQTTBackboneProtocol.cfg">mvn:eu.linksmart.gc/network.backbone.protocol.mqtt.impl/${linksmart.gc.version}/cfg/configuration</configfile>
-
+        <configfile finalname="/etc/linksmart/MQTTBackboneProtocol.cfg" override="false">mvn:eu.linksmart.gc/network.backbone.protocol.mqtt.impl/${linksmart.gc.version}/cfg/configuration</configfile>
         <bundle>mvn:eu.linksmart.gc/network.backbone.protocol.mqtt.impl/${linksmart.gc.version}</bundle>
     </feature>
     <feature name="gc-type-tunnelled" version="${linksmart.gc.version}">

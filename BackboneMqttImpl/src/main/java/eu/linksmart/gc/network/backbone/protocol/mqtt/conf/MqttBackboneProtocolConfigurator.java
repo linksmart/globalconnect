@@ -24,7 +24,7 @@ public class MqttBackboneProtocolConfigurator extends Configurator{
     private Logger LOG = Logger.getLogger(MqttBackboneProtocolConfigurator.class.getName());
 
 	public static String BACKBONE_PID = "eu.linksmart.gc.network.backbone.protocol.mqtt";
-	public static String CONFIGURATION_FILE = /*"./etc/MQTTBackboneProtocol.cfg";//*/"/mqttprotocol.properties";
+	public static String CONFIGURATION_FILE = "etc/linksmart/MQTTBackboneProtocol.cfg";//"/mqttprotocol.properties";
 
 	public static final String BACKBONE_DESCRIPTION = "BackboneMQTT.description";
 
