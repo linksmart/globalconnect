@@ -1,5 +1,6 @@
 package eu.linksmart.gc.network.backbone.protocol.mqtt;
 
+import com.google.gson.Gson;
 import eu.linksmart.gc.api.network.*;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.utils.Configurator;
@@ -21,6 +22,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -281,28 +283,29 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 				return createErrorMessage(404,message);
 			}
 
-			// determine HTTP method
-			if(tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.SUBSCRIBE_TO))) {
-                if(Boolean.valueOf(conf.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
-				    subscribe(senderVirtualAddress, uriEndpoint);
-                else
-                    subscribe(senderVirtualAddress,receiverVirtualAddress);
-			} else if(tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.PUBLISH_TO))) {
-				publish(getSyncMessage(uriEndpoint, tunnelRequest.getBody()));
-			} else if(tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.RESUBSCRIBE_TO))) {
-				resubscribe(senderVirtualAddress, uriEndpoint);
-			} else if(tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.UNSUBSCRIBE_TO))) {
-				unsubscribe( uriEndpoint);
-			} else {
-				throw new Exception("unsupported MQTT method for endpoint:" + uriEndpoint);
-			}
+           /*if(tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.LIST))) {
+                String body = list(senderVirtualAddress, uriEndpoint);
+                return packResponse(createListResponse(body), senderVirtualAddress, receiverVirtualAddress);
+            }else {*/
+                // determine HTTP method
+                if (tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.SUBSCRIBE_TO))) {
+                    if (Boolean.valueOf(conf.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
+                        subscribe(senderVirtualAddress, uriEndpoint);
+                    else
+                        subscribe(senderVirtualAddress, receiverVirtualAddress);
+                } else if (tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.PUBLISH_TO))) {
+                    publish(getSyncMessage(uriEndpoint, tunnelRequest.getBody()));
+                } else if (tunnelRequest.getMethod().equals(conf.get(MqttBackboneProtocolConfigurator.UNSUBSCRIBE_TO))) {
+                    unsubscribe(uriEndpoint);
+                } else {
+                    throw new Exception("unsupported MQTT method for endpoint:" + uriEndpoint);
+                }
 
-			// creating & encoding LinkSmart Message Object
+                // creating & encoding LinkSmart Message Object
 
 
-
-			return packResponse(createAcceptResponse(),senderVirtualAddress,receiverVirtualAddress);
-
+                return packResponse(createAcceptResponse(), senderVirtualAddress, receiverVirtualAddress);
+            //}
 		} catch (Exception e) {
 
             try {
@@ -334,6 +337,21 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
         nm_response.setStatus(NMResponse.STATUS_ERROR);
         nm_response.setBytesPrimary(true);
         try { nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response)); } catch (IOException e1) {	e1.printStackTrace(); }
+        return nm_response;
+
+    }
+
+    private static NMResponse createListResponse(String body) throws IOException {
+
+
+        TunnelResponse tunnel_response = new TunnelResponse();
+        tunnel_response.setStatusCode(200);
+        tunnel_response.setBody(body.getBytes());
+        NMResponse nm_response = new NMResponse();
+        nm_response.setStatus(NMResponse.STATUS_SUCCESS);
+        nm_response.setBytesPrimary(true);
+        try { nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response)); } catch (IOException e1) {	e1.printStackTrace(); }
+
         return nm_response;
 
     }
@@ -483,12 +501,33 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 
         return send;
     }
-    boolean uniqueMessageControl(MqttTunnelledMessage ms){
+ /*   private byte[] concatenateBytes(byte[] a, byte[] b){
+        byte[] c = new byte[a.length + b.length];
+        System.arraycopy(a, 0, c, 0, a.length);
+        System.arraycopy(b, 0, c, a.length, b.length);
+        return c;
+    }*/
+
+    private byte[] concatenateBytes(byte[]... bytes){
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+
+            for( byte[] i : bytes)
+                outputStream.write( i );
+
+
+        return  outputStream.toByteArray( );
+        } catch (IOException e) {
+            LOG.error(e.getMessage(),e);
+        }
+        return null;
+    }
+    private boolean uniqueMessageControl(MqttTunnelledMessage ms){
         boolean send = true;
 
 
             if (Boolean.valueOf(conf.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL))){
-                String hash = (new BigInteger(1,md5.digest(ms.getPayload()))).toString();
+                String hash = (new BigInteger(1,md5.digest(concatenateBytes(ms.getTopic().getBytes(), ms.getPayload())))).toString();
                 synchronized (repetitionControl){
 
                     if(repetitionControl.containsKey(ms.getPayload().length)) {
@@ -511,12 +550,11 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
         return send;
 
     }
-    private void resubscribe(VirtualAddress senderVAD, String uriEndpoint) throws Exception {
+  /*  private String list(VirtualAddress senderVAD, String uriEndpoint) throws Exception {
+        return (new Gson()).toJson(listeningVirtualAddresses.entrySet());
 
-        unsubscribe( uriEndpoint);
-        subscribe(senderVAD, uriEndpoint);
 
-    }
+    }*/
     
     private void unsubscribe( String uriEndpoint) throws Exception {
 

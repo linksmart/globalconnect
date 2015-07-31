@@ -43,7 +43,7 @@ public class MqttBackboneProtocolConfigurator extends Configurator{
     public static final String SUBSCRIBE_TO = "BackboneMQTT.mapping.SubscribeTo";
     public static String PUBLISH_TO = "BackboneMQTT.mapping.PublishTo";
     public static String UNSUBSCRIBE_TO = "BackboneMQTT.mapping.UnsubscribeTo";
-    public static String RESUBSCRIBE_TO = "BackboneMQTT.mapping.ReubscribeTo";
+  //  public static String LIST = "BackboneMQTT.mapping.List";
 
     public static String MESSAGE_CONTROL_CLEANER_TIMEOUT = "BackboneMQTT.Timeout";
 
