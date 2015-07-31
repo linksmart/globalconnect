@@ -145,13 +145,15 @@ public class HttpTunnelServlet extends HttpServlet {
 			String service_path = "";
 			String content = "";
 			
-			if(request.getMethod().equals("GET")) {
+			if(request.getMethod().equals("GET") || request.getMethod().equals("POST") || request.getMethod().equals("PUT")||request.getMethod().equals("DELETE")) {
 				service_path = TunnelProcessor.getServicePath(path_tokens, request, true);
-			} else if(request.getMethod().equals("POST") || request.getMethod().equals("PUT")) {
-				service_path = TunnelProcessor.getServicePath(path_tokens, request, false);
-				content = TunnelProcessor.getContent(request);
-			} else if(request.getMethod().equals("DELETE")) {
-				service_path = TunnelProcessor.getServicePath(path_tokens, request, false);
+			}
+            if(request.getMethod().equals("POST") ) {
+                try {
+                    content = TunnelProcessor.getContent(request);
+                }catch (Exception e){}
+            }else if(request.getMethod().equals("PUT") ) {
+                content = TunnelProcessor.getContent(request);
 			}
 			
 			//
@@ -187,13 +189,12 @@ public class HttpTunnelServlet extends HttpServlet {
 		
 			response.setStatus(tunnel_response.getStatusCode());
 			byte[] servlet_response_body = tunnel_response.getBody();
-		
 			//
 			// write servlet_response_body data
 			//
 			response.setContentLength(servlet_response_body.length);
 			response.getOutputStream().write(servlet_response_body);
-			response.getOutputStream().close();	
+			response.getOutputStream().close();
 			
 		} catch (TunnelException e) {
 			LOG.error(e.getMessage(), e);
