@@ -3,7 +3,7 @@
 # 1. it starts LSGC
 # 2. waits
 # 3. calls the remote REST weather service
-TIMER=45
+TIMER=90
 ## lower valus may not work due the ineffictient discovery mechanism
 echo "---> starting LSGC instance with consumer..."
 ./bin/start
