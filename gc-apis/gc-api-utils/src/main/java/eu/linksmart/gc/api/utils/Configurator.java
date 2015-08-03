@@ -134,13 +134,16 @@ public abstract class Configurator implements ManagedService {
 	public void init() {
 		try {
 			if (cm != null) {
-				// We check if there is already a persistent configuration
-				// in the framework.
-				Configuration config = cm.getConfiguration(pid);
-				configuration = config.getProperties();
+
+                Configuration config = null;
+                config = cm.getConfiguration(pid);
+                /* NOTE: de-comment this lines to load bundle config-file as default
+                // We check if there is already a persistent configuration
+                // in the framework.
+				//configuration = config.getProperties();*/
 
 				// If there is no configuration, we will use the properties 
-				// file in the jar
+				// file in the jar or in a location
 				if (configuration == null) {
 					logger.info("No persistent configuration for PID " + pid + " available");
 					configuration = loadDefaults();
