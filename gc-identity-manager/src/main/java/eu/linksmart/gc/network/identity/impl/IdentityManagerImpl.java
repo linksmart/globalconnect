@@ -1220,8 +1220,9 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 						LOG.debug("Broadcasting Message: " + m);
 						networkManagerCore.broadcastMessage(m);
 					}
+
+                    Thread.sleep(broadcastSleepMillis);
 				}
-				Thread.sleep(broadcastSleepMillis);
 			} catch (InterruptedException e) {
 				LOG.info("Thread broadcasting updates stopped!", e);
 				serviceUpdaterThreadRunning = false;
