@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>eu.linksmart.gc</groupId>
+        <artifactId>eu.linksmart.gc.parent</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>eu.linksmart.gc.server</artifactId>
+
+    <packaging>jar</packaging>
+
+    <name>LS GC - Backbone Router</name>
+    <description>LinkSmart backbone router</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>eu.linksmart.gc</groupId>
+            <artifactId>eu.linksmart.gc.apis</artifactId>
+        </dependency>
+        <dependency>
+			<groupId>commons-discovery</groupId>
+			<artifactId>commons-discovery</artifactId>
+			<version>0.5</version>
+		</dependency>
+		<!-- Dependencies required for Testing --> 
+		<dependency>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.sc.client</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.network.identitymanager</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.network.backbone.router</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.network.networkmanager</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.network.backbone.protocol.http</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.network.backbone.zmq</artifactId>
+			<scope>test</scope>
+		</dependency>
+    </dependencies>
+
+</project>
