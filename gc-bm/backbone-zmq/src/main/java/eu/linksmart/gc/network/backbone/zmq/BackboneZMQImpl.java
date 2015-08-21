@@ -40,6 +40,7 @@ public class BackboneZMQImpl implements Backbone {
 	}
 	
 	public void initialize() {	
+		LOGGER.info("initializing ZMQ protocol");
 	}
 
 	public void deactivate() {

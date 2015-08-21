@@ -25,6 +25,7 @@ public class EngineTest {
         
         String serverConfigFileName = gcConfig.getProperty("eu.linksmart.gc.server.config", ConfigConstants.GC_SERVER_CONFIGURATION_FILE_NAME);
         assertNotNull(serverConfigFileName);  
+        in.close();
     }
 
     /**
@@ -45,12 +46,13 @@ public class EngineTest {
      * Test GC engine
      */
     @Test
-    public void testFindSingletonImplementation() {
+    public void testEngine() {
     	try {
     		GcEngine.initializeEngine();
-    		//GcEngine.shutdownEngine();
+    		GcEngine.shutdownEngine();
 		} catch (Exception e) {
 			e.printStackTrace();
+			fail("testEngine failed: " + e.getMessage());
 		}
     }
 }

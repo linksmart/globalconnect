@@ -167,6 +167,9 @@ public class GcEngine {
         networkManagerCore.initialize();
         serviceCatalogClient.initialize();
         identityManager.initialize();
+        for (Backbone backbone : backbones) {
+        	backbone.initialize();
+		}
          
         LOG.info("--------------------------------");
         LOG.info("GcEngine -> is initialized");
@@ -180,17 +183,26 @@ public class GcEngine {
      *             indicates an error during engine shutdown
      */
     public static void shutdownEngine() throws Exception {
+    	
     	LOG.info("GcEngine -> is shutting down");
+    	
     	//
         // deactivate GC components
         //
         identityManager.deactivate();
+        serviceCatalogClient.deactivate();
         for (Backbone backbone : backbones) {
         	backbone.deactivate();
 		}
         backboneRouter.deactivate();
         networkManagerCore.deactivate();
+        
+        gcConfig = null;
+        gcServerConfig = null;
         engine = null;
+        LOG.info("--------------------------------");
+        LOG.info("GcEngine is stopped");
+        LOG.info("--------------------------------");
     }
 
     /**

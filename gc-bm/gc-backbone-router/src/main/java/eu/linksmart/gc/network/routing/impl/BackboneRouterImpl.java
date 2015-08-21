@@ -74,8 +74,7 @@ public class BackboneRouterImpl implements BackboneRouter {
         synchronized (backboneAddingLock) {
             List<VirtualAddress> movedVirtualAddressList = new ArrayList<VirtualAddress>();
 
-            logger.debug("Moving potential to active routes for backbone "
-                    + backbone.getName());
+            logger.info("moving potential to active routes for backbone: " + backbone.getName());
 
             if (!potentialRouteMap.isEmpty()) {
                 Iterator<Entry<VirtualAddress, List<RouteEntry>>> iter = potentialRouteMap
@@ -131,8 +130,7 @@ public class BackboneRouterImpl implements BackboneRouter {
             List<VirtualAddress> obsoleteVirtualAddressList = new ArrayList<VirtualAddress>();
 
             if (!activeRouteMap.isEmpty()) {
-                logger.debug("Removing active routes reachable over unbound backbone "
-                        + backbone.getName());
+                logger.info("Removing active routes reachable over unbound backbone: " + backbone.getName());
 
                 Iterator<Entry<VirtualAddress, Backbone>> iter = activeRouteMap
                         .entrySet().iterator();

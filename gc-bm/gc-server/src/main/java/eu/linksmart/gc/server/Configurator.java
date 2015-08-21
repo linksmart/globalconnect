@@ -55,6 +55,12 @@ public class Configurator {
         configurationFileName = configFileName;
     }
 
+    /**
+     * Get path of the GC configuration file
+     
+     * @return The path as <code>String</code>.
+     * 
+     */
     public static String getConfigurationPath() {
         String defaultPath = System.getProperty(ConfigConstants.GC_CONFIGURATION_PATH_KEY);
         if (defaultPath != null) {
@@ -68,6 +74,12 @@ public class Configurator {
         return configurationPath;
     }
     
+    /**
+     * Get name of the GC configuration file
+     
+     * @return The file name as <code>String</code>.
+     * 
+     */
     public static String getConfigurationFileName() {
         String defaultName = System.getProperty(ConfigConstants.GC_CONFIGURATION_FILE_NAME_KEY);
         if (defaultName != null) {

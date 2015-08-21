@@ -45,7 +45,7 @@ public class HttpImpl implements Backbone {
 	}
 	
 	public void initialize() {
-		
+		LOG.info("initializing HTTP protocol");
 	}
 
 	public void deactivate() {
