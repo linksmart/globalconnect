@@ -14,8 +14,8 @@
 
     <packaging>jar</packaging>
 
-    <name>LS GC - Backbone Router</name>
-    <description>LinkSmart backbone router</description>
+    <name>LS GC - Server</name>
+    <description>LinkSmart Server</description>
 
     <dependencies>
         <dependency>
