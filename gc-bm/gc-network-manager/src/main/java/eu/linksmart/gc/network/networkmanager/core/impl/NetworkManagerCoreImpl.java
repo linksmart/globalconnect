@@ -10,7 +10,7 @@ import eu.linksmart.gc.api.utils.Part;
 import eu.linksmart.gc.network.connection.Connection;
 import eu.linksmart.gc.network.connection.ConnectionManager;
 import eu.linksmart.gc.network.connection.MessageSerializerUtiliy;
-import eu.linksmart.gc.server.GcEngine;
+import eu.linksmart.gc.server.GcEngineSingleton;
 
 import org.apache.log4j.Logger;
 
@@ -54,10 +54,10 @@ public class NetworkManagerCoreImpl implements NetworkManagerCore, MessageDistri
 	public void activate() {
 		LOG.info("[activating network manager core]");
 		
-		this.identityManager = GcEngine.getIdentityManager();
+		this.identityManager = GcEngineSingleton.getIdentityManager();
 		this.connectionManager.setIdentityManager(this.identityManager);
 		
-		this.backboneRouter = GcEngine.getBackboneRouter();
+		this.backboneRouter = GcEngineSingleton.getBackboneRouter();
 		
 		//this.communicationSecurityManager = commSecMgr;
 		//this.connectionManager.setCommunicationSecurityManager(communicationSecurityManager);
@@ -84,9 +84,9 @@ public class NetworkManagerCoreImpl implements NetworkManagerCore, MessageDistri
 	 * @param context
 	 */
 	private void init() {
-		this.myDescription = GcEngine.get("network.manager.description");
-		String nmBackbone = GcEngine.get("network.manager.backbone");
-		String endpoint = GcEngine.get("network.manager.endpoint");
+		this.myDescription = GcEngineSingleton.get("network.manager.description");
+		String nmBackbone = GcEngineSingleton.get("network.manager.backbone");
+		String endpoint = GcEngineSingleton.get("network.manager.endpoint");
 		Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(),	this.myDescription) };
 
 		// Create a local VirtualAddress with SOAP Backbone for NetworkManager

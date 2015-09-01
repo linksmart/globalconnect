@@ -18,7 +18,7 @@ import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.backbone.Backbone;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.security.communication.SecurityProperty;
-import eu.linksmart.gc.server.GcEngine;
+import eu.linksmart.gc.server.GcEngineSingleton;
 
 import org.apache.log4j.Logger;
 
@@ -40,7 +40,7 @@ public class HttpImpl implements Backbone {
 	
 	public void activate() {
     	LOG.info("[activating Backbone HttpProtocol]");
-    	this.bbRouter = GcEngine.getBackboneRouter();
+    	this.bbRouter = GcEngineSingleton.getBackboneRouter();
     	// configuration parameters
 	}
 	

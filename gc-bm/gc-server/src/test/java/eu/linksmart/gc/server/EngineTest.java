@@ -1,14 +1,13 @@
 package eu.linksmart.gc.server;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.network.networkmanager.core.impl.NetworkManagerCoreImpl;
+import org.junit.Test;
 
 import java.io.InputStream;
 import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 public class EngineTest {
 	
@@ -33,11 +32,11 @@ public class EngineTest {
      */
     public void testFindImplementation() {
     	
-        Object instance = GcEngine.findImplementation(NetworkManagerCore.class,  NetworkManagerCoreImpl.class.getName());
+        Object instance = GcEngineSingleton.findImplementation(NetworkManagerCore.class, NetworkManagerCoreImpl.class.getName());
         assertNotNull( instance );
         assertTrue(instance instanceof NetworkManagerCore);
 
-        instance = GcEngine.findImplementation(NetworkManagerCore.class, "eu.linksmart.gc.network.networkmanager.core.impl.NetworkManagerCoreImpl");
+        instance = GcEngineSingleton.findImplementation(NetworkManagerCore.class, "eu.linksmart.gc.network.networkmanager.core.impl.NetworkManagerCoreImpl");
         assertNotNull( instance );
         assertTrue(instance instanceof NetworkManagerCore);
     }
@@ -48,8 +47,8 @@ public class EngineTest {
     @Test
     public void testEngine() {
     	try {
-    		GcEngine.initializeEngine();
-    		GcEngine.shutdownEngine();
+    		GcEngineSingleton.initializeEngine();
+    		GcEngineSingleton.shutdownEngine();
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("testEngine failed: " + e.getMessage());

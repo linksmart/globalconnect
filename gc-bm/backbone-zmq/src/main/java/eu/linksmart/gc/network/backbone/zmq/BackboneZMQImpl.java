@@ -5,7 +5,7 @@ import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.backbone.Backbone;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.security.communication.SecurityProperty;
-import eu.linksmart.gc.server.GcEngine;
+import eu.linksmart.gc.server.GcEngineSingleton;
 
 import org.apache.log4j.Logger;
 
@@ -30,10 +30,10 @@ public class BackboneZMQImpl implements Backbone {
     
 	public void activate() {
     	LOGGER.info("[activating BackboneZMQ]");
-    	this.bbRouter = GcEngine.getBackboneRouter();
-        String xpubURI = GcEngine.get("backbone.zmq.xpub.uri");
+    	this.bbRouter = GcEngineSingleton.getBackboneRouter();
+        String xpubURI = GcEngineSingleton.get("backbone.zmq.xpub.uri");
         LOGGER.info("using xpub uri :  " + xpubURI);
-        String xsubURI = GcEngine.get("backbone.zmq.xsub.uri");
+        String xsubURI = GcEngineSingleton.get("backbone.zmq.xsub.uri");
         LOGGER.info("using xsub uri :  " + xsubURI);
 		zmqHandler = new ZmqHandler(this, xpubURI, xsubURI);
 		zmqHandler.start();
@@ -81,7 +81,7 @@ public class BackboneZMQImpl implements Backbone {
 
 	@Override
 	public List<SecurityProperty> getSecurityTypesRequired() {
-		String configuredSecurity = GcEngine.get("backbone.zmq.SecurityParameters");
+		String configuredSecurity = GcEngineSingleton.get("backbone.zmq.SecurityParameters");
 		String[] securityTypes = configuredSecurity.split("\\|");
 		SecurityProperty oneProperty;
 		List<SecurityProperty> answer = new ArrayList<SecurityProperty>();

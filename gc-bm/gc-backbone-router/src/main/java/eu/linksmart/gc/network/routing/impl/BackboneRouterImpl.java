@@ -1,24 +1,18 @@
 package eu.linksmart.gc.network.routing.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.log4j.Logger;
-
-import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.backbone.Backbone;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.network.routing.RouteEntry;
 import eu.linksmart.gc.api.security.communication.SecurityProperty;
-import eu.linksmart.gc.server.GcEngine;
+import eu.linksmart.gc.server.GcEngineSingleton;
+import org.apache.log4j.Logger;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BackboneRouterImpl implements BackboneRouter {
 
@@ -41,12 +35,12 @@ public class BackboneRouterImpl implements BackboneRouter {
 
     public void activate() {
     	logger.info("[activating backbone router]");
-        nmCore = GcEngine.getNetworkManagerCore();
+        nmCore = GcEngineSingleton.getNetworkManagerCore();
     }
     
     public void initialize() {
     	logger.info("initializing backbone router");
-    	Backbone[] backbones = GcEngine.getBackbones();
+    	Backbone[] backbones = GcEngineSingleton.getBackbones();
         if(backbones != null) {
         	for (int i = 0; i < backbones.length; i++) {
             	Backbone backbone = backbones[i];
@@ -59,7 +53,7 @@ public class BackboneRouterImpl implements BackboneRouter {
     
     public void deactivate() {
         logger.info("de-activating " + BACKBONE_ROUTER);
-        Backbone[] backbones = GcEngine.getBackbones();
+        Backbone[] backbones = GcEngineSingleton.getBackbones();
         if(backbones != null) {
         	for (int i = 0; i < backbones.length; i++) {
             	Backbone backbone = backbones[i];

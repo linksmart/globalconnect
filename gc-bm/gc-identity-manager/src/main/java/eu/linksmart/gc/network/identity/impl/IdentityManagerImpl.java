@@ -1,48 +1,20 @@
 package eu.linksmart.gc.network.identity.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.apache.log4j.Logger;
-
-import eu.linksmart.gc.api.network.BroadcastMessage;
-import eu.linksmart.gc.api.network.Message;
-import eu.linksmart.gc.api.network.MessageDistributor;
-import eu.linksmart.gc.api.network.MessageProcessor;
-import eu.linksmart.gc.api.network.Registration;
-import eu.linksmart.gc.api.network.ServiceAttribute;
-import eu.linksmart.gc.api.network.VirtualAddress;
-import eu.linksmart.gc.api.network.ServiceUpdate;
+import eu.linksmart.gc.api.network.*;
 import eu.linksmart.gc.api.network.identity.IdentityManager;
-import eu.linksmart.gc.network.identity.util.AttributeQueryParser;
-import eu.linksmart.gc.network.identity.util.AttributeResolveFilter;
-import eu.linksmart.gc.network.identity.util.AttributeResolveResponse;
-import eu.linksmart.gc.network.identity.util.BloomFilterFactory;
-import eu.linksmart.gc.network.identity.util.ByteArrayCodec;
-import eu.linksmart.gc.server.GcEngine;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
 import eu.linksmart.gc.api.utils.Part;
 import eu.linksmart.gc.api.utils.PartConverter;
+import eu.linksmart.gc.network.identity.util.*;
+import eu.linksmart.gc.server.GcEngineSingleton;
+import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	
@@ -110,8 +82,8 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 		
 	public void activate() {
 		LOG.info("[activating identity manager]");
-		this.networkManagerCore = GcEngine.getNetworkManagerCore();
-		this.scClient = GcEngine.getServiceCatalogClient();
+		this.networkManagerCore = GcEngineSingleton.getNetworkManagerCore();
+		this.scClient = GcEngineSingleton.getServiceCatalogClient();
 		initMaps();
 	}
 	
