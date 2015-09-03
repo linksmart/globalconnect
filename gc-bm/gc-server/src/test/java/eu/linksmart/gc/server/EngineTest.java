@@ -2,6 +2,7 @@ package eu.linksmart.gc.server;
 
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.network.networkmanager.core.impl.NetworkManagerCoreImpl;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -44,8 +45,8 @@ public class EngineTest {
     /**
      * Test GC engine
      */
-    @Test
-    public void testEngine() {
+    @Ignore
+    public void testSingletonEngine() {
     	try {
     		GcEngineSingleton.initializeEngine();
     		GcEngineSingleton.shutdownEngine();
@@ -53,5 +54,39 @@ public class EngineTest {
 			e.printStackTrace();
 			fail("testEngine failed: " + e.getMessage());
 		}
+    }
+    /**
+     * Test GC engine
+     */
+    @Ignore
+    public void testEngine() {
+        try {
+            GcEngine engine = new GcEngine();
+            Thread.sleep(500);
+            engine.shutdownEngine();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("testEngine failed: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testTwoEngines() {
+        try {
+            GcEngine engine = new GcEngine();
+            Thread.sleep(250);
+            GcEngine engine2 = new GcEngine();
+            Thread.sleep(3000);
+            System.out.println("engine 1 VM : " + engine.getNetworkManagerCore().getVirtualAddress());
+            System.out.println("engine 2 VM : "+engine2.getNetworkManagerCore().getVirtualAddress());
+
+
+            engine.shutdownEngine();
+            Thread.sleep(250);
+            engine2.shutdownEngine();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("testEngine failed: " + e.getMessage());
+        }
     }
 }
