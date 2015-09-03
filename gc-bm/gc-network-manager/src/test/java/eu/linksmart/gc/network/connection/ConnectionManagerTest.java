@@ -9,9 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.any;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
@@ -21,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import eu.linksmart.gc.api.network.ErrorMessage;
 import eu.linksmart.gc.api.network.Message;
 import eu.linksmart.gc.api.network.NMResponse;
 import eu.linksmart.gc.api.network.VirtualAddress;

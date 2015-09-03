@@ -1,10 +1,10 @@
 package eu.linksmart.gc.sc.client;
 
 import com.google.gson.Gson;
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.ServiceAttribute;
 import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
 import eu.linksmart.gc.api.utils.Part;
-import eu.linksmart.gc.server.GcEngineSingleton;
 import eu.linksmart.lc.sc.client.ServiceCatalog;
 import eu.linksmart.lc.sc.types.Endpoint;
 import eu.linksmart.lc.sc.types.Meta;
@@ -28,11 +28,11 @@ public class SCClientImpl implements ServiceCatalogClient {
 	
 	private String TUNNELING_BASE_URL = "http://localhost:8082/HttpTunneling/0/";
 	
-	public void activate() {
+	public void activate(EngineContext ctx) {
     	LOG.info("[activating ServiceCatalogClient]");
-		CATALOG_URL = GcEngineSingleton.get("eu.linksmart.gc.sc.client.service.catalog.url");
+		CATALOG_URL = ctx.get("eu.linksmart.gc.sc.client.service.catalog.url");
         LOG.info("using service catalog URL :  " + CATALOG_URL);
-        TUNNELING_BASE_URL = GcEngineSingleton.get("eu.linksmart.gc.sc.client.tunneling.base.url");;
+        TUNNELING_BASE_URL = ctx.get("eu.linksmart.gc.sc.client.tunneling.base.url");;
         LOG.info("using Tunneling Base URL :  " + TUNNELING_BASE_URL);
 	}
 	

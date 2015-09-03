@@ -1,5 +1,7 @@
 package eu.linksmart.gc.api.activator;
 
+import eu.linksmart.gc.api.engine.EngineContext;
+
 /**
  * Activator interface is a hack to deal with life-cycle of the components, originally derived from OSGi specification, 
  * and part of the GC code where components have so called "Activate" method for initialization of the implementation.
@@ -9,7 +11,7 @@ package eu.linksmart.gc.api.activator;
  */
 public interface Activator {
 	
-	public void activate();
+	public void activate(EngineContext context);
 	
 	public void initialize();
 	

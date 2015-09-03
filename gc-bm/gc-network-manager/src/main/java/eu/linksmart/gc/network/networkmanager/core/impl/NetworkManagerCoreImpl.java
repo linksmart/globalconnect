@@ -1,5 +1,6 @@
 package eu.linksmart.gc.network.networkmanager.core.impl;
 
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.*;
 import eu.linksmart.gc.api.network.identity.IdentityManager;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
@@ -10,7 +11,6 @@ import eu.linksmart.gc.api.utils.Part;
 import eu.linksmart.gc.network.connection.Connection;
 import eu.linksmart.gc.network.connection.ConnectionManager;
 import eu.linksmart.gc.network.connection.MessageSerializerUtiliy;
-import eu.linksmart.gc.server.GcEngineSingleton;
 
 import org.apache.log4j.Logger;
 
@@ -51,13 +51,16 @@ public class NetworkManagerCoreImpl implements NetworkManagerCore, MessageDistri
 	
 	protected BackboneRouter backboneRouter = null;
 
-	public void activate() {
+	private EngineContext engineContext = null;
+
+	public void activate(EngineContext ctx) {
 		LOG.info("[activating network manager core]");
+		engineContext = ctx;
 		
-		this.identityManager = GcEngineSingleton.getIdentityManager();
+		this.identityManager = engineContext.getIdentityManager();
 		this.connectionManager.setIdentityManager(this.identityManager);
 		
-		this.backboneRouter = GcEngineSingleton.getBackboneRouter();
+		this.backboneRouter = engineContext.getBackboneRouter();
 		
 		//this.communicationSecurityManager = commSecMgr;
 		//this.connectionManager.setCommunicationSecurityManager(communicationSecurityManager);
@@ -84,9 +87,9 @@ public class NetworkManagerCoreImpl implements NetworkManagerCore, MessageDistri
 	 * @param context
 	 */
 	private void init() {
-		this.myDescription = GcEngineSingleton.get("network.manager.description");
-		String nmBackbone = GcEngineSingleton.get("network.manager.backbone");
-		String endpoint = GcEngineSingleton.get("network.manager.endpoint");
+		this.myDescription = engineContext.get("network.manager.description");
+		String nmBackbone = engineContext.get("network.manager.backbone");
+		String endpoint = engineContext.get("network.manager.endpoint");
 		Part[] attributes = { new Part(ServiceAttribute.DESCRIPTION.name(),	this.myDescription) };
 
 		// Create a local VirtualAddress with SOAP Backbone for NetworkManager
@@ -201,7 +204,7 @@ public class NetworkManagerCoreImpl implements NetworkManagerCore, MessageDistri
 									senderVirtualAddress, getService());
 						} else {
 							response = createErrorMessage(receiverVirtualAddress, senderVirtualAddress,
-									COMMUNICATION_PARAMETERS_ERROR, ErrorMessage.ERROR, null); 
+									COMMUNICATION_PARAMETERS_ERROR, ErrorMessage.ERROR, null);
 						}
 						return response;
 					}

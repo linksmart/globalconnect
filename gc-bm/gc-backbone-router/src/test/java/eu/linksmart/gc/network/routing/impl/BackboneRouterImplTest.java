@@ -1,18 +1,6 @@
 package eu.linksmart.gc.network.routing.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import eu.linksmart.gc.api.network.VirtualAddress;
-import eu.linksmart.gc.api.network.NMResponse;
-import eu.linksmart.gc.api.network.backbone.Backbone;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 
 public class BackboneRouterImplTest {

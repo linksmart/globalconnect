@@ -1,16 +1,9 @@
 package eu.linksmart.gc.network.backbone.protocol.mqtt;
 
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.*;
-import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
-
-import eu.linksmart.gc.network.backbone.protocol.mqtt.conf.MqttBackboneProtocolConfigurator;
-import eu.linksmart.gc.server.GcEngineSingleton;
-
-import org.apache.commons.collections.BidiMap;
-import org.apache.commons.collections.bidimap.DualHashBidiMap;
-
 import eu.linksmart.gc.api.network.backbone.Backbone;
-
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.security.communication.SecurityProperty;
 import eu.linksmart.gc.api.types.Configurable;
@@ -18,7 +11,13 @@ import eu.linksmart.gc.api.types.MqttTunnelledMessage;
 import eu.linksmart.gc.api.types.TunnelRequest;
 import eu.linksmart.gc.api.types.TunnelResponse;
 import eu.linksmart.gc.api.types.utils.SerializationUtil;
-
+import eu.linksmart.gc.network.backbone.protocol.mqtt.conf.MqttBackboneProtocolConfigurator;
+import eu.linksmart.gc.api.network.BroadcastMessage;
+import eu.linksmart.gc.api.network.Message;
+import eu.linksmart.gc.api.network.NMResponse;
+import eu.linksmart.gc.api.network.VirtualAddress;
+import org.apache.commons.collections.BidiMap;
+import org.apache.commons.collections.bidimap.DualHashBidiMap;
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
@@ -59,12 +58,13 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
     private MessageDigest md5 = null;
 
     private BrokerConnectionService brokerService;
+    EngineContext engineContext = null;
  
-	public void activate() {
+	public void activate(EngineContext ctx) {
     	LOG.info("[activating Backbone MQTTProtocol]");
-    	
-    	this.bbRouter = GcEngineSingleton.getBackboneRouter();
-    	this.networkManager = GcEngineSingleton.getNetworkManagerCore();
+    	engineContext = ctx;
+    	this.bbRouter = engineContext.getBackboneRouter();
+    	this.networkManager = engineContext.getNetworkManagerCore();
     	
         startKeepCleanMessageControl();
     }
@@ -74,12 +74,12 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 		try {
             LOG.info("Starting broker main client with name:" +MQTTProtocolID.toString());
 
-            brokerService = new BrokerConnectionService(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROKER_NAME),
-            		GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROKER_PORT),
+            brokerService = new BrokerConnectionService(engineContext.get(MqttBackboneProtocolConfigurator.BROKER_NAME),
+                    engineContext.get(MqttBackboneProtocolConfigurator.BROKER_PORT),
             		MQTTProtocolID,
             		networkManager,
-            		Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)),
-            		GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BACKBONE_DESCRIPTION));
+            		Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)),
+                    engineContext.get(MqttBackboneProtocolConfigurator.BACKBONE_DESCRIPTION));
 
             brokerService.connect();
 
@@ -92,12 +92,12 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 
     protected void startBroadcastPropagation(){
         try {
-            if (!Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
+            if (!Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
                 throw new UnsupportedOperationException("The  broadcast propagation service is just available in combination with the Broker as a service setting");
-            if(!openClients.containsKey(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC))){
-                openClients.put(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC),new ForwardingListener( brokerService.getBrokerName(),
-                		brokerService.getBrokerPort(), 
-                		GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC), MQTTProtocolID, this));
+            if(!openClients.containsKey(engineContext.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC))){
+                openClients.put(engineContext.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC),new ForwardingListener( brokerService.getBrokerName(),
+                		brokerService.getBrokerPort(),
+                        engineContext.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC), MQTTProtocolID, this));
                 ((MessageDistributor)networkManager).subscribe("mqttBroadcast",this);
 
             }else
@@ -114,7 +114,7 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
      * */
     void startKeepCleanMessageControl(){
 
-        if (Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL))) {
+        if (Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL))) {
             initMessageRepetitionControl();
         }
 
@@ -138,7 +138,7 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
                             }
                         }
                     }
-                    if (Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL)))
+                    if (Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL)))
                         synchronized (repetitionControl) {
                             if (!repetitionControl.isEmpty()) {
                                 // for all messages already sent
@@ -160,7 +160,7 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
                         }
                     try {
                     	//TODO make it static
-                        this.sleep(Integer.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.MESSAGE_CONTROL_CLEANER_TIMEOUT)));
+                        this.sleep(Integer.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.MESSAGE_CONTROL_CLEANER_TIMEOUT)));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -232,14 +232,14 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
                 return packResponse(createListResponse(body), senderVirtualAddress, receiverVirtualAddress);
             }else {*/
                 // determine HTTP method
-                if (tunnelRequest.getMethod().equals(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.SUBSCRIBE_TO))) {
-                    if (Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
+                if (tunnelRequest.getMethod().equals(engineContext.get(MqttBackboneProtocolConfigurator.SUBSCRIBE_TO))) {
+                    if (Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
                         subscribe(senderVirtualAddress, uriEndpoint);
                     else
                         subscribe(senderVirtualAddress, receiverVirtualAddress);
-                } else if (tunnelRequest.getMethod().equals(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.PUBLISH_TO))) {
+                } else if (tunnelRequest.getMethod().equals(engineContext.get(MqttBackboneProtocolConfigurator.PUBLISH_TO))) {
                     publish(getSyncMessage(uriEndpoint, tunnelRequest.getBody()));
-                } else if (tunnelRequest.getMethod().equals(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.UNSUBSCRIBE_TO))) {
+                } else if (tunnelRequest.getMethod().equals(engineContext.get(MqttBackboneProtocolConfigurator.UNSUBSCRIBE_TO))) {
                     unsubscribe(uriEndpoint);
                 } else {
                     throw new Exception("unsupported MQTT method for endpoint:" + uriEndpoint);
@@ -404,8 +404,8 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 
                 ms = new MqttTunnelledMessage(
                          topic,
-                        data,Integer.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.QoS)),
-                        Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.PERSISTENCE)),
+                        data,Integer.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.QoS)),
+                        Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.PERSISTENCE)),
                         -1,
                         MQTTProtocolID
                 );
@@ -429,7 +429,7 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 
         if(!ms.isGenerated())
             // if the local loop is not allowed, check if this message was sent by this protocol, otherwise don't test if the message is local.
-            if(!ms.getOriginProtocol().equals(MQTTProtocolID)  || (Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.ALLOWED_LOCAL_MESSAGING_LOOP)))){
+            if(!ms.getOriginProtocol().equals(MQTTProtocolID)  || (Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.ALLOWED_LOCAL_MESSAGING_LOOP)))){
                 // check if this message was already send
                 synchronized (MessageHashControl){
                     // if was sent, mark to no send it again
@@ -470,7 +470,7 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
         boolean send = true;
 
 
-            if (Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL))){
+            if (Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL))){
                 String hash = (new BigInteger(1,md5.digest(concatenateBytes(ms.getTopic().getBytes(), ms.getPayload())))).toString();
                 synchronized (repetitionControl){
 
@@ -586,7 +586,7 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 
 	@Override
 	public List<SecurityProperty> getSecurityTypesRequired() {
-		String configuredSecurity = GcEngineSingleton.get(MqttBackboneProtocolConfigurator.SECURITY_PARAMETERS);
+		String configuredSecurity = engineContext.get(MqttBackboneProtocolConfigurator.SECURITY_PARAMETERS);
 		String[] securityTypes = configuredSecurity.split("\\|");
 		SecurityProperty oneProperty;
 		List<SecurityProperty> answer = new ArrayList<SecurityProperty>();
@@ -669,9 +669,9 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
         // get the VAD which this topic is subscribed
        // VirtualAddress senderVAD =endpointTopicVirtualAddress.get(conf.get(conf.BROKER_URL));
 
-        if(data.getTopic().equals(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC)))
+        if(data.getTopic().equals(engineContext.get(MqttBackboneProtocolConfigurator.BROADCAST_TOPIC)))
             handleBroadcast(data);
-        else if (Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
+        else if (Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)))
             receiveDataBrokerBase(data);
         else
             receiveDataTopicBase(data);
@@ -728,7 +728,7 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
      *
      * */
     public void applyConfigurations(Hashtable map){
-        if (Boolean.valueOf(GcEngineSingleton.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL)))
+        if (Boolean.valueOf(engineContext.get(MqttBackboneProtocolConfigurator.MESSAGE_REPETITION_CONTROL)))
             initMessageRepetitionControl();
 
 

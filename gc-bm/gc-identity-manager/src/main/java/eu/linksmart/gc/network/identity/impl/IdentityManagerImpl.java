@@ -1,5 +1,6 @@
 package eu.linksmart.gc.network.identity.impl;
 
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.*;
 import eu.linksmart.gc.api.network.identity.IdentityManager;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
@@ -7,7 +8,6 @@ import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
 import eu.linksmart.gc.api.utils.Part;
 import eu.linksmart.gc.api.utils.PartConverter;
 import eu.linksmart.gc.network.identity.util.*;
-import eu.linksmart.gc.server.GcEngineSingleton;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -80,10 +80,10 @@ public class IdentityManagerImpl implements IdentityManager, MessageProcessor {
 	
 	protected ServiceCatalogClient scClient;
 		
-	public void activate() {
+	public void activate(EngineContext ctx) {
 		LOG.info("[activating identity manager]");
-		this.networkManagerCore = GcEngineSingleton.getNetworkManagerCore();
-		this.scClient = GcEngineSingleton.getServiceCatalogClient();
+		this.networkManagerCore = ctx.getNetworkManagerCore();
+		this.scClient = ctx.getServiceCatalogClient();
 		initMaps();
 	}
 	

@@ -13,7 +13,6 @@ import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.Registration;
 import eu.linksmart.gc.api.network.Message;
 import eu.linksmart.gc.api.network.NMResponse;
-import eu.linksmart.gc.network.identity.impl.IdentityManagerImpl;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.utils.Part;
 

@@ -21,10 +21,6 @@
             <artifactId>eu.linksmart.gc.apis</artifactId>
         </dependency>
         <dependency>
-			<groupId>eu.linksmart.gc</groupId>
-			<artifactId>eu.linksmart.gc.server</artifactId>
-		</dependency>
-        <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>
             <artifactId>org.apache.servicemix.bundles.commons-httpclient</artifactId>
         </dependency>

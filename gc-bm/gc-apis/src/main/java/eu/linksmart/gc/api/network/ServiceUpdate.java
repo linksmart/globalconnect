@@ -2,8 +2,6 @@ package eu.linksmart.gc.api.network;
 
 import java.io.Serializable;
 
-import eu.linksmart.gc.api.network.Registration;
-
 public class ServiceUpdate implements Serializable {
 
 	private static final long serialVersionUID = -8324166037777756972L;

@@ -1,7 +1,6 @@
 package eu.linksmart.gc.api.security.communication;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 import eu.linksmart.gc.api.network.Message;
 

@@ -1,12 +1,12 @@
 package eu.linksmart.gc.network.networkmanager.impl;
 
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.NMResponse;
 import eu.linksmart.gc.api.network.Registration;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.utils.Part;
-import eu.linksmart.gc.server.GcEngineSingleton;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
@@ -22,9 +22,9 @@ public class NetworkManagerImpl implements NetworkManager {
 	public NetworkManagerImpl() {
 	}
 	
-	public void activate() {
+	public void activate(EngineContext ctx) {
 		LOG.info(CREATED_MESSAGE);
-		this.core = GcEngineSingleton.getNetworkManagerCore();
+		this.core = ctx.getNetworkManagerCore();
 	}
 	
 	public void initialize() {

@@ -1,8 +1,9 @@
 package eu.linksmart.gc.api.security.communication;
 
+import eu.linksmart.gc.api.network.VirtualAddress;
+
 import java.util.List;
 
-import eu.linksmart.gc.api.network.VirtualAddress;
 
 /**
  * Returns the security protocol specific to this implementation

@@ -1,11 +1,11 @@
 package eu.linksmart.gc.network.backbone.zmq;
 
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.NMResponse;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.backbone.Backbone;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.security.communication.SecurityProperty;
-import eu.linksmart.gc.server.GcEngineSingleton;
 
 import org.apache.log4j.Logger;
 
@@ -22,18 +22,21 @@ public class BackboneZMQImpl implements Backbone {
 	private ZmqHandler zmqHandler = null;
 	
 	private BackboneRouter bbRouter;
+
+	private EngineContext engineContext;
 	
 	public static final String BACKBONE_DESCRIPTION = "backbone.description";
 	public static final String BACKBONE_ZMQ_XPUB_URI = "backbone.zmq.xpub.uri";
 	public static final String BACKBONE_ZMQ_XSUB_URI = "backbone.zmq.xsub.uri";
 	public static final String BACKBONE_ZMQ_HEARTBEAT_INTERVAL = "backbone.zmq.heartbeat.interval";
     
-	public void activate() {
+	public void activate(EngineContext ctx) {
     	LOGGER.info("[activating BackboneZMQ]");
-    	this.bbRouter = GcEngineSingleton.getBackboneRouter();
-        String xpubURI = GcEngineSingleton.get("backbone.zmq.xpub.uri");
+		engineContext = ctx;
+    	this.bbRouter = ctx.getBackboneRouter();
+        String xpubURI = ctx.get("backbone.zmq.xpub.uri");
         LOGGER.info("using xpub uri :  " + xpubURI);
-        String xsubURI = GcEngineSingleton.get("backbone.zmq.xsub.uri");
+        String xsubURI = ctx.get("backbone.zmq.xsub.uri");
         LOGGER.info("using xsub uri :  " + xsubURI);
 		zmqHandler = new ZmqHandler(this, xpubURI, xsubURI);
 		zmqHandler.start();
@@ -81,7 +84,7 @@ public class BackboneZMQImpl implements Backbone {
 
 	@Override
 	public List<SecurityProperty> getSecurityTypesRequired() {
-		String configuredSecurity = GcEngineSingleton.get("backbone.zmq.SecurityParameters");
+		String configuredSecurity =  engineContext.get("backbone.zmq.SecurityParameters");
 		String[] securityTypes = configuredSecurity.split("\\|");
 		SecurityProperty oneProperty;
 		List<SecurityProperty> answer = new ArrayList<SecurityProperty>();

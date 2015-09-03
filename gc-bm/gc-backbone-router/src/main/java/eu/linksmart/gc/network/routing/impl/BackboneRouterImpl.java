@@ -1,5 +1,6 @@
 package eu.linksmart.gc.network.routing.impl;
 
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.NMResponse;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.backbone.Backbone;
@@ -7,7 +8,6 @@ import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.network.routing.RouteEntry;
 import eu.linksmart.gc.api.security.communication.SecurityProperty;
-import eu.linksmart.gc.server.GcEngineSingleton;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -33,14 +33,17 @@ public class BackboneRouterImpl implements BackboneRouter {
     
     Object backboneAddingLock = new Object();
 
-    public void activate() {
+    private EngineContext engineContext;
+
+    public void activate(EngineContext ctx) {
+        engineContext = ctx;
     	logger.info("[activating backbone router]");
-        nmCore = GcEngineSingleton.getNetworkManagerCore();
+        nmCore = ctx.getNetworkManagerCore();
     }
     
     public void initialize() {
     	logger.info("initializing backbone router");
-    	Backbone[] backbones = GcEngineSingleton.getBackbones();
+    	Backbone[] backbones = engineContext.getBackbones();
         if(backbones != null) {
         	for (int i = 0; i < backbones.length; i++) {
             	Backbone backbone = backbones[i];
@@ -53,7 +56,7 @@ public class BackboneRouterImpl implements BackboneRouter {
     
     public void deactivate() {
         logger.info("de-activating " + BACKBONE_ROUTER);
-        Backbone[] backbones = GcEngineSingleton.getBackbones();
+        Backbone[] backbones = engineContext.getBackbones();
         if(backbones != null) {
         	for (int i = 0; i < backbones.length; i++) {
             	Backbone backbone = backbones[i];

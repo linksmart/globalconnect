@@ -1,5 +1,6 @@
 package eu.linksmart.gc.server;
 
+import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.backbone.Backbone;
 import eu.linksmart.gc.api.network.identity.IdentityManager;
 import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-public class GcEngineSingleton {
+public class GcEngineSingleton implements EngineContext {
 	
 	private static final Logger LOG = Logger.getLogger(GcEngineSingleton.class);
 	
@@ -150,14 +151,14 @@ public class GcEngineSingleton {
         //
         // activate GC components
         //
-        serviceCatalogClient.activate();
-        identityManager.activate();
+        serviceCatalogClient.activate(this);
+        identityManager.activate(this);
         // backbones are activated first and later backbone router retrieves all available backbones
         for (Backbone backbone : backbones) {
-        	backbone.activate();
+        	backbone.activate(this);
 		}
-        backboneRouter.activate();
-        networkManagerCore.activate();
+        backboneRouter.activate(this);
+        networkManagerCore.activate(this);
         
         //
         // initialize GC components
@@ -277,27 +278,27 @@ public class GcEngineSingleton {
         return null;
     }
     
-    public static NetworkManager getNetworkManager() {
+    public NetworkManager getNetworkManager() {
     	return networkManager;
     }
     
-    public static NetworkManagerCore getNetworkManagerCore() {
+    public NetworkManagerCore getNetworkManagerCore() {
     	return networkManagerCore;
     }
     
-    public static IdentityManager getIdentityManager() {
+    public IdentityManager getIdentityManager() {
     	return identityManager;
     }
     
-    public static BackboneRouter getBackboneRouter() {
+    public BackboneRouter getBackboneRouter() {
     	return backboneRouter;
     }
     
-    public static Backbone[] getBackbones() {
+    public Backbone[] getBackbones() {
     	return new Backbone[backbones.size()];
     }
     
-    public static ServiceCatalogClient getServiceCatalogClient() {
+    public ServiceCatalogClient getServiceCatalogClient() {
     	return serviceCatalogClient;
     }
     
@@ -310,12 +311,12 @@ public class GcEngineSingleton {
      * 
      * @return the configured value
      */
-    public static String get(String key) {  	
+    public String get(String key) {
     	 String defaultValue = gcConfig.getProperty( key );
          return System.getProperty(key, defaultValue);
     }
 
-    public static boolean getBoolean(String key, boolean defaultValue) {
+    public boolean getBoolean(String key, boolean defaultValue) {
     	return Boolean.parseBoolean(gcConfig.getProperty(key, Boolean.valueOf( defaultValue ).toString()));
     }  
 }

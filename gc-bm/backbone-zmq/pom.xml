@@ -21,10 +21,6 @@
             <artifactId>eu.linksmart.gc.apis</artifactId>
         </dependency>
         <dependency>
-			<groupId>eu.linksmart.gc</groupId>
-			<artifactId>eu.linksmart.gc.server</artifactId>
-		</dependency>
-        <dependency>
       		<groupId>org.zeromq</groupId>
       		<artifactId>jeromq</artifactId>
     	</dependency>

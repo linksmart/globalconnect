@@ -21,10 +21,6 @@
             <artifactId>eu.linksmart.gc.apis</artifactId>
         </dependency>
         <dependency>
-			<groupId>eu.linksmart.gc</groupId>
-			<artifactId>eu.linksmart.gc.server</artifactId>
-		</dependency>
-        <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
             <version>1.0.0</version>

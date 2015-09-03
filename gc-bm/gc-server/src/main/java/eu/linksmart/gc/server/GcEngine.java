@@ -1,5 +1,16 @@
 package eu.linksmart.gc.server;
 
+import eu.linksmart.gc.api.engine.EngineContext;
+import eu.linksmart.gc.api.network.backbone.Backbone;
+import eu.linksmart.gc.api.network.identity.IdentityManager;
+import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
+import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
+import eu.linksmart.gc.api.network.routing.BackboneRouter;
+import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
+import org.apache.commons.discovery.tools.DiscoverClass;
+import org.apache.commons.discovery.tools.DiscoverSingleton;
+import org.apache.log4j.Logger;
+
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -7,65 +18,46 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.apache.commons.discovery.tools.DiscoverClass;
-import org.apache.commons.discovery.tools.DiscoverSingleton;
-import org.apache.log4j.Logger;
-
-import eu.linksmart.gc.api.network.backbone.Backbone;
-import eu.linksmart.gc.api.network.identity.IdentityManager;
-import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
-import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
-import eu.linksmart.gc.api.network.routing.BackboneRouter;
-import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
-
-public class GcEngine { 
+public class GcEngine implements EngineContext {
 	
 	private static final Logger LOG = Logger.getLogger(GcEngine.class);
 	
-    private static GcEngine engine = null;
+    private GcEngine engine = null;
     
-    private static Properties gcConfig = null;
+    private Properties gcConfig = null;
     
-    private static Properties gcServerConfig = null;
+    private Properties gcServerConfig = null;
     
-    private static NetworkManager networkManager = null;
+    private NetworkManager networkManager = null;
     
-    private static NetworkManagerCore networkManagerCore = null;
+    private NetworkManagerCore networkManagerCore = null;
     
-    private static IdentityManager identityManager = null;
+    private IdentityManager identityManager = null;
     
-    private static BackboneRouter backboneRouter = null;
+    private BackboneRouter backboneRouter = null;
     
-    private static List<Backbone> backbones = new ArrayList<Backbone>();
+    private List<Backbone> backbones = new ArrayList<Backbone>();
     
-    private static ServiceCatalogClient serviceCatalogClient = null;
-    
-    private GcEngine() {
-    }
-    
-    private static synchronized GcEngine getInstance() {
-        if ( engine == null ) {
-            engine = new GcEngine();
-        }
-        return engine;
-    }
+    private ServiceCatalogClient serviceCatalogClient = null;
 
-    
+
     /**
      * Initializes the GC Engine. During the initialization process the GC main configuration (system
-     * configuration) is parsed and the referenced GC server configuration(s) are loaded. 
+     * configuration) is parsed and the referenced GC server configuration(s) are loaded.
      * The GC engine must be initialized before making any calls to the system. By default the
      * GC engine main configuration location is specified by the
      * {@link ConfigConstants#DEFAULT_CONFIGURATION_PATH} constant. This value can be overwritten by the
      * system property {@value ConfigConstants#DEFAULT_CONFIGURATION_PATH_KEY}.
-     * 
+     *
      * @throws Exception
      *             indicates an error during engine initialization
      */
-    public static void initializeEngine() throws Exception {
-        getInstance().initialize();
-    }
+    public GcEngine() throws Exception {
 
+        initialize();
+
+
+    }
     private void initialize() throws Exception {
     	
     	LOG.info("GcEngine -> is initializing");
@@ -151,14 +143,14 @@ public class GcEngine {
         //
         // activate GC components
         //
-        serviceCatalogClient.activate();
-        identityManager.activate();
+        serviceCatalogClient.activate(this);
+        identityManager.activate(this);
         // backbones are activated first and later backbone router retrieves all available backbones
         for (Backbone backbone : backbones) {
-        	backbone.activate();
+        	backbone.activate(this);
 		}
-        backboneRouter.activate();
-        networkManagerCore.activate();
+        backboneRouter.activate(this);
+        networkManagerCore.activate(this);
         
         //
         // initialize GC components
@@ -182,7 +174,7 @@ public class GcEngine {
      * @throws Exception
      *             indicates an error during engine shutdown
      */
-    public static void shutdownEngine() throws Exception {
+    public void shutdownEngine() throws Exception {
     	
     	LOG.info("GcEngine -> is shutting down");
     	
@@ -247,14 +239,10 @@ public class GcEngine {
      * @return The instance of the implementation class
      */
     public static Object findImplementation(Class<?> interfaceDef, String defaultImpl) {
-        DiscoverClass discovery = new DiscoverClass();
         try {
-        	Class<?> theClass = discovery.find(interfaceDef, defaultImpl);
-        	return theClass.newInstance();
-        } catch(InstantiationException e) {
-        	LOG.error(MessageFormat.format("Could not instantiate class for interface {0}.", new Object[] { interfaceDef.getName() }));
-        } catch(IllegalAccessException e) {
-        	LOG.error(MessageFormat.format("Could not instantiate class for interface {0}.", new Object[] { interfaceDef.getName() }));
+            return (new DiscoverClass().find(interfaceDef, defaultImpl).newInstance());
+        } catch(Exception e) {
+            LOG.error(MessageFormat.format("Could not instantiate class for interface {0}.", new Object[]{interfaceDef.getName()}));
         }
         return null;
     }
@@ -277,27 +265,27 @@ public class GcEngine {
         return null;
     }
     
-    public static NetworkManager getNetworkManager() {
+    public NetworkManager getNetworkManager() {
     	return networkManager;
     }
     
-    public static NetworkManagerCore getNetworkManagerCore() {
+    public NetworkManagerCore getNetworkManagerCore() {
     	return networkManagerCore;
     }
     
-    public static IdentityManager getIdentityManager() {
+    public IdentityManager getIdentityManager() {
     	return identityManager;
     }
     
-    public static BackboneRouter getBackboneRouter() {
+    public BackboneRouter getBackboneRouter() {
     	return backboneRouter;
     }
     
-    public static Backbone[] getBackbones() {
+    public Backbone[] getBackbones() {
     	return new Backbone[backbones.size()];
     }
     
-    public static ServiceCatalogClient getServiceCatalogClient() {
+    public ServiceCatalogClient getServiceCatalogClient() {
     	return serviceCatalogClient;
     }
     
@@ -310,12 +298,12 @@ public class GcEngine {
      * 
      * @return the configured value
      */
-    public static String get(String key) {  	
+    public String get(String key) {
     	 String defaultValue = gcConfig.getProperty( key );
          return System.getProperty(key, defaultValue);
     }
 
-    public static boolean getBoolean(String key, boolean defaultValue) {
+    public boolean getBoolean(String key, boolean defaultValue) {
     	return Boolean.parseBoolean(gcConfig.getProperty(key, Boolean.valueOf( defaultValue ).toString()));
     }  
 }
