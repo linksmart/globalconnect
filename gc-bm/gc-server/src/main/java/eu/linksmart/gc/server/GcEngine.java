@@ -7,6 +7,8 @@ import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
+import eu.linksmart.gc.networkmanager.rest.NetworkManagerRest;
+
 import org.apache.commons.discovery.tools.DiscoverClass;
 import org.apache.commons.discovery.tools.DiscoverSingleton;
 import org.apache.log4j.Logger;
@@ -39,7 +41,8 @@ public class GcEngine implements EngineContext {
     private List<Backbone> backbones = new ArrayList<Backbone>();
     
     private ServiceCatalogClient serviceCatalogClient = null;
-
+    
+    private NetworkManagerRest networkManagerRest = null;
 
     /**
      * Initializes the GC Engine. During the initialization process the GC main configuration (system
@@ -53,11 +56,9 @@ public class GcEngine implements EngineContext {
      *             indicates an error during engine initialization
      */
     public GcEngine() throws Exception {
-
         initialize();
-
-
     }
+    
     private void initialize() throws Exception {
     	
     	LOG.info("GcEngine -> is initializing");
@@ -152,6 +153,10 @@ public class GcEngine implements EngineContext {
         backboneRouter.activate(this);
         networkManagerCore.activate(this);
         
+        // activate network manager rest
+        networkManagerRest = new NetworkManagerRest();
+        networkManagerRest.activate(this);
+        
         //
         // initialize GC components
         //
@@ -162,6 +167,7 @@ public class GcEngine implements EngineContext {
         for (Backbone backbone : backbones) {
         	backbone.initialize();
 		}
+        networkManagerRest.initialize();
          
         LOG.info("--------------------------------");
         LOG.info("GcEngine -> is initialized");
@@ -289,6 +295,10 @@ public class GcEngine implements EngineContext {
     	return serviceCatalogClient;
     }
     
+    public NetworkManagerRest getNetworkManagerRest() {
+    	return networkManagerRest;
+    }
+    
     /**
      * Reads the value for the given key from the component configuration file. If there is a system property
      * with the same key, the system property will override the value from the configuration file.
@@ -299,11 +309,23 @@ public class GcEngine implements EngineContext {
      * @return the configured value
      */
     public String get(String key) {
-    	 String defaultValue = gcConfig.getProperty( key );
+    	 String defaultValue = gcConfig.getProperty(key);
          return System.getProperty(key, defaultValue);
     }
 
     public boolean getBoolean(String key, boolean defaultValue) {
     	return Boolean.parseBoolean(gcConfig.getProperty(key, Boolean.valueOf( defaultValue ).toString()));
-    }  
+    } 
+    
+    public String getContainerHost() {
+        return gcConfig.getProperty("eu.linksmart.gc.server.name");
+    }
+    
+    public int getContainerPort() {
+    	return Integer.parseInt(gcConfig.getProperty("eu.linksmart.gc.server.port"));
+    }
+    
+    public String getTunnelingPath() {
+    	return gcConfig.getProperty("eu.linksmart.gc.tunneling.path");
+    }
 }

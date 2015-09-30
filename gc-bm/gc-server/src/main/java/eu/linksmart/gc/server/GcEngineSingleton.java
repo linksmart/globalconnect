@@ -7,6 +7,8 @@ import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.sc.client.ServiceCatalogClient;
+import eu.linksmart.gc.networkmanager.rest.NetworkManagerRest;
+
 import org.apache.commons.discovery.tools.DiscoverClass;
 import org.apache.commons.discovery.tools.DiscoverSingleton;
 import org.apache.log4j.Logger;
@@ -39,6 +41,8 @@ public class GcEngineSingleton implements EngineContext {
     private static List<Backbone> backbones = new ArrayList<Backbone>();
     
     private static ServiceCatalogClient serviceCatalogClient = null;
+    
+    private NetworkManagerRest networkManagerRest = null;
     
     private GcEngineSingleton() {
     }
@@ -160,6 +164,10 @@ public class GcEngineSingleton implements EngineContext {
         backboneRouter.activate(this);
         networkManagerCore.activate(this);
         
+        // activate network manager rest
+        networkManagerRest = new NetworkManagerRest();
+        networkManagerRest.activate(this);
+        
         //
         // initialize GC components
         //
@@ -170,6 +178,7 @@ public class GcEngineSingleton implements EngineContext {
         for (Backbone backbone : backbones) {
         	backbone.initialize();
 		}
+        networkManagerRest.initialize();
          
         LOG.info("--------------------------------");
         LOG.info("GcEngine -> is initialized");
@@ -302,6 +311,10 @@ public class GcEngineSingleton implements EngineContext {
     	return serviceCatalogClient;
     }
     
+    public NetworkManagerRest getNetworkManagerRest() {
+    	return networkManagerRest;
+    }
+    
     /**
      * Reads the value for the given key from the component configuration file. If there is a system property
      * with the same key, the system property will override the value from the configuration file.
@@ -318,5 +331,17 @@ public class GcEngineSingleton implements EngineContext {
 
     public boolean getBoolean(String key, boolean defaultValue) {
     	return Boolean.parseBoolean(gcConfig.getProperty(key, Boolean.valueOf( defaultValue ).toString()));
-    }  
+    }
+    
+    public String getContainerHost() {
+        return gcConfig.getProperty("eu.linksmart.gc.server.name");
+    }
+    
+    public int getContainerPort() {
+    	return Integer.parseInt(gcConfig.getProperty("eu.linksmart.gc.server.port"));
+    }
+    
+    public String getTunnelingPath() {
+    	return gcConfig.getProperty("eu.linksmart.gc.tunneling.path");
+    }
 }

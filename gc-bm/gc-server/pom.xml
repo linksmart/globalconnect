@@ -23,6 +23,10 @@
             <artifactId>eu.linksmart.gc.apis</artifactId>
         </dependency>
         <dependency>
+			<groupId>eu.linksmart.gc</groupId>
+			<artifactId>eu.linksmart.gc.networkmanager.rest</artifactId>
+		</dependency>
+        <dependency>
 			<groupId>commons-discovery</groupId>
 			<artifactId>commons-discovery</artifactId>
 			<version>0.5</version>
@@ -57,8 +61,7 @@
 			<version>1.4.0</version>
 			<scope>test</scope>
 		</dependency>
-
-
+		
 		<!-- Dependencies required for Testing --> 
 		<dependency>
 			<groupId>eu.linksmart.gc</groupId>

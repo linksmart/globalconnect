@@ -31,6 +31,7 @@ public class EngineTest {
     /**
      * Test implementation lookup for specified interface.
      */
+	@Test
     public void testFindImplementation() {
     	
         Object instance = GcEngineSingleton.findImplementation(NetworkManagerCore.class, NetworkManagerCoreImpl.class.getName());
@@ -70,7 +71,7 @@ public class EngineTest {
         }
     }
 
-    @Test
+    @Ignore
     public void testTwoEngines() {
         try {
             GcEngine engine = new GcEngine();

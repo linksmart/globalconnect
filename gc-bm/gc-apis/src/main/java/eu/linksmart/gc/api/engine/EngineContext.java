@@ -25,12 +25,25 @@ public interface EngineContext {
     public boolean getBoolean(String key, boolean defaultValue);
     public String get(String key);
 
+    /**
+     * Container host and port information that is supplied to LinkSmart Components
+     *
+     */
+    public String getContainerHost();
+    public int getContainerPort();
+    public String getTunnelingPath();
+    
     public BackboneRouter getBackboneRouter();
     public Backbone[] getBackbones();
 
     public IdentityManager getIdentityManager();
+    
     public NetworkManager getNetworkManager();
+    
     public NetworkManagerCore getNetworkManagerCore();
+    
     public ServiceCatalogClient getServiceCatalogClient();
+    
+    
 }
 
