@@ -288,7 +288,12 @@ public class GcEngine implements EngineContext {
     }
     
     public Backbone[] getBackbones() {
-    	return new Backbone[backbones.size()];
+
+        Backbone[] arrayOfBackbones = new Backbone[backbones.size()];
+        for(int j=0; j < backbones.size(); j++){
+            arrayOfBackbones[j] = backbones.get(j);
+        }
+    	return arrayOfBackbones;
     }
     
     public ServiceCatalogClient getServiceCatalogClient() {
