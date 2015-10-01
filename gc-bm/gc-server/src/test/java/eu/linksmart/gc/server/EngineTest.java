@@ -1,5 +1,6 @@
 package eu.linksmart.gc.server;
 
+import eu.linksmart.gc.api.network.Registration;
 import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.network.networkmanager.core.impl.NetworkManagerCoreImpl;
 import org.junit.Ignore;
@@ -85,6 +86,30 @@ public class EngineTest {
             engine.shutdownEngine();
             Thread.sleep(250);
             engine2.shutdownEngine();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("testEngine failed: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testRemoteNMDetection() {
+        try {
+            // start two GC engines
+            GcEngine engine = new GcEngine();
+            GcEngine engine2 = new GcEngine();
+
+            // give some time to 2nd engine to register remotely
+            Thread.sleep(1000);
+
+            Registration[] registrations = engine.getNetworkManagerCore().getServiceByDescription("NetworkManager:LinkSmartUser");
+            System.out.println("number of registrations at local NM : "+registrations.length);
+
+
+            engine.shutdownEngine();
+            engine2.shutdownEngine();
+            assertTrue("Remote NM instance didn't register at local NM",registrations.length>1);
+            
         } catch (Exception e) {
             e.printStackTrace();
             fail("testEngine failed: " + e.getMessage());
