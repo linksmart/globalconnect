@@ -278,7 +278,7 @@ public class GcEngine implements EngineContext {
     public NetworkManagerCore getNetworkManagerCore() {
     	return networkManagerCore;
     }
-    
+
     public IdentityManager getIdentityManager() {
     	return identityManager;
     }
@@ -322,15 +322,15 @@ public class GcEngine implements EngineContext {
     	return Boolean.parseBoolean(gcConfig.getProperty(key, Boolean.valueOf( defaultValue ).toString()));
     } 
     
-    public String getContainerHost() {
-        return gcConfig.getProperty("eu.linksmart.gc.server.name");
+    public String getContainerEndpoint() {
+        return gcConfig.getProperty("eu.linksmart.gc.server.endpoint");
+    }
+
+    public String getContainerAddress() {
+        return gcConfig.getProperty("eu.linksmart.gc.server.address");
     }
     
     public int getContainerPort() {
     	return Integer.parseInt(gcConfig.getProperty("eu.linksmart.gc.server.port"));
-    }
-    
-    public String getTunnelingPath() {
-    	return gcConfig.getProperty("eu.linksmart.gc.tunneling.path");
     }
 }

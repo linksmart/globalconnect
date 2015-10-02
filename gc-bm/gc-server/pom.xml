@@ -96,7 +96,6 @@
 		<dependency>
 			<groupId>eu.linksmart.gc</groupId>
 			<artifactId>network.backbone.protocol.mqtt.impl</artifactId>
-			<version>0.2.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
     </dependencies>

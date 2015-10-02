@@ -1,35 +1,22 @@
 package eu.linksmart.gc.networkmanager.rest;
 
-import java.net.URLDecoder;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
-import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
-
 import eu.linksmart.gc.api.activator.Activator;
 import eu.linksmart.gc.api.engine.EngineContext;
 import eu.linksmart.gc.api.network.Registration;
 import eu.linksmart.gc.api.network.VirtualAddress;
 import eu.linksmart.gc.api.network.networkmanager.NetworkManager;
 import eu.linksmart.gc.api.utils.Part;
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.net.URLDecoder;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Network Manager REST API
@@ -46,8 +33,9 @@ public class NetworkManagerRest implements Activator {
 	private static final String KEY_BACKBONE_NAME = "BackboneName";
 	private static final String KEY_ATTRIBUTES = "Attributes";
 	private static final String KEY_VIRTUAL_ADDRESS = "VirtualAddress";
-	
-	private String TUNNELING_BASE_URL = "http://localhost:8080/HttpTunneling/0/";
+
+	private final String TUNNELING_PATH = "/HttpTunneling/0/";
+	private String TUNNELING_BASE_URL = "http://localhost:8080" + TUNNELING_PATH;
 	
 	private NetworkManager networkManager = null;
 	
@@ -57,7 +45,7 @@ public class NetworkManagerRest implements Activator {
 	public void activate(EngineContext ctx) {
 		LOG.info("[activating network manager rest]");
 		this.networkManager = ctx.getNetworkManager();
-		TUNNELING_BASE_URL = "http://" + ctx.getContainerHost() + ":" + ctx.getContainerPort() + ctx.getTunnelingPath();
+		TUNNELING_BASE_URL = ctx.getContainerEndpoint() + TUNNELING_PATH;
 	}
 	
 	public void initialize() {

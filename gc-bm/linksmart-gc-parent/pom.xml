@@ -300,6 +300,11 @@
 				<artifactId>eu.linksmart.gc.sc.client</artifactId>
 				<version>${linksmart.gc.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>eu.linksmart.gc</groupId>
+                <artifactId>network.backbone.protocol.mqtt.impl</artifactId>
+                <version>${linksmart.gc.version}</version>
+            </dependency>
             <!-- other dependencies -->
             <dependency>
 				<groupId>org.apache.servicemix.bundles</groupId>

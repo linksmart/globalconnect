@@ -29,9 +29,7 @@ public interface EngineContext {
      * Container host and port information that is supplied to LinkSmart Components
      *
      */
-    public String getContainerHost();
-    public int getContainerPort();
-    public String getTunnelingPath();
+    public String getContainerEndpoint();
     
     public BackboneRouter getBackboneRouter();
     public Backbone[] getBackbones();

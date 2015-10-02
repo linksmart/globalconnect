@@ -294,7 +294,7 @@ public class GcEngineSingleton implements EngineContext {
     public NetworkManagerCore getNetworkManagerCore() {
     	return networkManagerCore;
     }
-    
+
     public IdentityManager getIdentityManager() {
     	return identityManager;
     }
@@ -310,7 +310,7 @@ public class GcEngineSingleton implements EngineContext {
     public ServiceCatalogClient getServiceCatalogClient() {
     	return serviceCatalogClient;
     }
-    
+
     public NetworkManagerRest getNetworkManagerRest() {
     	return networkManagerRest;
     }
@@ -333,15 +333,15 @@ public class GcEngineSingleton implements EngineContext {
     	return Boolean.parseBoolean(gcConfig.getProperty(key, Boolean.valueOf( defaultValue ).toString()));
     }
     
-    public String getContainerHost() {
-        return gcConfig.getProperty("eu.linksmart.gc.server.name");
+    public String getContainerAddress() {
+        return gcConfig.getProperty("eu.linksmart.gc.server.address");
     }
-    
+
+    public String getContainerEndpoint() {
+        return gcConfig.getProperty("eu.linksmart.gc.server.endpoint");
+    }
+
     public int getContainerPort() {
     	return Integer.parseInt(gcConfig.getProperty("eu.linksmart.gc.server.port"));
-    }
-    
-    public String getTunnelingPath() {
-    	return gcConfig.getProperty("eu.linksmart.gc.tunneling.path");
     }
 }
