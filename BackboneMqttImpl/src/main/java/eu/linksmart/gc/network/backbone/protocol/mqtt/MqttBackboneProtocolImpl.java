@@ -767,14 +767,16 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
     private void handleBroadcast(MqttTunnelledMessage data){
 
 
+        if(data != null  && uniqueMessageControl(data)) {
 
-        BroadcastMessage msg = new BroadcastMessage(
-					"mqttBroadcast",
-					brokerService.getVirtualAddress(),
-					data.toBytes());
+            BroadcastMessage msg = new BroadcastMessage(
+                    "mqttBroadcast",
+                    brokerService.getVirtualAddress(),
+                    data.toBytes());
 
 
-        networkManager.broadcastMessage(msg);
+            networkManager.broadcastMessage(msg);
+        }
 
 
     }
