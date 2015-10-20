@@ -308,8 +308,9 @@ public class ZmqHandler {
 				}
 			} else if(zmqMessage.getTopic().equals(getPeerID())) {
 				processUnicast();
-			} else if(zmqMessage.getTopic().equals(ZmqConstants.HEARTBEAT_TOPIC)&& zmqMessage.getSender().equals(peerID)){
-                processHeartbeat();
+			} else if(zmqMessage.getTopic().equals(ZmqConstants.HEARTBEAT_TOPIC)){
+                if(zmqMessage.getSender().equals(peerID))
+                    processHeartbeat();
             }else {
 	            LOG.warn("unknown topic [" + zmqMessage.getTopic() + "] detected. ignoring");
 	        }
