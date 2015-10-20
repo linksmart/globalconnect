@@ -10,7 +10,7 @@ public class HeartBeat extends Thread {
 	private ZmqHandler zmqHandler = null;
 
 	private boolean isRunning = false;
-	
+
 	private String peerID = null;
 	private int heartbeatInterval = 5000;
 	

@@ -16,14 +16,15 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ZmqHandler {
-	
+
+    private HeartbeatWatch watchBeat;
 	private static Logger LOG = Logger.getLogger(ZmqHandler.class.getName());
 
 	private String peerID = null;
 	private String xsubUri = "tcp://gando.fit.fraunhofer.de:7000";
 	private String xpubUri = "tcp://gando.fit.fraunhofer.de:7001";
 	
-	private int HEART_BEAT_INTERVAL = 5000;
+	private int HEART_BEAT_INTERVAL = ZmqConstants.HEARTBEAT_INTERVAL;
 	
 	private HeartBeat heartBeat = null;
 	private ZmqReceiver receiver = null;
@@ -39,7 +40,7 @@ public class ZmqHandler {
 	
 	private int MAX_RESPONSE_TIME = 60000;
 	
-	private ExecutorService executor = Executors.newCachedThreadPool();
+	private ExecutorService executor = null;
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	
 	public ZmqHandler(BackboneZMQImpl zmqBackbone) {
@@ -67,6 +68,8 @@ public class ZmqHandler {
 	}
 	
 	public void start() {
+        executor = Executors.newCachedThreadPool();
+
 		heartBeat = new HeartBeat(this);
 		heartBeat.start();
 
@@ -74,6 +77,9 @@ public class ZmqHandler {
 		receiver = new ZmqReceiver(this);
 		receiver.start();
 		LOG.info("receiver thread started for peer :" + this.getPeerID());
+
+        watchBeat = new HeartbeatWatch(this);
+        watchBeat.start();
 
 		// heart beats should arrive at the supernode before brodcasts.
 		try {
@@ -89,6 +95,7 @@ public class ZmqHandler {
 	}
 	
 	public void stop() {
+        watchBeat.logoff();
 		heartBeat.setIsRunning(false);
 		receiver.stopReceiver();
 		publisher.stopPublisher();
@@ -96,7 +103,10 @@ public class ZmqHandler {
 		shutdownExecutor();
 		LOG.info("ZmqPeer [" + this.peerID + "] is stopped");
 	}
-	
+	public void restart(){
+        stop();
+        start();
+    }
 	private void shutdownExecutor() {
 		try {
 			executor.shutdown();
@@ -119,7 +129,9 @@ public class ZmqHandler {
 		//new MessageProcessor(zmqMessage).start();
 		executor.execute(new MessageProcessor(zmqMessage));
 	}
-	
+	public boolean isConnected(){
+        return watchBeat.isBeating();
+    }
 	public NMResponse broadcast(BackboneMessage bbMessage) {
 		
 		LOG.info("sending broadcast message from virtual address: " + bbMessage.getSenderVirtualAddress());
@@ -136,7 +148,7 @@ public class ZmqHandler {
 	public NMResponse sendData(BackboneMessage bbMessage) {
 		
 		NMResponse response = new NMResponse();
-		
+
 		String receiverPeerID = this.remoteServices.get(bbMessage.getReceiverVirtualAddress());
 		
 		if(receiverPeerID == null) {
@@ -144,7 +156,14 @@ public class ZmqHandler {
 			response.setStatus(NMResponse.STATUS_ERROR);
 			response.setMessage("unable to find PeerID for receiver virtual address: " + bbMessage.getReceiverVirtualAddress());
 			return response;
-		} 
+		}else if(!watchBeat.isBeating()){
+
+            LOG.error("message arrived but there is no connection to process the message ");
+            response.setStatus(NMResponse.STATUS_ERROR);
+            response.setMessage("Unable to connect to the supernode!");
+            return response;
+
+        }
 		
 		Integer requestID = nextRequestIdCounter();
 		
@@ -289,7 +308,9 @@ public class ZmqHandler {
 				}
 			} else if(zmqMessage.getTopic().equals(getPeerID())) {
 				processUnicast();
-			} else {
+			} else if(zmqMessage.getTopic().equals(ZmqConstants.HEARTBEAT_TOPIC)&& zmqMessage.getSender().equals(peerID)){
+                processHeartbeat();
+            }else {
 	            LOG.warn("unknown topic [" + zmqMessage.getTopic() + "] detected. ignoring");
 	        }
 		}
@@ -390,7 +411,13 @@ public class ZmqHandler {
 				LOG.warn("ignoring processBroadcast: unable to parse topic: " + message.getTopic());
 			}
 		}
+        @SuppressWarnings("unchecked")
+        private void processHeartbeat() {
 
+                if(watchBeat != null)
+                    watchBeat.beat();
+
+        }
 		private void processPeerDown() {
 			LOG.info("received peerdown message for peer [" + zmqMessage.getSender() + "]");
 			removePeerServices(zmqMessage.getSender());

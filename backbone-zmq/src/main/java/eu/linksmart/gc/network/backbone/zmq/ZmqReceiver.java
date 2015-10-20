@@ -40,6 +40,10 @@ public class ZmqReceiver extends Thread {
 			
 			subscriber.subscribe(peerID.getBytes());
 			LOG.debug("[" + peerID + "] is subscribed to own topic");
+
+
+            subscriber.subscribe(ZmqConstants.HEARTBEAT_TOPIC.getBytes());
+            LOG.debug("[" + peerID + "] is subscribed to topic: HEARTBEAT");
 			
 	    	while(this.isRunning) {
 	    		try {
