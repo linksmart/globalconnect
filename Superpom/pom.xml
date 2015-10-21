@@ -28,7 +28,6 @@
         <module>../network-manager-rest</module>
         <module>../http-tunneling</module>
         <module>../deployment/distribution</module>
-        <module>../deployment/distribution/project-distribution/gc-distro-almanac</module>
     </modules>
 
 </project>
