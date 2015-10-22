@@ -1,4 +1,4 @@
-FROM ubuntu:14.10
+FROM ubuntu:15.04
 MAINTAINER Alexandr Krylovskiy "alexandr.krylovskiy@fit.fraunhofer.de"
 ENV REFRESHED_AT 2014-12-17
 
