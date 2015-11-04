@@ -172,7 +172,7 @@ public class BrokerConnectionService  {
 
         Registration[] registration = networkManager.getServiceByDescription(serviceDescription);
         if(registration != null && registration.length > 0){
-            new RemoteException("There is already a service with this description");
+            throw new RemoteException("There is already a service with this description");
 
         }else {
             Part[] attributes = {
