@@ -429,13 +429,14 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 
     }
     private static void addVadListener(Map<String, Set<VirtualAddress>> listeningVirtualAddresses,VirtualAddress vad, String topic){
+        Set<VirtualAddress> topicSet = listeningVirtualAddresses.get(topic);
         // create container structure if is needed
-        if (listeningVirtualAddresses.get(topic) == null)
-            listeningVirtualAddresses.put(topic, new HashSet<VirtualAddress>());
+        if (topicSet == null)
+            topicSet = new HashSet<VirtualAddress>();
+            listeningVirtualAddresses.put(topic, topicSet);
 
-        if (!listeningVirtualAddresses.containsKey(vad))
-            // add a virtual address to the listeners of this topic
-            listeningVirtualAddresses.get(topic).add(vad);
+        // add a virtual address to the listeners of this topic
+        topicSet.add(vad);
 
     }
     /**
