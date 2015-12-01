@@ -72,7 +72,7 @@
         <maven.dependency.version>2.9</maven.dependency.version>
         <!-- other -->
 		<org.json.version>1.0.0</org.json.version>
-		<org.zeromq.version>0.3.4</org.zeromq.version>
+		<org.zeromq.version>0.3.5</org.zeromq.version>
         <javadoc-plugin.version>2.9</javadoc-plugin.version>
     </properties>
 
