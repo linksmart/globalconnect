@@ -271,7 +271,6 @@ public class MqttBackboneProtocolImpl implements Backbone, Observer, Configurabl
 
 			LOG.debug("method: " + tunnelRequest.getMethod());
 			LOG.debug("path: " + tunnelRequest.getPath());
-			LOG.debug("headers: " + tunnelRequest.getHeaders().length);
 			LOG.debug("body: " + new String(tunnelRequest.getBody()));
 
 			// check if service endpoint is available
