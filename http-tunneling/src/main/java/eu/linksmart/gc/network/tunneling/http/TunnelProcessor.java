@@ -56,7 +56,7 @@ public class TunnelProcessor {
 			if(senderVAD.getBytes().length != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
 				throw new TunnelException(HttpServletResponse.SC_BAD_REQUEST, "provided sender virtual-address doesn't conform to its format: " + senderVAD.toString());
 			}
-			if(senderVAD.toString() == "0.0.0.0") {
+			if(senderVAD.toString().equals("0.0.0.0")) {
 				throw new TunnelException(HttpServletResponse.SC_BAD_REQUEST, "computed sender virtual-address doesn't conform to its format: " + senderVAD.toString());
 			}
 		}
@@ -82,7 +82,7 @@ public class TunnelProcessor {
 			if(receiverVAD.getBytes().length != VirtualAddress.VIRTUAL_ADDRESS_BYTE_LENGTH) {
 				throw new TunnelException(HttpServletResponse.SC_BAD_REQUEST, "provided reciever virtual-address doesn't conform to its format: " + receiverVAD.toString());
 			}
-			if(receiverVAD.toString() == "0.0.0.0") {
+			if(receiverVAD.toString().equals("0.0.0.0")) {
 				throw new TunnelException(HttpServletResponse.SC_BAD_REQUEST, "computed reciever virtual-address doesn't conform to its format: " + receiverVAD.toString());
 			}
 		}
@@ -136,27 +136,24 @@ public class TunnelProcessor {
 	
 	public static TunnelResponse sendTunnelRequest(TunnelRequest tunnel_request, NetworkManagerCore nmCore, VirtualAddress senderVAD, VirtualAddress receiverVAD) throws TunnelException, Exception {
         // FixMe this should use serialize and not gSerialize
-        byte[] serializedRequest = SerializationUtil.gSerialize(tunnel_request);
+        final byte[] serializedRequest = SerializationUtil.gSerialize(tunnel_request);
 
-        LOG.trace("Serialized tunnel request: \n"+serializedRequest);
+        LOG.trace("Serialized tunnel request: \n" + Arrays.toString(serializedRequest));
 		
 		NMResponse nm_response = nmCore.sendData(senderVAD, receiverVAD,  serializedRequest, true);
 
-
-		
-		TunnelResponse tunnel_response = (TunnelResponse) SerializationUtil.deserialize(nm_response.getMessageBytes());
+		final byte[] response = nm_response.getMessageBytes();
+		final TunnelResponse tunnel_response = (TunnelResponse) SerializationUtil.deserialize(response);
 		
 		return tunnel_response;
 	}
 	
 	public static Map<String, String> getHeaders(HttpServletRequest request) throws TunnelException, Exception {
-		//StringBuilder builder = new StringBuilder();
 		Map<String,String> headers = new Hashtable();
 		Enumeration<String> headerNames = request.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
 			String header =  headerNames.nextElement();
             headers.put(header,request.getHeader(header));
-			//builder.append(header + ": " + value + "\r\n");
 		}
 		return headers;
 	}
