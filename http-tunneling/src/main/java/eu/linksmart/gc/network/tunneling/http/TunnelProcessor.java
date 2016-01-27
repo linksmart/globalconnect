@@ -149,17 +149,16 @@ public class TunnelProcessor {
 		return tunnel_response;
 	}
 	
-	public static String[] getHeaders(HttpServletRequest request) throws TunnelException, Exception {
+	public static Map<String, String> getHeaders(HttpServletRequest request) throws TunnelException, Exception {
 		//StringBuilder builder = new StringBuilder();
-		List<String> headers = new ArrayList<String>();
-		Enumeration<?> headerNames = request.getHeaderNames();
+		Map<String,String> headers = new Hashtable();
+		Enumeration<String> headerNames = request.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
-			String header = (String) headerNames.nextElement();
-			String value = request.getHeader(header);
-			headers.add(header + ": " + value);
+			String header =  headerNames.nextElement();
+            headers.put(header,request.getHeader(header));
 			//builder.append(header + ": " + value + "\r\n");
 		}
-		return headers.toArray(new String[headers.size()]);
+		return headers;
 	}
 	
 	public static byte[] addHeadersToResponse(byte[] byteData, HttpServletResponse response) throws TunnelException, Exception {

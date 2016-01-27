@@ -169,10 +169,7 @@ public class HttpTunnelServlet extends HttpServlet {
 			LOG.debug("s-vad: " + senderVAD.toString());
 			LOG.debug("r-vad: " + receiverVAD.toString());		
 			LOG.debug("servicePath: " + service_path);
-			String[] headers = tunnel_request.getHeaders();
-			for (int i = 0; i < headers.length; i++) {
-				LOG.debug("header: " + headers[i]);
-			}
+
 			
 			//
 			// send tunnel request & read response

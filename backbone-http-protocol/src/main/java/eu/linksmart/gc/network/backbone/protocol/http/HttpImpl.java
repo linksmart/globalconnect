@@ -1,5 +1,6 @@
 package eu.linksmart.gc.network.backbone.protocol.http;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
@@ -103,7 +104,7 @@ public class HttpImpl implements Backbone {
 			
 			LOG.debug("method: " + tunnel_request.getMethod());
 			LOG.debug("path: " + tunnel_request.getPath());
-			LOG.debug("headers: " + tunnel_request.getHeaders().length);
+			LOG.debug("headers: " + tunnel_request.getHeaders().size());
 			LOG.debug("body: " + new String(tunnel_request.getBody()));
 				
 			//
@@ -169,16 +170,16 @@ public class HttpImpl implements Backbone {
     	NMResponse nm_response = new NMResponse();
     	
     	TunnelResponse tunnel_response = new TunnelResponse();
-    	
+
     	//
     	// parse service path for query string
     	//
     	List<NameValuePair> query_string_pairs = new ArrayList<NameValuePair>();
-    	
+
 		String query_string = null;
-		
+
 		String path = tunnel_request.getPath();
-		
+
 		if(path != null && !(path.isEmpty())) {
 			if(path.contains("?")) {
 				if(path.startsWith("?")) {
@@ -200,7 +201,7 @@ public class HttpImpl implements Backbone {
 	    	} else {
 	    		uriEndpoint = uriEndpoint + path;
 	    	}
-		} 
+		}
 			
     	//
 		// invoke service endpoint
@@ -208,7 +209,9 @@ public class HttpImpl implements Backbone {
 		HttpClient client = new HttpClient();
 
     	HttpMethod  get_request = new GetMethod(uriEndpoint);
-    	
+
+        setHeaders(tunnel_request,get_request);
+
     	if(query_string_pairs.size() > 0) {
     		get_request.setQueryString(query_string_pairs.toArray(new NameValuePair[query_string_pairs.size()]));
     	}
@@ -222,12 +225,29 @@ public class HttpImpl implements Backbone {
 		//
     	tunnel_response.setStatusCode(status_code);
 		tunnel_response.setBody(service_response);
-		//TODO tunnel_response.setHeaders()
+		tunnel_response.setHeaders(packHeaders(get_request));
+
+
 		nm_response.setStatus(NMResponse.STATUS_SUCCESS);
 		nm_response.setBytesPrimary(true);
 		nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
 		
 		return nm_response;
+    }
+    //set the headers into the sending httpMethodRequest
+    private void setHeaders(TunnelRequest tunnelRequest, HttpMethod httpMethodRequest){
+        for(String headerName: tunnelRequest.getHeaders().keySet())
+            httpMethodRequest.setRequestHeader(headerName,tunnelRequest.getHeaders().get(headerName));
+
+    }
+    // creates a map of headers <name, value> out of class headers
+    private Map<String,String> packHeaders( HttpMethod httpMethodRequest){
+        Map<String,String> headerResponse = new Hashtable<>();
+
+        for(Header header: httpMethodRequest.getRequestHeaders())
+            headerResponse.put(header.getName(),header.getValue());
+
+        return headerResponse;
     }
     
     private NMResponse processPOST(TunnelRequest tunnel_request, String uriEndpoint) throws Exception {
@@ -238,6 +258,8 @@ public class HttpImpl implements Backbone {
     	
 		HttpClient client = new HttpClient();
 		PostMethod post_request = new PostMethod(uriEndpoint + tunnel_request.getPath());
+        setHeaders(tunnel_request,post_request);
+
 		StringRequestEntity requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), APPLICATION_JSON_CONTENT_TYPE, ENDCODING_TYPE);
 		post_request.setRequestEntity(requestEntity);
 		int status_code = client.executeMethod(post_request);
@@ -246,7 +268,8 @@ public class HttpImpl implements Backbone {
     	//TODO check for chunk response
     	tunnel_response.setStatusCode(status_code);
 		tunnel_response.setBody(service_response);
-		//TODO tunnel_response.setHeaders()
+        tunnel_response.setHeaders(packHeaders(post_request));
+
 		nm_response.setStatus(NMResponse.STATUS_SUCCESS);
 		nm_response.setBytesPrimary(true);
 		nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
@@ -262,6 +285,7 @@ public class HttpImpl implements Backbone {
     	
 		HttpClient client = new HttpClient();
 		PutMethod put_request = new PutMethod(uriEndpoint + tunnel_request.getPath());
+        setHeaders(tunnel_request,put_request);
 		StringRequestEntity put_requestEntity = new StringRequestEntity(new String(tunnel_request.getBody()), APPLICATION_JSON_CONTENT_TYPE, ENDCODING_TYPE);
 		put_request.setRequestEntity(put_requestEntity);
 		int status_code = client.executeMethod(put_request);
@@ -270,7 +294,7 @@ public class HttpImpl implements Backbone {
     	//TODO check for chunk response
     	tunnel_response.setStatusCode(status_code);
 		tunnel_response.setBody(service_response);
-		//TODO tunnel_response.setHeaders()
+		tunnel_response.setHeaders(packHeaders(put_request));
 		nm_response.setStatus(NMResponse.STATUS_SUCCESS);
 		nm_response.setBytesPrimary(true);
 		nm_response.setMessageBytes(SerializationUtil.serialize(tunnel_response));
