@@ -137,10 +137,10 @@
             <id>jboss-maven2-release-repository</id>
             <url>https://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
-        <repository>
+       <!-- <repository>
             <id>opencast-public</id>
             <url>http://repository.opencastproject.org/nexus/content/repositories/public/</url>
-        </repository>
+        </repository>-->
     </repositories>
 
     <pluginRepositories>
