@@ -77,6 +77,17 @@
     </properties>
 
     <developers>
+        <developer>
+            <id>jacarvajal</id>
+            <email>jose.angel.angel.carvajal&lt;at&gt;fit.fraunhofer.de</email>
+            <name>Jose Angel Carvajal Soto</name>
+            <roles>
+                <role>Java developer</role>
+            </roles>
+            <organization>Fraunhofer FIT</organization>
+            <organizationUrl>http://www.fit.fraunhofer.de/</organizationUrl>
+            <url>http://www.fit.fraunhofer.de/</url>
+        </developer>
     	<developer>
             <id>hrasheed</id>
             <email>hassan.rasheed&lt;at&gt;fit.fraunhofer.de</email>
