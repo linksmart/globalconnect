@@ -9,7 +9,6 @@
         <artifactId>eu.linksmart.gc.parent</artifactId>
         <version>0.3.0-SNAPSHOT</version>
     </parent>
-    <version>0.3.0-ALMANAC</version>
     <groupId>eu.linksmart.gc.distribution</groupId>
     <artifactId>eu.linksmart.gc.distribution.all</artifactId>
     
