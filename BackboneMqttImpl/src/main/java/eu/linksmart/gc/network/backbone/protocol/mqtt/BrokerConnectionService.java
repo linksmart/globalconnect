@@ -36,7 +36,8 @@ public class BrokerConnectionService extends StaticBroker {
         this.networkManager = netMngr;
         this.isService = isService;
         this.serviceDescription = serviceDescription;
-       createClient();
+        createClient();
+        registerBroker();
 
     }
 

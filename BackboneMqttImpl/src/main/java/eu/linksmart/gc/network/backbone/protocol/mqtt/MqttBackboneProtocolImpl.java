@@ -5,7 +5,7 @@ import eu.linksmart.gc.api.network.*;
 import eu.linksmart.gc.network.backbone.protocol.mqtt.conf.MqttBackboneProtocolConfigurator;
 import eu.linksmart.gc.utils.mqtt.broker.StaticBroker;
 import eu.linksmart.gc.api.types.Configurable;
-import eu.linksmart.gc.api.types.MqttTunnelledMessage;
+import eu.linksmart.gc.utils.mqtt.types.MqttMessage;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -184,7 +184,7 @@ public class MqttBackboneProtocolImpl implements Observer, Configurable {
 
     }
 
-    public synchronized void  publish(MqttTunnelledMessage ms) throws Exception {
+    public synchronized void  publish(MqttMessage ms) throws Exception {
 
             // if the message is not repartition or local,and I successful recovered then is published.
             if(ms != null && uniqueMessagePerTopic(ms) && uniqueMessageControl(ms))
@@ -193,7 +193,7 @@ public class MqttBackboneProtocolImpl implements Observer, Configurable {
                 LOG.warn("Message with topic "+ms.getTopic()+" discarded considered duplicated");
 
     }
-    boolean uniqueMessagePerTopic(MqttTunnelledMessage ms){
+    boolean uniqueMessagePerTopic(MqttMessage ms){
         boolean send = true;
 
         if(!ms.isGenerated())
@@ -235,7 +235,7 @@ public class MqttBackboneProtocolImpl implements Observer, Configurable {
         }
         return null;
     }
-    private boolean uniqueMessageControl(MqttTunnelledMessage ms){
+    private boolean uniqueMessageControl(MqttMessage ms){
         boolean send = true;
 
 
@@ -301,7 +301,7 @@ public class MqttBackboneProtocolImpl implements Observer, Configurable {
     @Override
     public void update(Observable forwardingListener, Object mqttTunnelledMessage) {
         // recovering objects
-        MqttTunnelledMessage data = (MqttTunnelledMessage)mqttTunnelledMessage;
+        MqttMessage data = (MqttMessage)mqttTunnelledMessage;
 
         // get the VAD which this topic is subscribed
        // VirtualAddress senderVAD =endpointTopicVirtualAddress.get(conf.get(conf.BROKER_URL));
@@ -314,7 +314,7 @@ public class MqttBackboneProtocolImpl implements Observer, Configurable {
             backbone.receiveDataTopicBase(data);
     }
 
-    private void handleBroadcast(MqttTunnelledMessage data){
+    private void handleBroadcast(MqttMessage data){
 
 
         if(data != null  && uniqueMessageControl(data)) {

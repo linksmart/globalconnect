@@ -6,12 +6,12 @@ import eu.linksmart.gc.api.network.networkmanager.core.NetworkManagerCore;
 import eu.linksmart.gc.api.network.routing.BackboneRouter;
 import eu.linksmart.gc.api.security.communication.SecurityProperty;
 import eu.linksmart.gc.api.types.Configurable;
-import eu.linksmart.gc.api.types.MqttTunnelledMessage;
 import eu.linksmart.gc.api.types.TunnelRequest;
 import eu.linksmart.gc.api.types.TunnelResponse;
 import eu.linksmart.gc.api.types.utils.SerializationUtil;
 import eu.linksmart.gc.api.utils.Configurator;
 import eu.linksmart.gc.network.backbone.protocol.mqtt.conf.MqttBackboneProtocolConfigurator;
+import eu.linksmart.gc.utils.mqtt.types.MqttMessage;
 import org.apache.commons.collections.BidiMap;
 import org.apache.commons.collections.bidimap.DualHashBidiMap;
 import org.apache.felix.scr.annotations.*;
@@ -241,10 +241,10 @@ public class MQTTProtocolActivator implements Configurable, Backbone, MessagePro
     /**
      * TODO add description
      * */
-    public MqttTunnelledMessage getAsyncMessage( byte[] data){
-        MqttTunnelledMessage ms =null;
+    public MqttMessage getAsyncMessage( byte[] data){
+        MqttMessage ms =null;
         try {
-            ms = MqttTunnelledMessage.deserialize(data);
+            ms = MqttMessage.deserialize(data);
         }catch (Exception e){
             e.printStackTrace();
 
@@ -255,10 +255,10 @@ public class MQTTProtocolActivator implements Configurable, Backbone, MessagePro
     /**
      * TODO add description
      * */
-    private MqttTunnelledMessage getSyncMessage(String topic, byte[] data){
-        MqttTunnelledMessage ms =null;
+    private MqttMessage getSyncMessage(String topic, byte[] data){
+        MqttMessage ms =null;
 
-        ms = new MqttTunnelledMessage(
+        ms = new MqttMessage(
                 topic,
                 data,Integer.valueOf(conf.get(MqttBackboneProtocolConfigurator.QoS)),
                 Boolean.valueOf(conf.get(MqttBackboneProtocolConfigurator.PERSISTENCE)),
@@ -488,7 +488,7 @@ public class MQTTProtocolActivator implements Configurable, Backbone, MessagePro
 
         MqttBBP.applyConfigurations(updates);
     }
-    public void handleBroadcast(MqttTunnelledMessage data){
+    public void handleBroadcast(MqttMessage data){
 
 
 
@@ -503,7 +503,7 @@ public class MQTTProtocolActivator implements Configurable, Backbone, MessagePro
 
 
     }
-    public void receiveDataBrokerBase(MqttTunnelledMessage data){
+    public void receiveDataBrokerBase(MqttMessage data){
 
         if(!listeningWithWildcardVirtualAddresses.isEmpty()) {
             boolean send = true;
@@ -531,14 +531,14 @@ public class MQTTProtocolActivator implements Configurable, Backbone, MessagePro
         for (VirtualAddress vad : listeningVirtualAddresses.get(data.getTopic()))
             receiveDataAsynch(brokerService.getVirtualAddress(), vad, data.toBytes());
     }
-    public void receiveDataTopicBase(MqttTunnelledMessage data){
+    public void receiveDataTopicBase(MqttMessage data){
         for (VirtualAddress vad : listeningVirtualAddresses.get(data.getTopic()))
             receiveDataAsynch((VirtualAddress) endpointVirtualAddressTopic.getKey(data.getTopic()), vad, data.toBytes());
     }
     @Override
     public Message processMessage(Message msg) {
         if(!msg.getSenderVirtualAddress().equals(brokerService.getVirtualAddress())) {
-            MqttTunnelledMessage mqttmsg = getAsyncMessage(msg.getData());
+            MqttMessage mqttmsg = getAsyncMessage(msg.getData());
             try {
                 MqttBBP.publish(mqttmsg);
             } catch (Exception e) {

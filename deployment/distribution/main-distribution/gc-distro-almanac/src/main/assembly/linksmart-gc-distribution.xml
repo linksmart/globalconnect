@@ -18,9 +18,11 @@
                 <exclude>/etc/org.ops4j.pax.url.mvn.cfg</exclude>
       		</excludes>
 		</fileSet>
+
 		<fileSet>
 			<directory>target/linksmart-gc-resources/unpacked-resources/repository</directory>
 			<outputDirectory>system</outputDirectory>
+
 		</fileSet>
 
 		<fileSet>
@@ -37,11 +39,7 @@
             <destName>MQTTBackboneProtocol.cfg</destName>
             <outputDirectory>etc/linksmart</outputDirectory>
         </file>
-        <file>
-            <source>target/linksmart-gc-resources/unpacked-resources/repository/eu/linksmart/gc/eu.linksmart.gc.network.backbone.zmq/${linksmart.gc.version}/eu.linksmart.gc.network.backbone.zmq-${linksmart.gc.version}-configuration.cfg</source>
-            <destName>ZMQBackbone.cfg</destName>
-            <outputDirectory>etc/linksmart</outputDirectory>
-        </file>
+
 
         <file>
             <source>target/linksmart-gc-resources/unpacked-resources/repository/eu/linksmart/gc/utils/${linksmart.gc.version}/utils-${linksmart.gc.version}-configuration.cfg</source>

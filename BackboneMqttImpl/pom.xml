@@ -46,11 +46,6 @@
             <artifactId>eu.linksmart.gc.api.types</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.eclipse.paho</groupId>
-            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-            <version>1.0.0</version>
-        </dependency>
 
         <dependency>
             <groupId>commons-collections</groupId>
@@ -70,7 +65,7 @@
         </dependency>
         <dependency>
             <groupId>eu.linksmart.gc</groupId>
-            <artifactId>  utils</artifactId>
+            <artifactId>utils</artifactId>
             <version>${linksmart.gc.version}</version>
         </dependency>
     </dependencies>

@@ -7,9 +7,9 @@
     	<version>0.3.0-SNAPSHOT</version>
      </parent>
 
-    <artifactId>eu.linksmart.gc.distribution.main.deployable</artifactId>
+    <artifactId>eu.linksmart.gc.distribution.almanac.deployable</artifactId>
     
-    <name>LS GC - main zip archive</name>
+    <name>LS GC - almanac zip archive</name>
     <description>Delivers a LinkSmart GC distribution as ZIP and GZIP</description>
     
     <packaging>pom</packaging>
