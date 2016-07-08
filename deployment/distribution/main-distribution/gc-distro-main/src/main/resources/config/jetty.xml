@@ -47,6 +47,25 @@ DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
                 <Set name="lowResourcesMaxIdleTime">5000</Set>
             </New>
         </Arg>
+        <!-- ============================================================= -->
+        <!-- De-comment the configuration below for enabling  SSL  -->
+       <!-- <Arg>
+            <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+                <Arg>
+                    <New class="org.eclipse.jetty.util.ssl.SslContextFactory">
+                        <Set name="keyStore"><SystemProperty name="jetty.home" default="." /><replace this with key store file e.g.: /etc/linksmart/keystore></Set>
+                        <Set name="keyStorePassword"><replace this with password></Set>
+                        <Set name="keyManagerPassword"><replace this with password></Set>
+                        <Set name="trustStore"><SystemProperty name="jetty.home" default="." /><replace this with trust store file e.g.: /etc/linksmart/truststore></Set>
+                        <Set name="trustStorePassword"><replace this with password></Set>
+                    </New>
+                </Arg>
+                <Set name="port">8443</Set>
+                <Set name="maxIdleTime">30000</Set>
+            </New>
+        </Arg>
+         -->
+        <!-- ============================================================= -->
     </Call>
 
     <!-- =========================================================== -->
