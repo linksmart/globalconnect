@@ -337,8 +337,12 @@ public class MqttBackboneProtocolImpl implements Observer, Configurable {
         if (map.containsKey(MqttBackboneProtocolConfigurator.BROKER_NAME)|| map.containsKey(MqttBackboneProtocolConfigurator.BROKER_PORT)) {
             try {
 
-                if (map.containsKey(MqttBackboneProtocolConfigurator.BROKER_NAME))
-                    brokerService.setBrokerName(map.get(MqttBackboneProtocolConfigurator.BROKER_NAME).toString());
+                if (map.containsKey(MqttBackboneProtocolConfigurator.BROKER_NAME)) {
+                    String broker = "localhost";
+                    if (!conf.get(MqttBackboneProtocolConfigurator.BROKER_NAME).equals("*"))
+                        broker = conf.get(MqttBackboneProtocolConfigurator.BROKER_NAME);
+                    brokerService.setBrokerName(broker);
+                }
                 if (map.containsKey(MqttBackboneProtocolConfigurator.BROKER_PORT))
                     brokerService.setBrokerPort(map.get(MqttBackboneProtocolConfigurator.BROKER_PORT).toString());
             }catch (Exception e){

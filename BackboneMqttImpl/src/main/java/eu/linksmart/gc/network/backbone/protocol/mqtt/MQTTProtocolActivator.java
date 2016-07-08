@@ -112,7 +112,10 @@ public class MQTTProtocolActivator implements Configurable, Backbone, MessagePro
         try {
             LOG.info("Starting broker main client with name:" +MQTTProtocolID.toString());
 
-            brokerService = new BrokerConnectionService(conf.get(MqttBackboneProtocolConfigurator.BROKER_NAME),conf.get(MqttBackboneProtocolConfigurator.BROKER_PORT), MQTTProtocolID,networkManager,Boolean.valueOf(conf.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)),conf.get(conf.BACKBONE_DESCRIPTION));
+            String broker ="localhost";
+            if(!conf.get(MqttBackboneProtocolConfigurator.BROKER_NAME).equals("*"))
+                broker = conf.get(MqttBackboneProtocolConfigurator.BROKER_NAME);
+            brokerService = new BrokerConnectionService(broker,conf.get(MqttBackboneProtocolConfigurator.BROKER_PORT), MQTTProtocolID,networkManager,Boolean.valueOf(conf.get(MqttBackboneProtocolConfigurator.BROKER_AS_SERVICE)),conf.get(conf.BACKBONE_DESCRIPTION));
 
             brokerService.connect();
              MqttBBP = new MqttBackboneProtocolImpl(conf,brokerService, this);
